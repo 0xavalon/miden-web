@@ -6,8 +6,10 @@ import {
   ChevronRight,
   ChevronDown,
   CircuitBoardIcon,
+  CircleMinus,
   Command,
   CreditCard,
+  ArrowDownToLine,
   File,
   Facebook,
   FileText,
@@ -49,7 +51,9 @@ export const Icons = {
   chevronLeft: ChevronLeft,
   chevronRight: ChevronRight,
   chevronDown: ChevronDown,
+  circleMinus: CircleMinus,
   document: FileText,
+  arrowDownToLine: ArrowDownToLine,
   trash: Trash,
   employee: UserX2Icon,
   post: FileText,
@@ -138,8 +142,8 @@ export const Icons = {
       xmlns="http://www.w3.org/2000/svg"
     >
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M12 1C18.071 1 23 5.92895 23 12C23 18.071 18.071 23 12 23C5.92991 23 1 18.071 1 12C1 5.92895 5.92991 1 12 1ZM12.2636 11.5342V6.19081C12.2636 5.9337 12.055 5.72503 11.7979 5.72503C11.5408 5.72503 11.3321 5.9337 11.3321 6.19081V11.5342H5.98865C5.73154 11.5342 5.52287 11.7429 5.52287 12C5.52287 12.2571 5.73154 12.4658 5.98865 12.4658H11.3321V17.8092C11.3321 18.0663 11.5408 18.275 11.7979 18.275C12.055 18.275 12.2636 18.0663 12.2636 17.8092V12.4658H17.6071C17.8642 12.4658 18.0729 12.2571 18.0729 12C18.0729 11.7429 17.8642 11.5342 17.6071 11.5342H12.2636Z"
         fill={color || "#000000"}
       />
