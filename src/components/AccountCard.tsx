@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
-import bg from "../assets/images/purple-bg.png";
+import { useState, useRef, useEffect } from "react";
 import { Icons } from "./icons";
+import bg from "../assets/images/purple-bg.png";
 
 interface AccountCardProps {
   username: string;
