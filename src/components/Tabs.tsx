@@ -1,8 +1,6 @@
-// Tabs.tsx
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import LoadingScreen from "./LoadingScreen";
-import BusinessTab from "./TabContent/BusinessTab";
-import EmployeeTab from "./TabContent/EmployeeTab";
+import TabContent from "./TabContent";
 import TabButton from "./TabButton";
 import AccountCard from "./AccountCard";
 import ImportFileCard from "./ImportFileCard";
@@ -94,11 +92,19 @@ const Tabs = () => {
             />
           </div>
 
-          {activeTab === "Business" ? (
-            <BusinessTab handleCreateAccount={handleCreateAccount} />
-          ) : (
-            <EmployeeTab handleCreateAccount={handleCreateAccount} />
-          )}
+          <TabContent
+            title={
+              activeTab === "Business"
+                ? "Create a business account"
+                : "Create an employee account"
+            }
+            description={
+              activeTab === "Business"
+                ? "Create an account to enable bulk fund disbursement"
+                : "Create an account to manage your personal tasks"
+            }
+            handleCreateAccount={handleCreateAccount}
+          />
         </>
       )}
 
@@ -137,6 +143,5 @@ const Tabs = () => {
     </div>
   );
 };
-
 
 export default Tabs;

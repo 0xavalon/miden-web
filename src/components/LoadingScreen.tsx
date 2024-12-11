@@ -1,8 +1,6 @@
-// LoadingScreen.tsx
-import React from "react";
-import logo from "../assets/images/teamwork.png"; // Make sure this path is correct
+import logo from "../assets/images/teamwork.png";
 
-const LoadingScreen: React.FC = () => {
+const LoadingScreen = () => {
   return (
     <div className="fixed inset-0 bg-[#D9BBFF] bg-opacity-50 flex justify-center items-center z-50">
       <div className="text-center">

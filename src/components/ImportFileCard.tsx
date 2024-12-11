@@ -1,4 +1,3 @@
-// components/ImportFileCard.tsx
 import { Icons } from "./icons";
 import teamwork from "../assets/images/teamwork.png";
 
