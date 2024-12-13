@@ -28,7 +28,9 @@ const Tabs = () => {
     setIsLoading(true);
     await sleep(1000);
     const _account = await createAccount();
-    console.log("_account", _account);
+    setNewAccount(_account);
+    setUserName(_account.id().to_string());
+    setUserAccountId(_account.id().to_string());
     setIsLoading(false);
     setIsAccountCreated(true);
 };
