@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import LoadingScreen from "./LoadingScreen";
 import TabContent from "./TabContent";
 import TabButton from "./TabButton";
@@ -6,7 +6,7 @@ import AccountCard from "./AccountCard";
 import ImportFileCard from "./ImportFileCard";
 import Send from "./Send";
 import History from "./History";
-import { createAccount } from "../utils/index";
+import { createAccount, getAccountId, getAccountsFromDb } from "../utils/index";
 
 const Tabs = () => {
   const [activeTab, setActiveTab] = useState<string>("Business");
@@ -81,6 +81,32 @@ const Tabs = () => {
   const handleCloseSend = () => {
     setShowSend(false);
   };
+
+  const getExistingAccounts = async () => {
+    try {
+      setIsLoading(true);
+      await sleep(1000);
+      const accounts = await getAccountsFromDb();
+      
+      if (accounts.length > 0) {
+        const _id = accounts[0].id().to_string();
+        setIsAccountCreated(true);
+        setNewAccount(accounts[0]);
+        setUserName(_id);
+        setUserAccountId(_id);
+        setIsLoading(false);
+      } else {
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error("Error fetching existing accounts:", error.message);
+    }
+  };
+
+  // Use useEffect to check for existing accounts when the component mounts
+  useEffect(() => {
+    getExistingAccounts();
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-purple-100 p-4">

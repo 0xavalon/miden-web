@@ -7,6 +7,7 @@ import {
   TransactionRequest,
   AccountHeader,
 } from "@demox-labs/miden-sdk";
+import exp from "constants";
 
 const webClient = new WebClient();
 
@@ -14,9 +15,20 @@ export const createClient = async () => {
   await webClient.create_client();
 };
 
-export const getAccounts = async () => {
+export const getAccountsFromDb = async () => {
   const _accounts = await webClient.get_accounts();
   return _accounts;
+};
+
+export const getAccountId = (accountId: any) => {
+  const _account = AccountId.from_hex(accountId);
+  return _account;
+};
+
+
+export const getAccountDetails = async (accountId: AccountId) => {
+  const _accountDetails = webClient.get_account(accountId);
+  return _accountDetails;
 };
 
 export const createAccount = async () => {

@@ -12,9 +12,9 @@ export default function Miden() {
   const [recoverAccountId, setRecoverAccountId] = useState("");
 
   const fetchAccounts = async () => {
-    const _accounts = await getAccounts();
-    console.log(_accounts);
-    setAccounts(_accounts);
+    // const _accounts = await getAccounts();
+    // console.log(_accounts);
+    // setAccounts(_accounts);
   };
 
   useEffect(() => {
