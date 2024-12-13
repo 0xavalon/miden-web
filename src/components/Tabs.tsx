@@ -6,7 +6,7 @@ import AccountCard from "./AccountCard";
 import ImportFileCard from "./ImportFileCard";
 import Send from "./Send";
 import History from "./History";
-import { createAccount, getAccountId, getAccountsFromDb, getBalance } from "../utils/index";
+import { createAccount, getAccountId, getAccountsFromDb, getBalance, importNoteFiles } from "../utils/index";
 
 const Tabs = () => {
   const [activeTab, setActiveTab] = useState<string>("Business");
@@ -54,16 +54,17 @@ const Tabs = () => {
       setSelectedFile(file.name);
       setImportStatus("idle");
       setShowSend(false); // Ensure Send is closed
+      handleImportFile(file);
     }
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
-  const handleImportFile = (): void => {
-    if (!selectedFile) return;
-
+  const handleImportFile = (file: File): void => {
+    if (!file) return;
     setImportStatus("importing");
+    importNoteFiles(file);
     setTimeout(() => {
       const isSuccess = Math.random() > 0.5;
       setImportStatus(isSuccess ? "success" : "error");
@@ -163,13 +164,14 @@ const Tabs = () => {
             walletAddress="0xdhb3rg3g8rfgffgeuyfbefbfhbfrebijbhfssbu4gf74gsbjd"
             onImportClick={handleImportClick}
             onSendClick={handleSendClick}
+            
           />
 
           {selectedFile ? (
             <ImportFileCard
               selectedFile={selectedFile}
               importStatus={importStatus}
-              handleImportFile={handleImportFile}
+              // handleImportFile={handleImportFile}
               resetImport={resetImport}
             />
           ) : showSend ? (

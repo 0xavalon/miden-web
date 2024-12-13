@@ -43,8 +43,8 @@ export const getAccountId = (accountId: any) => {
   return _account;
 };
 
-export const importNoteFiles = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
-  const file = event.target.files?.[0]; // Check if a file is selected
+export const importNoteFiles = async (file: File): Promise<void> => {
+  // const file = event.target.files?.[0]; // Check if a file is selected
   if (file) {
     const reader = new FileReader();
 
