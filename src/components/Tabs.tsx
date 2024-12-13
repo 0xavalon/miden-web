@@ -6,14 +6,14 @@ import AccountCard from "./AccountCard";
 import ImportFileCard from "./ImportFileCard";
 import Send from "./Send";
 import History from "./History";
-import { createAccount, getAccountId, getAccountsFromDb, getBalance, importNoteFiles } from "../utils/index";
+import { consumeAvailableNotes, createAccount, getAccountId, getAccountsFromDb, getBalance, importNoteFiles, syncClient } from "../utils/index";
 
 const Tabs = () => {
   const [activeTab, setActiveTab] = useState<string>("Business");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [userName, setUserName] = useState("");
   const [userAccountId, setUserAccountId] = useState("");
-  const [newAccount, setNewAccount] = useState("");
+  const [account, setAccount] = useState("");
   const [selectedAccountBalance, setSelectedAccountBalance] = useState("0");
   const [isAccountCreated, setIsAccountCreated] = useState<boolean>(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
@@ -32,7 +32,7 @@ const Tabs = () => {
     const _id = _account.id().to_string();
     const _balance = await getBalance(_id);
     setSelectedAccountBalance(_balance);
-    setNewAccount(_account);
+    setAccount(_account);
     setUserName(_id);
     setUserAccountId(_id);
     setIsLoading(false);
@@ -65,11 +65,18 @@ const Tabs = () => {
     if (!file) return;
     setImportStatus("importing");
     importNoteFiles(file);
+    _consumeAvailableNotes();
     setTimeout(() => {
       const isSuccess = Math.random() > 0.5;
       setImportStatus(isSuccess ? "success" : "error");
     }, 2000);
   };
+
+  const _consumeAvailableNotes = async () => {
+    await sleep(3000); // Artificial wait, Need to understand more!  
+    await syncClient(); 
+    await consumeAvailableNotes(userAccountId);
+  }
 
   const resetImport = (): void => {
     setSelectedFile(null);
@@ -97,7 +104,7 @@ const Tabs = () => {
         const _id = accounts[0].id().to_string();
         const _balance = await getBalance(_id);
         setIsAccountCreated(true);
-        setNewAccount(accounts[0]);
+        setAccount(accounts[0]);
         setUserName(_id);
         setSelectedAccountBalance(_balance);
         setUserAccountId(_id);

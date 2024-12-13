@@ -11,16 +11,7 @@ import exp from "constants";
 
 const webClient = new WebClient();
 
-export const createClient = async () => {
-  await webClient.create_client();
-};
-
-export const getAccountsFromDb = async () => {
-  const _accounts = await webClient.get_accounts();
-  return _accounts;
-};
-
-export const getBalance = async (accountId: any, faucetAccountId: AccountId = "0x29b86f9443ad907a") => {
+const _getAccountId = (accountId: any) => {
   let _accountId;
   if (typeof accountId === "string") {
     if (!accountId) {
@@ -31,7 +22,20 @@ export const getBalance = async (accountId: any, faucetAccountId: AccountId = "0
   } else {
     _accountId = accountId;
   }
+  return _accountId;
+}
 
+export const createClient = async () => {
+  await webClient.create_client();
+};
+
+export const getAccountsFromDb = async () => {
+  const _accounts = await webClient.get_accounts();
+  return _accounts;
+};
+
+export const getBalance = async (accountId: any, faucetAccountId: AccountId = "0x29b86f9443ad907a") => {
+  let _accountId = _getAccountId(accountId);
   const faucetAccount = AccountId.from_hex(faucetAccountId);
   let _account = await getAccountDetails(_accountId);
   let _balance = _account.vault().get_balance(faucetAccount)
@@ -67,6 +71,50 @@ export const importNoteFiles = async (file: File): Promise<void> => {
   }
 };
 
+export const syncClient = async () => {
+  try{
+    console.log("Attempting to sync the client ...", new Date());
+    await webClient.sync_state();
+    console.log("syncing done ...", new Date())
+  } catch (error) {
+      console.log("Error syncing accounts: ", error.message);
+  }
+}
+
+export const consumeAvailableNotes = async (targetAccount: any) => {
+  const _accountId = _getAccountId(targetAccount);
+  await webClient.fetch_and_cache_account_auth_by_pub_key(_accountId);
+  let accountId2 = _getAccountId(targetAccount);
+  const notes = await webClient.get_consumable_notes(accountId2);
+  let accountId = _getAccountId(targetAccount);
+  await webClient.fetch_and_cache_account_auth_by_pub_key(accountId);
+  console.log(`consuming notes for account id: ${targetAccount}, Notes Found: ${notes.length}`);
+  console.log('logging for account vanishes ... ',accountId, targetAccount);
+  
+
+  if(notes.length) {
+    let notelist = [];
+    for(let i=0; i<notes.length; i++) {
+      const noteId = notes[i].input_note_record().id().to_string();
+      const isConsumed = notes[i].input_note_record().is_consumed();
+      console.log(noteId, ' ',isConsumed)
+      notelist.push(noteId);
+    }
+    
+    console.log(accountId, targetAccount);
+    try{
+      const txResult = await webClient.new_consume_transaction(
+        accountId,
+        notelist
+      );
+      console.log('Tx Result: ',txResult);
+    } catch (error){
+      console.log("error cosuming notes", error.message);
+    }
+  } else {
+    console.log('No notes found for this user.')
+  }
+}
 
 export const importAccount = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
   const file = event.target.files?.[0]; // Ensure the file exists
