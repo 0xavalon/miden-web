@@ -44,6 +44,31 @@ export const getAccountId = (accountId: any) => {
 };
 
 
+export const importAccount = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+  const file = event.target.files?.[0]; // Ensure the file exists
+  if (file) {
+    const reader = new FileReader();
+
+    reader.onload = async (e: ProgressEvent<FileReader>) => {
+      if (e.target?.result) {
+        const arrayBuffer = e.target.result as ArrayBuffer; // Type assertion
+        const byteArray = new Uint8Array(arrayBuffer);
+        console.log(byteArray);
+
+        try {
+          await webClient.import_account(byteArray); // Assuming `webClient` is typed correctly
+          console.log('Account successfully imported!');
+        } catch (error) {
+          console.error('Error importing account:', error);
+        }
+      }
+    };
+
+    reader.readAsArrayBuffer(file); // Read the file as an ArrayBuffer
+  }
+};
+
+
 export const getAccountDetails = async (accountId: AccountId) => {
   try {
     const _accountDetails = await webClient.get_account(accountId);
