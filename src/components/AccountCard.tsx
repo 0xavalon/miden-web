@@ -21,8 +21,44 @@ const AccountCard = ({
 }: AccountCardProps) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
+  const downloadRef = useRef<HTMLAnchorElement | null>(null);
 
   const toggleTooltip = () => setShowTooltip((prev) => !prev);
+
+  const handleDownload = () => {
+    try{
+      const fileContent = JSON.stringify(
+        {
+          username,
+          balance,
+          privateKey,
+          walletAddress,
+        },
+        null,
+        2 // Indentation for readability
+      );
+      _createNDownloadFile(fileContent);
+    } catch(error){
+      console.log(error.message);
+    }
+  };
+
+  const _createNDownloadFile = (fileContent: any) => {
+      const blob = new Blob([fileContent], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+
+      const tempLink = document.createElement("a");
+      tempLink.href = url;
+      tempLink.download = `${username}_backup.mac`; // File name
+      console.log("downloading...", downloadRef.current)
+
+        // Append the anchor to the document body
+      document.body.appendChild(tempLink);
+      tempLink.click(); // Trigger download
+      document.body.removeChild(tempLink); // Remove the anchor from the DOM
+
+      URL.revokeObjectURL(url); // Clean up the URL object
+  }
 
   // Close the tooltip when clicking outside
   useEffect(() => {
@@ -61,11 +97,11 @@ const AccountCard = ({
         </div>
         <div className="relative" ref={tooltipRef}>
           <button
-            onClick={toggleTooltip}
+            onClick={handleDownload}
             className="bg-[#0b3ceb] px-6 py-4 rounded-[64px]"
           >
             <span className="text-white text-base font-semibold font-inter leading-6">
-              Key
+              Export
             </span>
           </button>
 
