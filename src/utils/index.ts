@@ -43,6 +43,30 @@ export const getAccountId = (accountId: any) => {
   return _account;
 };
 
+export const importNoteFiles = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+  const file = event.target.files?.[0]; // Check if a file is selected
+  if (file) {
+    const reader = new FileReader();
+
+    reader.onload = async (e: ProgressEvent<FileReader>) => {
+      if (e.target?.result) {
+        const arrayBuffer = e.target.result as ArrayBuffer; // Assert type
+        const byteArray = new Uint8Array(arrayBuffer);
+        console.log(byteArray);
+
+        try {
+          await webClient.import_note(byteArray, true); // Assuming `webClient` is correctly typed
+          console.log('Note successfully imported!');
+        } catch (error) {
+          console.error('Error importing note:', error);
+        }
+      }
+    };
+
+    reader.readAsArrayBuffer(file); // Read the file as an ArrayBuffer
+  }
+};
+
 
 export const importAccount = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
   const file = event.target.files?.[0]; // Ensure the file exists
