@@ -6,10 +6,14 @@ import AccountCard from "./AccountCard";
 import ImportFileCard from "./ImportFileCard";
 import Send from "./Send";
 import History from "./History";
+import { createAccount } from "../utils/index";
 
 const Tabs = () => {
   const [activeTab, setActiveTab] = useState<string>("Business");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [userName, setUserName] = useState("");
+  const [userAccountId, setUserAccountId] = useState("");
+  const [newAccount, setNewAccount] = useState("");
   const [isAccountCreated, setIsAccountCreated] = useState<boolean>(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [importStatus, setImportStatus] = useState<
@@ -18,14 +22,16 @@ const Tabs = () => {
   const [showSend, setShowSend] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const handleCreateAccount = (): void => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      setIsAccountCreated(true);
-    }, 3000);
-  };
+  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+  const handleCreateAccount = async (): Promise<void> => {
+    setIsLoading(true);
+    await sleep(1000);
+    const _account = await createAccount();
+    console.log("_account", _account);
+    setIsLoading(false);
+    setIsAccountCreated(true);
+};
   const handleImportClick = (): void => {
     // Close Send view and open Import view
     setShowSend(false);
@@ -111,7 +117,7 @@ const Tabs = () => {
       {isAccountCreated && !isLoading && (
         <div className="flex flex-col lg:flex-row justify-center items-center gap-6 p-8 bg-white">
           <AccountCard
-            username="eclipse231232"
+            username={userName}
             balance="0"
             privateKey="0xdhb3rg3g8rfgffgeuyfbefbfhbfrebijbhfssbu4gf74gsbjd"
             walletAddress="0xdhb3rg3g8rfgffgeuyfbefbfhbfrebijbhfssbu4gf74gsbjd"

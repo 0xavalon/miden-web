@@ -25,31 +25,8 @@ export const createAccount = async () => {
     AccountStorageMode.private(),
     true
   );
-  console.log(newAccount);
-  const result = await webClient.fetch_and_cache_account_auth_by_pub_key(
-    newAccount.id()
-  );
-
-  let keys = {
-    publicKey: result.get_rpo_falcon_512_public_key_as_word(),
-    secretKey: result.get_rpo_falcon_512_secret_key_as_felts(),
-    // isAuthSecretKeyType: result instanceof window.AuthSecretKey,
-  };
-  console.log("account created", newAccount.id().to_string());
-  console.log(keys);
-
-  // const _pk = encodeFeltArrayToHex(keys.secretKey);
-  // console.log('hexformat', _pk);
-
-  // const _pkToFelt = decodeHexToFeltArray(_pk);
-  // console.log('Felt', _pkToFelt);
-
-  // // Example usage
-  // const base64Encoded = encodeToBase64(keys.secretKey);
-  // console.log("Base64 Encoded String:", base64Encoded);
-
-  // const decodedFromBase64 = decodeFromBase64(base64Encoded);
-  // console.log("Decoded Felt Array:", decodedFromBase64);
+  console.log('new account',newAccount);
+  return newAccount;
 };
 
 export const _getKeys = async (accountId: AccountId) => {
