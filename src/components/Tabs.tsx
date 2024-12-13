@@ -6,7 +6,7 @@ import AccountCard from "./AccountCard";
 import ImportFileCard from "./ImportFileCard";
 import Send from "./Send";
 import History from "./History";
-import { createAccount, getAccountId, getAccountsFromDb } from "../utils/index";
+import { createAccount, getAccountId, getAccountsFromDb, getBalance } from "../utils/index";
 
 const Tabs = () => {
   const [activeTab, setActiveTab] = useState<string>("Business");
@@ -14,6 +14,7 @@ const Tabs = () => {
   const [userName, setUserName] = useState("");
   const [userAccountId, setUserAccountId] = useState("");
   const [newAccount, setNewAccount] = useState("");
+  const [selectedAccountBalance, setSelectedAccountBalance] = useState("0");
   const [isAccountCreated, setIsAccountCreated] = useState<boolean>(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [importStatus, setImportStatus] = useState<
@@ -28,9 +29,12 @@ const Tabs = () => {
     setIsLoading(true);
     await sleep(1000);
     const _account = await createAccount();
+    const _id = _account.id().to_string();
+    const _balance = await getBalance(_id);
+    setSelectedAccountBalance(_balance);
     setNewAccount(_account);
-    setUserName(_account.id().to_string());
-    setUserAccountId(_account.id().to_string());
+    setUserName(_id);
+    setUserAccountId(_id);
     setIsLoading(false);
     setIsAccountCreated(true);
 };
@@ -90,9 +94,11 @@ const Tabs = () => {
       
       if (accounts.length > 0) {
         const _id = accounts[0].id().to_string();
+        const _balance = await getBalance(_id);
         setIsAccountCreated(true);
         setNewAccount(accounts[0]);
         setUserName(_id);
+        setSelectedAccountBalance(_balance);
         setUserAccountId(_id);
         setIsLoading(false);
       } else {
@@ -102,6 +108,12 @@ const Tabs = () => {
       console.error("Error fetching existing accounts:", error.message);
     }
   };
+
+  const exportAccount = () => {
+
+  }
+
+
 
   // Use useEffect to check for existing accounts when the component mounts
   useEffect(() => {
@@ -146,7 +158,7 @@ const Tabs = () => {
         <div className="flex flex-col lg:flex-row justify-center items-center gap-6 p-8 bg-white">
           <AccountCard
             username={userName}
-            balance="0"
+            balance={selectedAccountBalance}
             privateKey="0xdhb3rg3g8rfgffgeuyfbefbfhbfrebijbhfssbu4gf74gsbjd"
             walletAddress="0xdhb3rg3g8rfgffgeuyfbefbfhbfrebijbhfssbu4gf74gsbjd"
             onImportClick={handleImportClick}

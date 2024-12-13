@@ -20,6 +20,24 @@ export const getAccountsFromDb = async () => {
   return _accounts;
 };
 
+export const getBalance = async (accountId: any, faucetAccountId: AccountId = "0x29b86f9443ad907a") => {
+  let _accountId;
+  if (typeof accountId === "string") {
+    if (!accountId) {
+      console.error("accountId is undefined or empty.");
+      return null; // Handle undefined or empty accountId
+    }
+    _accountId = AccountId.from_hex(accountId);
+  } else {
+    _accountId = accountId;
+  }
+
+  const faucetAccount = AccountId.from_hex(faucetAccountId);
+  let _account = await getAccountDetails(_accountId);
+  let _balance = _account.vault().get_balance(faucetAccount)
+  return _balance.toString();
+}
+
 export const getAccountId = (accountId: any) => {
   const _account = AccountId.from_hex(accountId);
   return _account;
@@ -27,8 +45,12 @@ export const getAccountId = (accountId: any) => {
 
 
 export const getAccountDetails = async (accountId: AccountId) => {
-  const _accountDetails = webClient.get_account(accountId);
-  return _accountDetails;
+  try {
+    const _accountDetails = await webClient.get_account(accountId);
+    return _accountDetails;
+  } catch(error) {
+    console.log("error fetching account details", error.message);
+  }
 };
 
 export const createAccount = async () => {
