@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Icons } from "./icons";
 import teamwork from "../assets/images/teamwork.png";
-import { consumeAvailableNotes, createNote, getAccountsFromDb, getBalance, getConsumableNotesForUser, getNonFaucetFirstAccount, setupFaucet, sleep, syncClient } from "../utils/index";
+import { consumeAvailableNotes, createMultipleNotes, createNote, getAccountsFromDb, getBalance, getConsumableNotesForUser, getNonFaucetFirstAccount, setupFaucet, sleep, syncClient } from "../utils/index";
 
 const recipientSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -104,15 +104,13 @@ const Send = ({ onClose }: SendProps) => {
     await sleep(1000);
     await syncClient();
     
-    const deployedFaucet = await setupFaucet();
-    console.log('deployed faucet',deployedFaucet);
-    // let {recipients} = data;
-    // for (const { username: receiver, amount } of recipients) {
-      // await createNote(accountId, receiver, amount);
+    let {recipients} = data;
+    for (const { username: receiver, amount } of recipients) {
+      await createMultipleNotes(accountId, receiver, amount);
       // await sendNotesToRemoteRecipient(accountId, receiver, amount);
       // const notes = await getConsumableNotesForUser(receiver);
       // console.log(notes);
-    // }
+    }
     
 
     const generatedFiles = data.recipients.map(createFile);

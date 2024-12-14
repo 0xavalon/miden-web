@@ -14,9 +14,12 @@ import {
   NoteAssets,
   OutputNotesArray,
   AccountHeader,
+  NoteInputs,
   NoteFilter,
   NoteFilterTypes,
+  FeltArray,
   NoteExecutionMode,
+  // NoteDetailsArray,
   NoteTag,
   NoteExecutionHint,
   NoteScript,
@@ -70,7 +73,7 @@ export const getFirstFaucetAccount = async () => {
     if(account.is_faucet()) return account;
     await sleep(100);
   }
-  
+
   return null;
 }
 
@@ -164,16 +167,22 @@ export const createNote = async (sender: any, receiver: any, amountToSend: strin
       await webClient.fetch_and_cache_account_auth_by_pub_key(senderAccount) // Need to understand more what this does.
       const faucetAccount = _getAccountId(assetId);
       const recipientAccount = _getAccountId(receiver);
+      console.log(senderAccount, recipientAccount);
       if(faucetAccount.is_faucet()) {
   
       try {
-        const transaction = await webClient.new_send_transaction(
+        await sleep(100);
+        console.log('starting the new transactions')
+        const transaction = webClient.new_send_transaction(
           senderAccount,
           recipientAccount,
           faucetAccount,
           NoteType.private(),
           BigInt(amountToSend.toString())
         );
+        await Promise.all([transaction])
+        await sleep(100);
+        await syncClient();
         console.log('transaction result',transaction);
         return transaction;
 
@@ -190,6 +199,117 @@ export const createNote = async (sender: any, receiver: any, amountToSend: strin
     }
 }
 
+const getCustomNoteScript = (expectedNoteArg1: any, expectedNoteArg2: any, memAddress: any, memAddress2:any) => `
+  use.miden::note
+  use.miden::contracts::auth::basic->auth_tx
+  use.miden::kernels::tx::memory
+
+  begin
+      # Push expected data from advice map into memory
+      adv.push_mapval
+      # => [NOTE_ARG_COMMITMENT]
+
+      push.${memAddress}
+      push.2
+      exec.mem::pipe_preimage_to_memory
+      # => [memAddress']
+
+      # Validate first argument
+      push.${memAddress}
+      mem_loadw
+      push.${expectedNoteArg1}
+      assert_eqw
+
+      # Validate second argument
+      push.${memAddress2}
+      mem_loadw
+      push.${expectedNoteArg2}
+      assert_eqw
+
+      # Check note inputs
+      push.0 exec.note::get_inputs
+      eq.1 assert
+      mem_load
+
+      # Authorize transaction
+      exec.auth_tx::auth_tx_rpo_falcon512
+  end
+`;
+
+const customTransaction = async (assertedValue: string) => {
+  const webClient = new WebClient();
+
+  await webClient.create_client("http://localhost:57291", "http://localhost:50051");
+
+  // Example of dynamic inputs
+  const memAddress = "1000";
+  const memAddress2 = "1001";
+  const expectedNoteArg1 = "1234.5678";
+  const expectedNoteArg2 = "8765.4321";
+
+  // Generate the script dynamically
+  const noteScript = getCustomNoteScript(expectedNoteArg1, expectedNoteArg2, memAddress, memAddress2);
+  const compiledNoteScript = await webClient.compile_note_script(noteScript);
+
+  console.log("Compiled Script:", compiledNoteScript.toString());
+
+  // Now use this script in your NoteRecipient
+  const noteRecipient = new NoteRecipient(compiledNoteScript, new NoteInputs(new FeltArray([walletAccount.id().to_felt()])));
+  
+  // Use the rest of your logic from the `customTransaction` method
+};
+
+
+
+
+export const createMultipleNotes = async (sender: any, receiver: any, amountToSend: string, assetId:any = "0x29b86f9443ad907a") => {
+  const ownOutputNotes = new OutputNotesArray();
+  const senderAccount =  _getAccountId(sender);
+  await webClient.fetch_and_cache_account_auth_by_pub_key(senderAccount) // Need to understand more what this does.
+  const faucetAccount = _getAccountId(assetId);
+  const recipientAccount = _getAccountId(receiver);
+  console.log(senderAccount, recipientAccount);
+
+
+      const noteMetadata = new NoteMetadata(
+        senderAccount,
+        NoteType.private(),
+        NoteTag.from_account_id(senderAccount, NoteExecutionMode.new_local()),
+        NoteExecutionHint.none()
+      );
+
+
+      // Create assets and recipient for the note
+      const noteAssets = new NoteAssets([
+        new FungibleAsset(faucetAccount, BigInt(amountToSend.toString())),
+      ]);
+      const minimalScript =`
+      begin
+          push.0 # Start of the note script
+          end
+    `;
+    const noteScript = await webClient.compile_note_script(minimalScript);
+    await sleep(100);
+    const noteInputs = new NoteInputs(new FeltArray([recipientAccount.to_felt()]));
+    const noteRecipient = new NoteRecipient(noteScript, noteInputs);
+
+
+      // Create a note and append it to the OutputNotesArray
+      const note = new Note(noteAssets, noteMetadata, noteRecipient);
+      ownOutputNotes.append(OutputNote.full(note));
+      console.log(ownOutputNotes);
+
+
+    await sleep(200);
+    await syncClient();
+    const transactionRequest = new TransactionRequest().with_own_output_notes(ownOutputNotes);
+    const txResult = await webClient.new_transaction(senderAccount, transactionRequest);  
+    const result = await webClient.submit_transaction(txResult);
+    await sleep(2000);
+    await syncClient();
+
+}
+
 /**
  * accountId: "0x9e3ef32141aa2f15",
  * faucetId: "0xa260982899cd63da"
@@ -204,7 +324,7 @@ export const setupFaucet = async () => {
         BigInt(10000000)
       );
 
-      console.log("faucet", faucetAccount);
+      console.log("Creating new faucet account", faucetAccount);
       await webClient.sync_state();
 
       return {
