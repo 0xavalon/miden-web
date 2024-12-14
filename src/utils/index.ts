@@ -11,6 +11,8 @@ import exp from "constants";
 
 const webClient = new WebClient();
 
+export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 const _getAccountId = (accountId: any) => {
   let _accountId;
   if (typeof accountId === "string") {
@@ -116,20 +118,16 @@ export const consumeAvailableNotes = async (targetAccount: any) => {
   }
 }
 
-export const createNote = async(sender: AccountId, receiver: AccountId, amountToSend: string, assetId:AccountId = "0x29b86f9443ad907a") => {
+export const createNote = async (sender: AccountId, receiver: AccountId, amountToSend: string, assetId:AccountId = "0x29b86f9443ad907a") => {
     try {
-      const senderAccount = AccountId.from_hex(sender);
+      const senderAccount =  _getAccountId(sender);
       await webClient.fetch_and_cache_account_auth_by_pub_key(senderAccount) // Need to understand more what this does.
-      const faucetAccount = AccountId.from_hex(assetId);
-      console.log("senderAccount", faucetAccount.to_string());
+      const faucetAccount = _getAccountId(assetId);
+      const recipientAccount = _getAccountId(receiver);
       if(faucetAccount.is_faucet()) {
   
       try {
-        const recipientAccount = AccountId.from_hex(receiver);
-        console.log("Processing recipient:", recipientAccount.to_string(), "Amount:", amountToSend);
-
-        // Create the transaction and add to the batch
-        const transaction = webClient.new_send_transaction(
+        const transaction = await webClient.new_send_transaction(
           senderAccount,
           recipientAccount,
           faucetAccount,

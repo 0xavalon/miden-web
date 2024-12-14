@@ -6,7 +6,7 @@ import AccountCard from "./AccountCard";
 import ImportFileCard from "./ImportFileCard";
 import Send from "./Send";
 import History from "./History";
-import { consumeAvailableNotes, createAccount, getAccountId, getAccountsFromDb, getBalance, importNoteFiles, syncClient } from "../utils/index";
+import { consumeAvailableNotes, createAccount, getAccountId, getAccountsFromDb, getBalance, importNoteFiles, sleep, syncClient } from "../utils/index";
 
 const Tabs = () => {
   const [activeTab, setActiveTab] = useState<string>("Business");
@@ -23,7 +23,6 @@ const Tabs = () => {
   const [showSend, setShowSend] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
   const handleCreateAccount = async (): Promise<void> => {
     setIsLoading(true);
@@ -122,8 +121,6 @@ const Tabs = () => {
   }
 
 
-
-  // Use useEffect to check for existing accounts when the component mounts
   useEffect(() => {
     getExistingAccounts();
   }, []);
