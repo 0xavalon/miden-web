@@ -71,6 +71,7 @@ const Send = ({ onClose }: SendProps) => {
   const onSubmit = async (data: FormSchema) => {
     setIsLoading(true);
     setFileName("December123");
+    console.log("submit clicked", data);
 
     // Simulate an API call
     await new Promise((resolve) => setTimeout(resolve, 2000));

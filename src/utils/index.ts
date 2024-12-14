@@ -116,6 +116,42 @@ export const consumeAvailableNotes = async (targetAccount: any) => {
   }
 }
 
+export const createNote = async(sender: AccountId, receiver: AccountId, amountToSend: string, assetId:AccountId = "0x29b86f9443ad907a") => {
+    try {
+      const senderAccount = AccountId.from_hex(sender);
+      await webClient.fetch_and_cache_account_auth_by_pub_key(senderAccount) // Need to understand more what this does.
+      const faucetAccount = AccountId.from_hex(assetId);
+      console.log("senderAccount", faucetAccount.to_string());
+      if(faucetAccount.is_faucet()) {
+  
+      try {
+        const recipientAccount = AccountId.from_hex(receiver);
+        console.log("Processing recipient:", recipientAccount.to_string(), "Amount:", amountToSend);
+
+        // Create the transaction and add to the batch
+        const transaction = webClient.new_send_transaction(
+          senderAccount,
+          recipientAccount,
+          faucetAccount,
+          NoteType.private(),
+          BigInt(amountToSend.toString())
+        );
+        console.log('transaction result',transaction);
+        return transaction;
+
+      } catch (error) {
+        console.log("Error creating the transaction note.", error.message)
+      }
+      } else {
+        console.log("Not a valid faucet");
+      }
+      
+    } catch (error) {
+      console.error("Error creating or submitting notes:", error);
+      throw error;
+    }
+}
+
 export const importAccount = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
   const file = event.target.files?.[0]; // Ensure the file exists
   if (file) {
