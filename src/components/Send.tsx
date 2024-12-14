@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Icons } from "./icons";
 import teamwork from "../assets/images/teamwork.png";
-import { createNote, getAccountsFromDb, getBalance, sleep, syncClient } from "../utils/index";
+import { consumeAvailableNotes, createNote, getAccountsFromDb, getBalance, getConsumableNotesForUser, getNonFaucetFirstAccount, setupFaucet, sleep, syncClient } from "../utils/index";
 
 const recipientSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -61,12 +61,12 @@ const Send = ({ onClose }: SendProps) => {
 
   const getExistingAccounts = async () => {
     try {
-      const accounts = await getAccountsFromDb();
+      const account = await getNonFaucetFirstAccount();
       
-      if (accounts.length > 0) {
-        const _id = accounts[0].id().to_string();
+      if (account) {
+        const _id = account.id().to_string();
         const _balance = await getBalance(_id);
-        setAccountId(accounts[0].id().to_string());
+        setAccountId(account.id().to_string());
         setBalance(_balance);
       }
     } catch (error) {
@@ -104,10 +104,16 @@ const Send = ({ onClose }: SendProps) => {
     await sleep(1000);
     await syncClient();
     
-    let {recipients} = data;
-    for (const { username: receiver, amount } of recipients) {
-      createNote(accountId, receiver, amount);
-    }
+    const deployedFaucet = await setupFaucet();
+    console.log('deployed faucet',deployedFaucet);
+    // let {recipients} = data;
+    // for (const { username: receiver, amount } of recipients) {
+      // await createNote(accountId, receiver, amount);
+      // await sendNotesToRemoteRecipient(accountId, receiver, amount);
+      // const notes = await getConsumableNotesForUser(receiver);
+      // console.log(notes);
+    // }
+    
 
     const generatedFiles = data.recipients.map(createFile);
 

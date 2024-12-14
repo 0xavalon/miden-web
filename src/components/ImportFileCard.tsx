@@ -59,7 +59,7 @@ const ImportFileCard = ({
         {importStatus === "success" && (
           <>
             <p className="my-[107px] text-[#151515] text-base font-semibold font-inter leading-6 rounded-[64px] bg-[#D6FFA1] p-4">
-              Imported Successfully!
+              Wait,Processing your notes..
             </p>
             <button
               className=" w-full px-6 py-3 bg-[#0b3ceb] text-white font-inter font-bold rounded-[48px] shadow-lg hover:bg-[#0b3ceb]/90"

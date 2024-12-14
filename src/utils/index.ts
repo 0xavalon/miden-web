@@ -1,11 +1,25 @@
 import { Buffer } from "buffer";
 import {
+  Account,
   AccountId,
   AccountStorageMode,
   WebClient,
   NoteType,
   TransactionRequest,
+  NoteMetadata,
+  FungibleAsset,
+  NoteRecipient,
+  Note,
+  OutputNote,
+  NoteAssets,
+  OutputNotesArray,
   AccountHeader,
+  NoteFilter,
+  NoteFilterTypes,
+  NoteExecutionMode,
+  NoteTag,
+  NoteExecutionHint,
+  NoteScript,
 } from "@demox-labs/miden-sdk";
 import exp from "constants";
 
@@ -14,13 +28,13 @@ const webClient = new WebClient();
 export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 const _getAccountId = (accountId: any) => {
-  let _accountId;
+  let _accountId: AccountId;
   if (typeof accountId === "string") {
     if (!accountId) {
       console.error("accountId is undefined or empty.");
-      return null; // Handle undefined or empty accountId
+      return null;
     }
-    _accountId = AccountId.from_hex(accountId);
+    return AccountId.from_hex(accountId);
   } else {
     _accountId = accountId;
   }
@@ -35,6 +49,18 @@ export const getAccountsFromDb = async () => {
   const _accounts = await webClient.get_accounts();
   return _accounts;
 };
+
+export const getNonFaucetFirstAccount = async () => {
+  const _accounts = await webClient.get_accounts();
+
+  for (const header of _accounts) {
+    const accountId = AccountId.from_hex(header.id().to_string()); // Create fresh AccountId
+    const account = await webClient.get_account(accountId); // Fetch full account details
+    if(!account.is_faucet()) return account;
+    await sleep(100);
+  }
+  return null;
+}
 
 export const getBalance = async (accountId: any, faucetAccountId: AccountId = "0x29b86f9443ad907a") => {
   let _accountId = _getAccountId(accountId);
@@ -76,6 +102,7 @@ export const importNoteFiles = async (file: File): Promise<void> => {
 export const syncClient = async () => {
   try{
     console.log("Attempting to sync the client ...", new Date());
+    sleep(20000);
     await webClient.sync_state();
     console.log("syncing done ...", new Date())
   } catch (error) {
@@ -109,7 +136,7 @@ export const consumeAvailableNotes = async (targetAccount: any) => {
         accountId,
         notelist
       );
-      console.log('Tx Result: ',txResult);
+      console.log('consumption completed. Tx Result: ',txResult);
     } catch (error){
       console.log("error cosuming notes", error.message);
     }
@@ -118,7 +145,8 @@ export const consumeAvailableNotes = async (targetAccount: any) => {
   }
 }
 
-export const createNote = async (sender: AccountId, receiver: AccountId, amountToSend: string, assetId:AccountId = "0x29b86f9443ad907a") => {
+
+export const createNote = async (sender: any, receiver: any, amountToSend: string, assetId:any = "0x29b86f9443ad907a") => {
     try {
       const senderAccount =  _getAccountId(sender);
       await webClient.fetch_and_cache_account_auth_by_pub_key(senderAccount) // Need to understand more what this does.
@@ -148,6 +176,46 @@ export const createNote = async (sender: AccountId, receiver: AccountId, amountT
       console.error("Error creating or submitting notes:", error);
       throw error;
     }
+}
+
+/**
+ * accountId: "0x9e3ef32141aa2f15",
+ * faucetId: "0xa260982899cd63da"
+ * 
+ */
+export const setupFaucet = async () => {
+      const faucetAccount = await webClient.new_faucet(
+        AccountStorageMode.private(),
+        false,
+        "DAG",
+        8,
+        BigInt(10000000)
+      );
+
+      console.log("faucet", faucetAccount);
+      await webClient.sync_state();
+
+      return {
+        faucetId: faucetAccount.id().to_string(),
+      };
+};
+
+export const exportNote = async (noteId: any) => {
+  try {
+    let result = await webClient.export_note(noteId, "Partial");
+    let byteArray = new Uint8Array(result);
+    console.log(byteArray);
+    return byteArray;
+  } catch (error) {
+    console.error("Failed to call export input note:", error);
+  }
+}
+
+export const getConsumableNotesForUser = async (targetAccount: any) => {
+  let accountId2 = _getAccountId(targetAccount);
+  console.log(accountId2);
+  
+  return "";
 }
 
 export const importAccount = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {

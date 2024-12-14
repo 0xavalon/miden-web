@@ -6,7 +6,7 @@ import AccountCard from "./AccountCard";
 import ImportFileCard from "./ImportFileCard";
 import Send from "./Send";
 import History from "./History";
-import { consumeAvailableNotes, createAccount, getAccountId, getAccountsFromDb, getBalance, importNoteFiles, sleep, syncClient } from "../utils/index";
+import { consumeAvailableNotes, createAccount, getAccountId, getAccountsFromDb, getBalance, getNonFaucetFirstAccount, importNoteFiles, sleep, syncClient } from "../utils/index";
 
 const Tabs = () => {
   const [activeTab, setActiveTab] = useState<string>("Business");
@@ -60,19 +60,21 @@ const Tabs = () => {
     }
   };
 
-  const handleImportFile = (file: File): void => {
+  const handleImportFile = async (file: File): Promise<void> => {
     if (!file) return;
     setImportStatus("importing");
-    importNoteFiles(file);
-    _consumeAvailableNotes();
+    _consumeAvailableNotes(file);
     setTimeout(() => {
       const isSuccess = Math.random() > 0.5;
       setImportStatus(isSuccess ? "success" : "error");
     }, 2000);
   };
 
-  const _consumeAvailableNotes = async () => {
+  const _consumeAvailableNotes = async (file: any) => {
     await sleep(3000); // Artificial wait, Need to understand more!  
+    await syncClient(); 
+    await importNoteFiles(file);
+    await sleep(1000);
     await syncClient(); 
     await consumeAvailableNotes(userAccountId);
   }
@@ -97,13 +99,15 @@ const Tabs = () => {
     try {
       setIsLoading(true);
       await sleep(1000);
-      const accounts = await getAccountsFromDb();
+      const account = await getNonFaucetFirstAccount();
+      console.log("non faucetAccount",  account)
       
-      if (accounts.length > 0) {
-        const _id = accounts[0].id().to_string();
+      if (account) {
+        console.log(account);
+        const _id = account.id().to_string();
         const _balance = await getBalance(_id);
         setIsAccountCreated(true);
-        setAccount(accounts[0]);
+        setAccount(account);
         setUserName(_id);
         setSelectedAccountBalance(_balance);
         setUserAccountId(_id);
