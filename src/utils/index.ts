@@ -62,6 +62,18 @@ export const getNonFaucetFirstAccount = async () => {
   return null;
 }
 
+export const getFirstFaucetAccount = async () => {
+  const _accounts = await webClient.get_accounts();
+  for (const header of _accounts) {
+    const accountId = AccountId.from_hex(header.id().to_string()); // Create fresh AccountId
+    const account = await webClient.get_account(accountId); // Fetch full account details
+    if(account.is_faucet()) return account;
+    await sleep(100);
+  }
+  
+  return null;
+}
+
 export const getBalance = async (accountId: any, faucetAccountId: AccountId = "0x29b86f9443ad907a") => {
   let _accountId = _getAccountId(accountId);
   const faucetAccount = AccountId.from_hex(faucetAccountId);
