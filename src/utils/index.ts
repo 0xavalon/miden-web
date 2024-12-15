@@ -89,39 +89,33 @@ export const syncClient = async () => {
     console.log("Attempting to sync the client ...", new Date());
     await webClient.sync_state();
     console.log("syncing done ...", new Date())
-  } catch (error) {
+  } catch (error: any) {
       console.log("Error syncing accounts: ", error.message);
   }
 }
 
-export const consumeAvailableNotes = async (targetAccount: any) => {
-  const _accountId = _getAccountId(targetAccount);
-  await webClient.fetch_and_cache_account_auth_by_pub_key(_accountId);
-  let accountId2 = _getAccountId(targetAccount);
-  const notes = await webClient.get_consumable_notes(accountId2);
-  let accountId = _getAccountId(targetAccount);
-  await webClient.fetch_and_cache_account_auth_by_pub_key(accountId);
+export const consumeAvailableNotes = async (targetAccount: string) => {
+  const notes = await webClient.get_consumable_notes(AccountId.from_hex(targetAccount));
   console.log(`consuming notes for account id: ${targetAccount}, Notes Found: ${notes.length}`);
-  console.log('logging for account vanishes ... ',accountId, targetAccount);
-  
 
   if(notes.length) {
     let notelist = [];
     for(let i=0; i<notes.length; i++) {
       const noteId = notes[i].input_note_record().id().to_string();
       const isConsumed = notes[i].input_note_record().is_consumed();
-      console.log(noteId, ' ',isConsumed)
+      console.log(noteId, ' ',isConsumed, notes[i].input_note_record())
       notelist.push(noteId);
     }
+    console.log(notes);
     
-    console.log(accountId, targetAccount);
     try{
+      sleep(100);
       const txResult = await webClient.new_consume_transaction(
-        accountId,
+        AccountId.from_hex(targetAccount),
         notelist
       );
       console.log('Tx Result: ',txResult);
-    } catch (error){
+    } catch (error: any){
       console.log("error cosuming notes", error.message);
     }
   } else {

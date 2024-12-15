@@ -63,15 +63,15 @@ const Tabs = () => {
   const handleImportFile = (file: File): void => {
     if (!file) return;
     setImportStatus("importing");
-    importNoteFiles(file);
-    _consumeAvailableNotes();
+    _consumeAvailableNotes(file);
     setTimeout(() => {
       const isSuccess = Math.random() > 0.5;
       setImportStatus(isSuccess ? "success" : "error");
     }, 2000);
   };
 
-  const _consumeAvailableNotes = async () => {
+  const _consumeAvailableNotes = async (file: File) => {
+    await importNoteFiles(file);
     await sleep(3000); // Artificial wait, Need to understand more!  
     await syncClient(); 
     await consumeAvailableNotes(userAccountId);
