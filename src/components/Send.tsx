@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Icons } from "./icons";
 import teamwork from "../assets/images/teamwork.png";
-import { createNote, getAccountsFromDb, getBalance, sleep, syncClient } from "../utils/index";
+import { createMultipleNotes, createNote, getAccountsFromDb, getBalance, sleep, syncClient } from "../utils/index";
 
 const recipientSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -105,9 +105,9 @@ const Send = ({ onClose }: SendProps) => {
     await syncClient();
     
     let {recipients} = data;
-    for (const { username: receiver, amount } of recipients) {
-      createNote(accountId, receiver, amount);
-    }
+    // for (const { username: receiver, amount } of recipients) {
+      createMultipleNotes(accountId, recipients);
+    // }
 
     const generatedFiles = data.recipients.map(createFile);
 

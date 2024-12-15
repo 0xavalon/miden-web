@@ -1,7 +1,6 @@
 import { Buffer } from "buffer";
 import {
   AccountId,
-  AccountHeader,
   AccountStorageMode,
   WebClient,
   FeltArray,
@@ -9,6 +8,8 @@ import {
   NoteType,
   NoteTag,
   Note,
+  NoteFilter,
+  NoteFilterTypes,
   NoteAssets,
   NoteExecutionHint,
   NoteRecipient,
@@ -95,10 +96,12 @@ export const syncClient = async () => {
 }
 
 export const consumeAvailableNotes = async (targetAccount: string) => {
+  await webClient.fetch_and_cache_account_auth_by_pub_key(AccountId.from_hex(targetAccount))
   const notes = await webClient.get_consumable_notes(AccountId.from_hex(targetAccount));
   console.log(`consuming notes for account id: ${targetAccount}, Notes Found: ${notes.length}`);
 
   if(notes.length) {
+    await sleep(100);
     let notelist = [];
     for(let i=0; i<notes.length; i++) {
       const noteId = notes[i].input_note_record().id().to_string();
@@ -106,7 +109,7 @@ export const consumeAvailableNotes = async (targetAccount: string) => {
       console.log(noteId, ' ',isConsumed, notes[i].input_note_record())
       notelist.push(noteId);
     }
-    console.log(notes);
+    console.log(notes, notelist[1]);
     
     try{
       sleep(100);
@@ -116,7 +119,7 @@ export const consumeAvailableNotes = async (targetAccount: string) => {
       );
       console.log('Tx Result: ',txResult);
     } catch (error: any){
-      console.log("error cosuming notes", error.message);
+      console.log("error cosuming notes", error);
     }
   } else {
     console.log('No notes found for this user.')
@@ -162,9 +165,7 @@ export const createMultipleNotes = async (
 ) => {
   try {
     const ownOutputNotes = new OutputNotesArray();
-    const senderAccount = _getAccountId(sender);
-    const faucetAccount = _getAccountId(assetId);
-    await webClient.fetch_and_cache_account_auth_by_pub_key(senderAccount);
+    await webClient.fetch_and_cache_account_auth_by_pub_key(AccountId.from_hex(sender));
     const minimalScript = `
         begin
           push.0 # Placeholder logic for the note script
@@ -172,18 +173,18 @@ export const createMultipleNotes = async (
     `;
     const noteScript = await webClient.compile_note_script(minimalScript);
     for (const { username: receiver, amount } of recipients) {
-      const recipientAccount = _getAccountId(receiver);
+      const recipientAccount = AccountId.from_hex(receiver);
       console.log("Recipient Account:", recipientAccount.to_string());
 
       const noteMetadata = new NoteMetadata(
-        senderAccount,
+        AccountId.from_hex(sender),
         NoteType.private(),
-        NoteTag.from_account_id(senderAccount, NoteExecutionMode.new_local()),
+        NoteTag.from_account_id(AccountId.from_hex(sender), NoteExecutionMode.new_local()),
         NoteExecutionHint.none()
       );
 
       const noteAssets = new NoteAssets([
-        new FungibleAsset(faucetAccount, BigInt(amount.toString())),
+        new FungibleAsset(AccountId.from_hex(assetId), BigInt(amount.toString())),
       ]);
 
       const noteInputs = new NoteInputs(new FeltArray([recipientAccount.to_felt()]));
@@ -199,23 +200,34 @@ export const createMultipleNotes = async (
     await syncClient();
 
     const transactionRequest = new TransactionRequest().with_own_output_notes(ownOutputNotes);
-    const txResult = await webClient.new_transaction(senderAccount, transactionRequest);
+    const txResult = await webClient.new_transaction(AccountId.from_hex(sender), transactionRequest);
     console.log("Transaction Result:", txResult);
-
-    await sleep(20000);
-    await syncClient();
-
-    const result = await webClient.submit_transaction(txResult);
-    console.log("Final Submission Result:", result);
 
     await sleep(2000);
     await syncClient();
-    for (let i = 0; i < txResult.created_notes().num_notes(); i++) {
-      const outputNote = txResult.created_notes().notes()
-      const noteId = outputNote[i].id().to_string();
-      console.log('noteId',noteId);
-      // exportNote(noteId);
-    }
+
+    // const result = await webClient.submit_transaction(txResult);
+    // console.log("Final Submission Result:", result);
+    await sleep(100);
+    // const getOutputNotes = await webClient.get_output_note("0x386edbca765e08ecc4e092322842358a5b156c3da6678604a900f1223aee32f4");
+    const getOutputNotes = await webClient.
+    get_output_notes(new NoteFilter(NoteFilterTypes.All));
+    console.log(getOutputNotes);
+
+    const outputNotess = await webClient.get_output_note("0xff47f7107841b0fb4318cea8bffbc93559cf3b5ef5815eae9644ee0f85763e69");
+    console.log(outputNotess);
+    let _outputNotes = await webClient.export_note(outputNotess, "Partial");
+    let byteArray = new Uint8Array(_outputNotes);
+      exportNote(byteArray,'try_1.mno');
+
+    await sleep(2000);
+    await syncClient();
+    // for (let i = 0; i < txResult.created_notes().num_notes(); i++) {
+    //   const outputNote = txResult.created_notes().notes()
+    //   const noteId = outputNote[i].id().to_string();
+    //   console.log('noteId',noteId);
+  
+    // }
 
     return txResult;
   } catch (error) {
@@ -223,6 +235,24 @@ export const createMultipleNotes = async (
     throw error;
   }
 }
+
+const exportNote = (byteArray: any, fileName: string) => {
+  const blob = new Blob([byteArray], {type: 'application/octet-stream'});
+  // Generate a URL for the blob
+  const url = URL.createObjectURL(blob);
+
+  // Create an anchor element to trigger the download
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName; // Set the file name with .mno extension
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  console.log(`${fileName} downloaded successfully.`);
+  // Revoke the object URL to free up resources
+  URL.revokeObjectURL(url);
+};
 
 export const importAccount = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
   const file = event.target.files?.[0]; // Ensure the file exists
