@@ -1,13 +1,24 @@
 import { Buffer } from "buffer";
 import {
   AccountId,
+  AccountHeader,
   AccountStorageMode,
   WebClient,
+  FeltArray,
+  FungibleAsset,
   NoteType,
+  NoteTag,
+  Note,
+  NoteAssets,
+  NoteExecutionHint,
+  NoteRecipient,
+  NoteInputs,
+  NoteExecutionMode,
+  NoteMetadata,
   TransactionRequest,
-  AccountHeader,
+  OutputNote,
+  OutputNotesArray,
 } from "@demox-labs/miden-sdk";
-import exp from "constants";
 
 const webClient = new WebClient();
 
@@ -148,6 +159,75 @@ export const createNote = async (sender: AccountId, receiver: AccountId, amountT
       console.error("Error creating or submitting notes:", error);
       throw error;
     }
+}
+
+export const createMultipleNotes = async (
+  sender: any, // Sender account ID
+  recipients: { username: string; amount: string }[], // List of recipients with account ID and amount
+  assetId: any = "0x29b86f9443ad907a" // Default faucet ID
+) => {
+  try {
+    const ownOutputNotes = new OutputNotesArray();
+    const senderAccount = _getAccountId(sender);
+    const faucetAccount = _getAccountId(assetId);
+    await webClient.fetch_and_cache_account_auth_by_pub_key(senderAccount);
+    const minimalScript = `
+        begin
+          push.0 # Placeholder logic for the note script
+        end
+    `;
+    const noteScript = await webClient.compile_note_script(minimalScript);
+    for (const { username: receiver, amount } of recipients) {
+      const recipientAccount = _getAccountId(receiver);
+      console.log("Recipient Account:", recipientAccount.to_string());
+
+      const noteMetadata = new NoteMetadata(
+        senderAccount,
+        NoteType.private(),
+        NoteTag.from_account_id(senderAccount, NoteExecutionMode.new_local()),
+        NoteExecutionHint.none()
+      );
+
+      const noteAssets = new NoteAssets([
+        new FungibleAsset(faucetAccount, BigInt(amount.toString())),
+      ]);
+
+      const noteInputs = new NoteInputs(new FeltArray([recipientAccount.to_felt()]));
+      const noteRecipient = new NoteRecipient(noteScript, noteInputs);
+
+      const note = new Note(noteAssets, noteMetadata, noteRecipient);
+      ownOutputNotes.append(OutputNote.full(note));
+
+      console.log(`Created note for recipient: ${receiver} with amount: ${amount}`);
+      await sleep(100);
+    }
+
+    await syncClient();
+
+    const transactionRequest = new TransactionRequest().with_own_output_notes(ownOutputNotes);
+    const txResult = await webClient.new_transaction(senderAccount, transactionRequest);
+    console.log("Transaction Result:", txResult);
+
+    await sleep(20000);
+    await syncClient();
+
+    const result = await webClient.submit_transaction(txResult);
+    console.log("Final Submission Result:", result);
+
+    await sleep(2000);
+    await syncClient();
+    for (let i = 0; i < txResult.created_notes().num_notes(); i++) {
+      const outputNote = txResult.created_notes().notes()
+      const noteId = outputNote[i].id().to_string();
+      console.log('noteId',noteId);
+      // exportNote(noteId);
+    }
+
+    return txResult;
+  } catch (error) {
+    console.error("Error creating multiple notes:", error);
+    throw error;
+  }
 }
 
 export const importAccount = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
