@@ -160,138 +160,6 @@ export const createNote = async (sender: AccountId, receiver: AccountId, amountT
     }
 }
 
-const getScriptData = async () => {
-    let felt1 = new Felt(BigInt(9));
-    let felt2 = new Felt(BigInt(12));
-    let felt3 = new Felt(BigInt(18));
-    let felt4 = new Felt(BigInt(3));
-    let felt5 = new Felt(BigInt(3));
-    let felt6 = new Felt(BigInt(18));
-    let felt7 = new Felt(BigInt(12));
-    let felt8 = new Felt(BigInt(9));
-    let noteArgs = [felt1, felt2, felt3, felt4, felt5, felt6, felt7, felt8];
-    let feltArray = new FeltArray();
-    noteArgs.forEach((felt) => feltArray.append(felt));
-
-
-    let expectedNoteArgs = noteArgs.map((felt) => felt.as_int());
-    let memAddress = "1000";
-    let memAddress2 = "1001";
-    let expectedNoteArg1 = expectedNoteArgs.slice(0, 4).join(".");
-    let expectedNoteArg2 = expectedNoteArgs.slice(4, 8).join(".");
-  let note_script = `
-                # Custom P2ID note script
-                #
-                # This note script asserts that the note args are exactly the same as passed 
-                # (currently defined as {expected_note_arg_1} and {expected_note_arg_2}).
-                # Since the args are too big to fit in a single note arg, we provide them via advice inputs and 
-                # address them via their commitment (noted as NOTE_ARG)
-                # This note script is based off of the P2ID note script because notes currently need to have 
-                # assets, otherwise it could have been boiled down to the assert. 
-
-                use.miden::account
-                use.miden::note
-                use.miden::contracts::wallets::basic->wallet
-                use.std::mem
-
-
-                proc.add_note_assets_to_account
-                    push.0 exec.note::get_assets
-                    # => [num_of_assets, 0 = ptr, ...]
-
-                    # compute the pointer at which we should stop iterating
-                    dup.1 add
-                    # => [end_ptr, ptr, ...]
-
-                    # pad the stack and move the pointer to the top
-                    padw movup.5
-                    # => [ptr, 0, 0, 0, 0, end_ptr, ...]
-
-                    # compute the loop latch
-                    dup dup.6 neq
-                    # => [latch, ptr, 0, 0, 0, 0, end_ptr, ...]
-
-                    while.true
-                        # => [ptr, 0, 0, 0, 0, end_ptr, ...]
-
-                        # save the pointer so that we can use it later
-                        dup movdn.5
-                        # => [ptr, 0, 0, 0, 0, ptr, end_ptr, ...]
-
-                        # load the asset and add it to the account
-                        mem_loadw call.wallet::receive_asset
-                        # => [ASSET, ptr, end_ptr, ...]
-
-                        # increment the pointer and compare it to the end_ptr
-                        movup.4 add.1 dup dup.6 neq
-                        # => [latch, ptr+1, ASSET, end_ptr, ...]
-                    end
-
-                    # clear the stack
-                    drop dropw drop
-                end
-
-                begin
-                    # push data from the advice map into the advice stack
-                    adv.push_mapval
-                    # => [NOTE_ARG] 
-
-                    # memory address where to write the data
-                    push.${memAddress}
-                    # => [target_mem_addr, NOTE_ARG_COMMITMENT]
-                    # number of words
-                    push.2
-                    # => [number_of_words, target_mem_addr, NOTE_ARG_COMMITMENT]
-                    exec.mem::pipe_preimage_to_memory
-                    # => [target_mem_addr']
-                    dropw
-                    # => []
-                    
-                    # read first word
-                    push.${memAddress}
-                    # => [data_mem_address]
-                    mem_loadw
-                    # => [NOTE_ARG_1]
-                    
-                    push.${expectedNoteArg1} assert_eqw
-                    # => []
-
-                    # read second word
-                    push.${memAddress2}
-                    # => [data_mem_address_2]
-                    mem_loadw
-                    # => [NOTE_ARG_2]
-
-                    push.${expectedNoteArg2} assert_eqw
-                    # => []
-
-                    # store the note inputs to memory starting at address 0
-                    push.0 exec.note::get_inputs
-                    # => [num_inputs, inputs_ptr]
-
-                    # make sure the number of inputs is 1
-                    eq.1 assert
-                    # => [inputs_ptr]
-
-                    # read the target account id from the note inputs
-                    mem_load
-                    # => [target_account_id]
-
-                    exec.account::get_id
-                    # => [account_id, target_account_id, ...]
-
-                    # ensure account_id = target_account_id, fails otherwise
-                    assert_eq
-                    # => [...]
-
-                    exec.add_note_assets_to_account
-                    # => [...]
-                end
-            `;
-            let compiledNoteScript = await webClient.compile_note_script(note_script);
-            console.log('compiled note script',compiledNoteScript);
-            return compiledNoteScript;
-}
 
 export const createMultipleNotes = async (
   sender: any, // Sender account ID
@@ -306,10 +174,8 @@ export const createMultipleNotes = async (
           push.0 # Placeholder logic for the note script
         end
     `;
-    console.log("!!!!!!compiling script")
-    await getScriptData();
-    // const noteScript = await webClient.compile_note_script(minimalScript);
-    const noteScript = await getScriptData();
+
+    const noteScript = await webClient.compile_note_script(minimalScript);
     for (const { username: receiver, amount } of recipients) {
       const recipientAccount = AccountId.from_hex(receiver);
       console.log("Recipient Account:", recipientAccount.to_string());
@@ -347,35 +213,11 @@ export const createMultipleNotes = async (
 
 
     try {
-      // const result = await webClient.submit_transaction(txResult);
-      // console.log("Final Submission Result:", result);
+      const result = await webClient.submit_transaction(txResult);
+      console.log("Final Submission Result:", result);
     } catch(error: any) {
       console.log("error getting submitted result", error)
     }
-    await sleep(100);
-    // const getOutputNotes = await webClient.get_output_note(id);
-    const getOutputNotes = await webClient.
-    get_output_notes(new NoteFilter(NoteFilterTypes.All));
-    console.log(getOutputNotes);
-
-    const txs = await webClient.get_transactions(TransactionFilter.all());
-    console.log('txs',txs);
-
-    // const outputNotess = await webClient.get_output_note("0xdda43bb7de8b7c25560ba56b2457b34d25fc5ff079f549f86624e4d7cadb54de");
-    // console.log(outputNotess);
-    let _outputNotes = await webClient.export_note("0x4088ecc3e08030186f5e18452127f04b995445fb3b7b4d274d38672f1c2684d1", "Full");
-    // console.log("outtttput notes", _outputNotes);
-    let byteArray = new Uint8Array(_outputNotes);
-      exportNote(byteArray,'a1.mno');
-
-    await sleep(2000);
-    await syncClient();
-    // for (let i = 0; i < txResult.created_notes().num_notes(); i++) {
-    //   const outputNote = txResult.created_notes().notes()
-    //   const noteId = outputNote[i].id().to_string();
-    //   console.log('noteId',noteId);
-  
-    // }
 
     return txResult;
   } catch (error) {
@@ -431,7 +273,7 @@ export const getAccountDetails = async (accountId: AccountId) => {
   try {
     const _accountDetails = await webClient.get_account(accountId);
     return _accountDetails;
-  } catch(error) {
+  } catch(error: any) {
     console.log("error fetching account details", error.message);
   }
 };
@@ -472,14 +314,6 @@ export const recoverSecretKey = async (recoverAccountId: string) => {
   return keys;
 };
 
-export const createNotes = async (sender: string, target: string) => {
-  // Setup note arguments
-  //  const ownOutputNotes = [];
-  //  const noteType = NoteType.private;
-  //  let transactions = new TransactionRequest();
-  //  let notes = transactions.with_own_output_notes(ownOutputNotes);
-  //  return notes;
-};
 
 const encodeFeltArrayToHex = (feltArray: { __wbg_ptr: number }[]) => {
   // Convert each `__wbg_ptr` value to hex and pad to 8 characters
