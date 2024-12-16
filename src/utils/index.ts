@@ -207,11 +207,6 @@ export const createMultipleNotes = async (
     const txResult = await webClient.new_transaction(AccountId.from_hex(sender), transactionRequest);
     console.log("Transaction Result:", txResult);
 
-    await sleep(2000);
-    await syncClient();
-    const id = txResult.created_notes().get_note().id().to_string();
-
-
     try {
       const result = await webClient.submit_transaction(txResult);
       console.log("Final Submission Result:", result);
