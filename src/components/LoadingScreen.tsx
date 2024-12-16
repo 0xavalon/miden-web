@@ -6,7 +6,7 @@ const LoadingScreen = () => {
       <div className="text-center">
         <img src={logo} alt="Logo" className="mb-4 w-24 h-24 mx-auto" />
         <h2 className="text-white text-lg font-semibold">
-          Creating your account...
+          Loading ...
         </h2>
       </div>
     </div>

@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Icons } from "./icons";
 import teamwork from "../assets/images/teamwork.png";
+import { createNote, getAccountsFromDb, getBalance, sleep, syncClient } from "../utils/index";
 
 const recipientSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -21,7 +22,10 @@ type SendProps = {
   onClose: () => void;
 };
 
+
 const Send = ({ onClose }: SendProps) => {
+  const [accountId, setAccountId] = useState("");
+  const [balance, setBalance] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [files, setFiles] = useState<{ name: string; content: string }[]>([]);
   const [fileName, setFileName] = useState("");
@@ -54,6 +58,29 @@ const Send = ({ onClose }: SendProps) => {
     };
   };
 
+
+  const getExistingAccounts = async () => {
+    try {
+      const accounts = await getAccountsFromDb();
+      
+      if (accounts.length > 0) {
+        const _id = accounts[0].id().to_string();
+        const _balance = await getBalance(_id);
+        setAccountId(accounts[0].id().to_string());
+        setBalance(_balance);
+      }
+    } catch (error) {
+      console.error("Error fetching existing accounts:", error.message);
+    }
+  };
+
+
+  // Use useEffect to check for existing accounts when the component mounts
+  useEffect(() => {
+    getExistingAccounts();
+  }, []);
+
+
   const downloadFile = (fileName: string, content: string) => {
     const blob = new Blob([content], { type: "text/plain" });
     const link = document.createElement("a");
@@ -69,11 +96,18 @@ const Send = ({ onClose }: SendProps) => {
   };
 
   const onSubmit = async (data: FormSchema) => {
+    if(!accountId || !Number(balance)) {
+      console.log("account not valid or not enough balance")
+    }
     setIsLoading(true);
     setFileName("December123");
-
-    // Simulate an API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await sleep(1000);
+    await syncClient();
+    
+    let {recipients} = data;
+    for (const { username: receiver, amount } of recipients) {
+      createNote(accountId, receiver, amount);
+    }
 
     const generatedFiles = data.recipients.map(createFile);
 

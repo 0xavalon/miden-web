@@ -7,16 +7,181 @@ import {
   TransactionRequest,
   AccountHeader,
 } from "@demox-labs/miden-sdk";
+import exp from "constants";
 
 const webClient = new WebClient();
+
+export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+const _getAccountId = (accountId: any) => {
+  let _accountId;
+  if (typeof accountId === "string") {
+    if (!accountId) {
+      console.error("accountId is undefined or empty.");
+      return null; // Handle undefined or empty accountId
+    }
+    _accountId = AccountId.from_hex(accountId);
+  } else {
+    _accountId = accountId;
+  }
+  return _accountId;
+}
 
 export const createClient = async () => {
   await webClient.create_client();
 };
 
-export const getAccounts = async () => {
+export const getAccountsFromDb = async () => {
   const _accounts = await webClient.get_accounts();
   return _accounts;
+};
+
+export const getBalance = async (accountId: any, faucetAccountId: AccountId = "0x29b86f9443ad907a") => {
+  let _accountId = _getAccountId(accountId);
+  const faucetAccount = AccountId.from_hex(faucetAccountId);
+  let _account = await getAccountDetails(_accountId);
+  let _balance = _account.vault().get_balance(faucetAccount)
+  return _balance.toString();
+}
+
+export const getAccountId = (accountId: any) => {
+  const _account = AccountId.from_hex(accountId);
+  return _account;
+};
+
+export const importNoteFiles = async (file: File): Promise<void> => {
+  // const file = event.target.files?.[0]; // Check if a file is selected
+  if (file) {
+    const reader = new FileReader();
+
+    reader.onload = async (e: ProgressEvent<FileReader>) => {
+      if (e.target?.result) {
+        const arrayBuffer = e.target.result as ArrayBuffer; // Assert type
+        const byteArray = new Uint8Array(arrayBuffer);
+        console.log(byteArray);
+
+        try {
+          await webClient.import_note(byteArray, true); // Assuming `webClient` is correctly typed
+          console.log('Note successfully imported!');
+        } catch (error) {
+          console.error('Error importing note:', error);
+        }
+      }
+    };
+
+    reader.readAsArrayBuffer(file); // Read the file as an ArrayBuffer
+  }
+};
+
+export const syncClient = async () => {
+  try{
+    console.log("Attempting to sync the client ...", new Date());
+    await webClient.sync_state();
+    console.log("syncing done ...", new Date())
+  } catch (error) {
+      console.log("Error syncing accounts: ", error.message);
+  }
+}
+
+export const consumeAvailableNotes = async (targetAccount: any) => {
+  const _accountId = _getAccountId(targetAccount);
+  await webClient.fetch_and_cache_account_auth_by_pub_key(_accountId);
+  let accountId2 = _getAccountId(targetAccount);
+  const notes = await webClient.get_consumable_notes(accountId2);
+  let accountId = _getAccountId(targetAccount);
+  await webClient.fetch_and_cache_account_auth_by_pub_key(accountId);
+  console.log(`consuming notes for account id: ${targetAccount}, Notes Found: ${notes.length}`);
+  console.log('logging for account vanishes ... ',accountId, targetAccount);
+  
+
+  if(notes.length) {
+    let notelist = [];
+    for(let i=0; i<notes.length; i++) {
+      const noteId = notes[i].input_note_record().id().to_string();
+      const isConsumed = notes[i].input_note_record().is_consumed();
+      console.log(noteId, ' ',isConsumed)
+      notelist.push(noteId);
+    }
+    
+    console.log(accountId, targetAccount);
+    try{
+      const txResult = await webClient.new_consume_transaction(
+        accountId,
+        notelist
+      );
+      console.log('Tx Result: ',txResult);
+    } catch (error){
+      console.log("error cosuming notes", error.message);
+    }
+  } else {
+    console.log('No notes found for this user.')
+  }
+}
+
+export const createNote = async (sender: AccountId, receiver: AccountId, amountToSend: string, assetId:AccountId = "0x29b86f9443ad907a") => {
+    try {
+      const senderAccount =  _getAccountId(sender);
+      await webClient.fetch_and_cache_account_auth_by_pub_key(senderAccount) // Need to understand more what this does.
+      const faucetAccount = _getAccountId(assetId);
+      const recipientAccount = _getAccountId(receiver);
+      if(faucetAccount.is_faucet()) {
+  
+      try {
+        const transaction = await webClient.new_send_transaction(
+          senderAccount,
+          recipientAccount,
+          faucetAccount,
+          NoteType.private(),
+          BigInt(amountToSend.toString())
+        );
+        console.log('transaction result',transaction);
+        return transaction;
+
+      } catch (error) {
+        console.log("Error creating the transaction note.", error.message)
+      }
+      } else {
+        console.log("Not a valid faucet");
+      }
+      
+    } catch (error) {
+      console.error("Error creating or submitting notes:", error);
+      throw error;
+    }
+}
+
+export const importAccount = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+  const file = event.target.files?.[0]; // Ensure the file exists
+  if (file) {
+    const reader = new FileReader();
+
+    reader.onload = async (e: ProgressEvent<FileReader>) => {
+      if (e.target?.result) {
+        const arrayBuffer = e.target.result as ArrayBuffer; // Type assertion
+        const byteArray = new Uint8Array(arrayBuffer);
+        console.log(byteArray);
+
+        try {
+          await webClient.import_account(byteArray); // Assuming `webClient` is typed correctly
+          console.log('Account successfully imported!');
+        } catch (error) {
+          console.error('Error importing account:', error);
+        }
+      }
+    };
+
+    reader.readAsArrayBuffer(file); // Read the file as an ArrayBuffer
+  }
+};
+
+
+export const getAccountDetails = async (accountId: AccountId) => {
+  try {
+    const _accountDetails = await webClient.get_account(accountId);
+    return _accountDetails;
+  } catch(error) {
+    console.log("error fetching account details", error.message);
+  }
 };
 
 export const createAccount = async () => {
@@ -25,31 +190,8 @@ export const createAccount = async () => {
     AccountStorageMode.private(),
     true
   );
-  console.log(newAccount);
-  const result = await webClient.fetch_and_cache_account_auth_by_pub_key(
-    newAccount.id()
-  );
-
-  let keys = {
-    publicKey: result.get_rpo_falcon_512_public_key_as_word(),
-    secretKey: result.get_rpo_falcon_512_secret_key_as_felts(),
-    // isAuthSecretKeyType: result instanceof window.AuthSecretKey,
-  };
-  console.log("account created", newAccount.id().to_string());
-  console.log(keys);
-
-  // const _pk = encodeFeltArrayToHex(keys.secretKey);
-  // console.log('hexformat', _pk);
-
-  // const _pkToFelt = decodeHexToFeltArray(_pk);
-  // console.log('Felt', _pkToFelt);
-
-  // // Example usage
-  // const base64Encoded = encodeToBase64(keys.secretKey);
-  // console.log("Base64 Encoded String:", base64Encoded);
-
-  // const decodedFromBase64 = decodeFromBase64(base64Encoded);
-  // console.log("Decoded Felt Array:", decodedFromBase64);
+  console.log('new account',newAccount);
+  return newAccount;
 };
 
 export const _getKeys = async (accountId: AccountId) => {
