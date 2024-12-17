@@ -1,9 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Icons } from "./icons";
 import teamwork from "../assets/images/teamwork.png";
+import {
+  createMultipleNotes,
+  createNote,
+  exportNote,
+  getAccountsFromDb,
+  getBalance,
+  sleep,
+  syncClient,
+} from "../utils/index";
 
 const recipientSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -22,9 +31,13 @@ type SendProps = {
 };
 
 const Send = ({ onClose }: SendProps) => {
+  const [accountId, setAccountId] = useState("");
+  const [balance, setBalance] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [files, setFiles] = useState<{ name: string; content: string }[]>([]);
-  const [fileName, setFileName] = useState("");
+  // const [files, setFiles] = useState<{ name: string; content: string }[]>([]);
+  // const [fileName, setFileName] = useState("");
+  const [noteResults, setNoteResults] = useState<{ noteData: any; recipientId: string; filename: string; }[]>([]);
+  
 
   const {
     control,
@@ -44,7 +57,7 @@ const Send = ({ onClose }: SendProps) => {
     name: "recipients",
   });
 
-  const createFile = (
+  const createFile = async (
     recipient: { username: string; amount: number },
     index: number
   ) => {
@@ -54,30 +67,90 @@ const Send = ({ onClose }: SendProps) => {
     };
   };
 
-  const downloadFile = (fileName: string, content: string) => {
-    const blob = new Blob([content], { type: "text/plain" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const getExistingAccounts = async () => {
+    try {
+      const accounts = await getAccountsFromDb();
+
+      if (accounts.length > 0) {
+        const _id = accounts[0].id().to_string();
+        const _balance = await getBalance(_id);
+        setAccountId(accounts[0].id().to_string());
+        setBalance(_balance);
+      }
+    } catch (error) {
+      console.error("Error fetching existing accounts:", error.message);
+    }
+  };
+
+  // Use useEffect to check for existing accounts when the component mounts
+  useEffect(() => {
+    getExistingAccounts();
+  }, []);
+
+  const downloadFile = (fileName: string, result: any) => {
+    // const blob = new Blob([content], { type: "text/plain" });
+    // const link = document.createElement("a");
+    // link.href = URL.createObjectURL(blob);
+    // link.download = fileName;
+    // document.body.appendChild(link);
+    // link.click();
+    // document.body.removeChild(link);
+
+    const byteArray = new Uint8Array(result);
+          exportNote(byteArray, fileName);
+
   };
 
   const downloadAllFiles = () => {
-    files.forEach((file) => downloadFile(file.name, file.content));
+    // recipients.map(createFile).forEach((file) => downloadFile(file.name, file.content));
+    // noteResults.forEach((noteResult, i) => {
+    //   const file = createFile(noteResult, i);
+    //   downloadFile(file.name, file.content)
+    // });
+
+    noteResults.forEach(({filename, noteData}) => {
+
+      downloadFile(filename, noteData)
+    })
   };
 
+
+
   const onSubmit = async (data: FormSchema) => {
+    if (!accountId || !Number(balance)) {
+      console.log("account not valid or not enough balance");
+    }
     setIsLoading(true);
-    setFileName("December123");
+    // setFileName("December123");
+    await sleep(100);
+    await syncClient();
+    // setRecipients(data.recipients)
+    // let noteData = await createNote(accountId, recipient.username, String(recipient.amount));
 
-    // Simulate an API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    const generatedFiles = data.recipients.map(createFile);
+    // let noteData = await createNote(accountId, recipients[0].username, recipients[0].amount);
+    // // createMultipleNotes(accountId, recipients);
+    // const generatedFiles = data.recipients.map(createFile);
 
-    setFiles(generatedFiles);
+ 
+    // recipients.forEach((recipient) => {
+    // let noteData = await createNote(accountId, recipient.username, String(recipient.amount));
+    // return noteData;
+    // });
+
+    const recipients: {username: string; amount: number;}[] = data.recipients;
+
+
+let _noteResults = []
+    for (let recipient of recipients) {
+      const {username, amount} = recipient;
+    const noteData = await createNote(accountId, username, String(amount));
+    _noteResults.push({noteData, recipientId:username, filename: `${username}_${amount}.mno` })
+    }
+    console.log(_noteResults);
+    setNoteResults(_noteResults)
+
+    // setFiles(generatedFiles);
     setIsLoading(false);
 
     // Clear the form and reset to default state
@@ -86,8 +159,10 @@ const Send = ({ onClose }: SendProps) => {
     });
   };
 
+
+
   return (
-    <div className="max-h-[660px] px-8 py-10 flex flex-col bg-white rounded-[32px] shadow-lg min-h-[430px] w-[433px]">
+    <div className=" px-8 py-10 flex flex-col bg-white rounded-[32px] shadow-lg min-h-[430px] w-[433px]">
       {isLoading ? (
         <div className="flex flex-col  h-full">
           <h1 className="text-lg font-semibold text-start">Send</h1>
@@ -98,28 +173,30 @@ const Send = ({ onClose }: SendProps) => {
             </p>
           </div>
         </div>
-      ) : files.length > 0 ? (
+      ) : noteResults.length > 0 ? (
         <div className="flex flex-col ">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-xl font-bold">{fileName}</h1>
+            <h1 className="text-xl font-bold">Files</h1>
             <button
-              onClick={() => setFiles([])}
+              // onClick={() => setFiles([])}
+              onClick={() => setNoteResults([])}
               className="text-gray-500 text-sm"
             >
               <Icons.close />
             </button>
           </div>
           <div className="space-y-4 min-h-[228px]">
-            {files.map((file, index) => (
+            {noteResults.map(({filename, noteData}, index) => (
               <div
-                key={index}
+                key={filename}
                 className="flex items-center justify-between bg-yellow-100 p-4 rounded-lg"
               >
                 <p className="font-semibold">For recipient {index + 1}</p>
                 <div className="flex items-center space-x-4">
-                  <span>{file.name}</span>
+                  <span>{filename}</span>
                   <button
-                    onClick={() => downloadFile(file.name, file.content)}
+                    // onClick={() => downloadFile(file.name, file.content)}
+                    onClick={() => downloadFile(filename, noteData)}
                     className="text-blue-600"
                   >
                     <Icons.arrowDownToLine />
@@ -148,7 +225,7 @@ const Send = ({ onClose }: SendProps) => {
           </div>
 
           <p className="text-gray-600">Enter username or wallet address</p>
-          <div className="overflow-y-auto">
+          <div className="overflow-y-scroll max-h-[344px] pr-5">
             {fields.map((field, index) => (
               <div key={field.id} className="space-y-3 mt-6">
                 <div>

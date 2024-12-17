@@ -12,9 +12,9 @@ export default function Miden() {
   const [recoverAccountId, setRecoverAccountId] = useState("");
 
   const fetchAccounts = async () => {
-    const _accounts = await getAccounts();
-    console.log(_accounts);
-    setAccounts(_accounts);
+    // const _accounts = await getAccounts();
+    // console.log(_accounts);
+    // setAccounts(_accounts);
   };
 
   useEffect(() => {
@@ -35,29 +35,6 @@ export default function Miden() {
   };
 
   return (
-    <div>
-      <button onClick={fetchAccounts}>fetch account</button>
-      <button onClick={createAccount}>create account</button>
-
-      <div>
-        <input
-          type="text"
-          value={recoverAccountId}
-          placeholder="Enter Account ID"
-          onChange={(e) => setRecoverAccountId(e.target.value)}
-        />
-        <button onClick={retrieveSecretKey}>Retrieve Secret Key</button>
-      </div>
-      {/* {accounts?.map((account) =>{
-        const id = account.id().to_string();
-        const hash = account.hash().to_hex();
-        return (
-          <div key={id}>
-            <div>id: {id}</div>
-            <div>hash: {hash}</div>
-          </div>
-        );
-      })} */}
-    </div>
+    <div></div>
   );
 }
