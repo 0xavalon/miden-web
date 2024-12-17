@@ -164,12 +164,14 @@ export const createNote = async (sender: AccountId, receiver: AccountId, amountT
             BigInt(amountToSend.toString())
           );
           console.log('transaction result',transaction);
-          const noteId = transaction.created_notes().notes()[0].id().to_string();
+          const noteId = transaction.created_notes().get_note().id().to_string();
+          await sleep(20000);
+          await syncClient();
           console.log('noteId',noteId);
           let result = await webClient.export_note(noteId, "Full");
-          let byteArray = new Uint8Array(result);
-          exportNote(byteArray, `single_tx_note.mno`);
-          // return transaction;
+          // let byteArray = new Uint8Array(result);
+          // exportNote(byteArray, `single_tx_note.mno`);
+          return result;
 
         } catch (error: any) {
           console.log("Error creating the transaction note.", error)
@@ -245,7 +247,7 @@ export const createMultipleNotes = async (
   }
 }
 
-const exportNote = (byteArray: any, fileName: string) => {
+export const exportNote = (byteArray: any, fileName: string) => {
   const blob = new Blob([byteArray], {type: 'application/octet-stream'});
   // Generate a URL for the blob
   const url = URL.createObjectURL(blob);
