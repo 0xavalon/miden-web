@@ -11,33 +11,19 @@ interface HistoryItem {
 
 const historyData: HistoryItem[] = [];
 
-
 const History = () => {
+  const [activeTab, setActiveTab] = useState<string>("Business");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [userName, setUserName] = useState("");
   const [userAccountId, setUserAccountId] = useState("");
   const [account, setAccount] = useState("");
   const [selectedAccountBalance, setSelectedAccountBalance] = useState("0");
   const [isAccountCreated, setIsAccountCreated] = useState<boolean>(false);
+  
 
   const getHistories = async () => {
     const histories = await getAccountHistory(userAccountId);
-    histories.map((history: any, index: any) => {
-      let totalAmount = 0;
-      const outputNotes = history.output_notes(); 
-      const totalNotes = outputNotes.num_notes();
-      const hash = history.id().to_hex();
-      for(let i=0; i<totalNotes; i++){
-        const amount = outputNotes.notes()[i].assets().assets()[0].amount(); // assuming single asset
-        totalAmount += Number(amount)
-      }
-      historyData.push({
-        id: index,
-        title: `${hash.slice(0, 3)}...${hash.slice(-3)}`,
-        recipients: totalNotes,
-        amount: totalAmount.toString()
-      })
-    })
+    historyData.push(...histories);
   }
 
   const getUserAccount = async () => {
@@ -58,7 +44,7 @@ const History = () => {
       } else {
         setIsLoading(false);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error fetching existing accounts:", error.message);
     }
 }

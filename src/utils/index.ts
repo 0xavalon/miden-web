@@ -88,9 +88,25 @@ export const importNoteFiles = async (file: File): Promise<void> => {
 };
 
 export const getAccountHistory = async (accountId:string) => {
+  const historyList: { id: any; title: string; recipients: any; amount: string; }[] = [];
   const histories = await webClient.get_transactions(TransactionFilter.all());
-  console.log('available histories',histories);
-  return histories;
+  histories.map((history: any, index: any) => {
+    let totalAmount = 0;
+    const outputNotes = history.output_notes(); 
+    const totalNotes = outputNotes.num_notes();
+    const hash = history.id().to_hex();
+    for(let i=0; i<totalNotes; i++){
+      const amount = outputNotes.notes()[i].assets().assets()[0].amount(); // assuming single asset
+      totalAmount += Number(amount)
+    }
+    historyList.push({
+      id: index,
+      title: `${hash.slice(0, 3)}...${hash.slice(-3)}`,
+      recipients: totalNotes,
+      amount: totalAmount.toString()
+    })
+  })
+  return historyList;
 }
 
 export const syncClient = async () => {
