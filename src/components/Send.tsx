@@ -4,7 +4,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Icons } from "./icons";
 import teamwork from "../assets/images/teamwork.png";
-import { createMultipleNotes, createNote, getAccountsFromDb, getBalance, sleep, syncClient } from "../utils/index";
+import {
+  createMultipleNotes,
+  createNote,
+  getAccountsFromDb,
+  getBalance,
+  sleep,
+  syncClient,
+} from "../utils/index";
 
 const recipientSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -21,7 +28,6 @@ type FormSchema = z.infer<typeof formSchema>;
 type SendProps = {
   onClose: () => void;
 };
-
 
 const Send = ({ onClose }: SendProps) => {
   const [accountId, setAccountId] = useState("");
@@ -58,11 +64,10 @@ const Send = ({ onClose }: SendProps) => {
     };
   };
 
-
   const getExistingAccounts = async () => {
     try {
       const accounts = await getAccountsFromDb();
-      
+
       if (accounts.length > 0) {
         const _id = accounts[0].id().to_string();
         const _balance = await getBalance(_id);
@@ -74,12 +79,10 @@ const Send = ({ onClose }: SendProps) => {
     }
   };
 
-
   // Use useEffect to check for existing accounts when the component mounts
   useEffect(() => {
     getExistingAccounts();
   }, []);
-
 
   const downloadFile = (fileName: string, content: string) => {
     const blob = new Blob([content], { type: "text/plain" });
@@ -96,14 +99,13 @@ const Send = ({ onClose }: SendProps) => {
   };
 
   const onSubmit = async (data: FormSchema) => {
-    if(!accountId || !Number(balance)) {
-      console.log("account not valid or not enough balance")
+    if (!accountId || !Number(balance)) {
+      console.log("account not valid or not enough balance");
     }
     setIsLoading(true);
     setFileName("December123");
     await sleep(1000);
     await syncClient();
-    
     let {recipients} = data;
     createNote(accountId, recipients[0].username, recipients[0].amount);
     // createMultipleNotes(accountId, recipients);
@@ -119,7 +121,7 @@ const Send = ({ onClose }: SendProps) => {
   };
 
   return (
-    <div className="max-h-[660px] px-8 py-10 flex flex-col bg-white rounded-[32px] shadow-lg min-h-[430px] w-[433px]">
+    <div className=" px-8 py-10 flex flex-col bg-white rounded-[32px] shadow-lg min-h-[430px] w-[433px]">
       {isLoading ? (
         <div className="flex flex-col  h-full">
           <h1 className="text-lg font-semibold text-start">Send</h1>
@@ -180,7 +182,7 @@ const Send = ({ onClose }: SendProps) => {
           </div>
 
           <p className="text-gray-600">Enter username or wallet address</p>
-          <div className="overflow-y-auto">
+          <div className="overflow-y-scroll max-h-[344px] pr-5">
             {fields.map((field, index) => (
               <div key={field.id} className="space-y-3 mt-6">
                 <div>
