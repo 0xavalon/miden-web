@@ -152,29 +152,31 @@ export const consumeAvailableNotes = async (targetAccount: string) => {
 
 export const createNote = async (sender: AccountId, receiver: AccountId, amountToSend: string, assetId:AccountId = "0x29b86f9443ad907a") => {
     try {
-      const senderAccount =  _getAccountId(sender);
-      await webClient.fetch_and_cache_account_auth_by_pub_key(senderAccount) // Need to understand more what this does.
-      const faucetAccount = _getAccountId(assetId);
-      const recipientAccount = _getAccountId(receiver);
+      await webClient.fetch_and_cache_account_auth_by_pub_key(AccountId.from_hex(sender)) // Need to understand more what this does.
+      const faucetAccount =  AccountId.from_hex(assetId);
       if(faucetAccount.is_faucet()) {
-  
-      try {
-        const transaction = await webClient.new_send_transaction(
-          senderAccount,
-          recipientAccount,
-          faucetAccount,
-          NoteType.private(),
-          BigInt(amountToSend.toString())
-        );
-        console.log('transaction result',transaction);
-        return transaction;
+        try {
+          const transaction = await webClient.new_send_transaction(
+            AccountId.from_hex(sender),
+            AccountId.from_hex(receiver),
+            AccountId.from_hex(assetId),
+            NoteType.private(),
+            BigInt(amountToSend.toString())
+          );
+          console.log('transaction result',transaction);
+          const noteId = transaction.created_notes().notes()[0].id().to_string();
+          console.log('noteId',noteId);
+          let result = await webClient.export_note(noteId, "Full");
+          let byteArray = new Uint8Array(result);
+          exportNote(byteArray, `single_tx_note.mno`);
+          // return transaction;
 
-      } catch (error: any) {
-        console.log("Error creating the transaction note.", error)
-      }
-      } else {
-        console.log("Not a valid faucet");
-      }
+        } catch (error: any) {
+          console.log("Error creating the transaction note.", error)
+        }
+        } else {
+          console.log("Not a valid faucet");
+        }
       
     } catch (error) {
       console.error("Error creating or submitting notes:", error);

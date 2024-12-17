@@ -105,7 +105,8 @@ const Send = ({ onClose }: SendProps) => {
     await syncClient();
     
     let {recipients} = data;
-    createMultipleNotes(accountId, recipients);
+    createNote(accountId, recipients[0].username, recipients[0].amount);
+    // createMultipleNotes(accountId, recipients);
     const generatedFiles = data.recipients.map(createFile);
 
     setFiles(generatedFiles);
