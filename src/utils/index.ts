@@ -87,6 +87,12 @@ export const importNoteFiles = async (file: File): Promise<void> => {
   }
 };
 
+export const getAccountHistory = async (accountId:string) => {
+  const histories = await webClient.get_transactions(TransactionFilter.all());
+  console.log('available histories',histories);
+  return histories;
+}
+
 export const syncClient = async () => {
   try{
     console.log("Attempting to sync the client ...", new Date());

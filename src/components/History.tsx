@@ -1,3 +1,7 @@
+import { useEffect, useState } from "react";
+import { WebClient } from "../../node_modules/@demox-labs/miden-sdk/dist/index";
+import { sleep, getAccountsFromDb, getBalance, getAccountHistory } from "../utils/index";
+
 interface HistoryItem {
   id: number;
   title: string;
@@ -5,14 +9,65 @@ interface HistoryItem {
   amount: string;
 }
 
-const historyData: HistoryItem[] = [
-  { id: 1, title: "December123", recipients: 5, amount: "6,000 Miden" },
-  { id: 2, title: "December123", recipients: 5, amount: "6,000 Miden" },
-  { id: 3, title: "December123", recipients: 5, amount: "6,000 Miden" },
-  { id: 4, title: "December123", recipients: 5, amount: "6,000 Miden" },
-];
+const historyData: HistoryItem[] = [];
+
 
 const History = () => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [userName, setUserName] = useState("");
+  const [userAccountId, setUserAccountId] = useState("");
+  const [account, setAccount] = useState("");
+  const [selectedAccountBalance, setSelectedAccountBalance] = useState("0");
+  const [isAccountCreated, setIsAccountCreated] = useState<boolean>(false);
+
+  const getHistories = async () => {
+    const histories = await getAccountHistory(userAccountId);
+    histories.map((history: any, index: any) => {
+      let totalAmount = 0;
+      const outputNotes = history.output_notes(); 
+      const totalNotes = outputNotes.num_notes();
+      const hash = history.id().to_hex();
+      for(let i=0; i<totalNotes; i++){
+        const amount = outputNotes.notes()[i].assets().assets()[0].amount(); // assuming single asset
+        totalAmount += Number(amount)
+      }
+      historyData.push({
+        id: index,
+        title: `${hash.slice(0, 3)}...${hash.slice(-3)}`,
+        recipients: totalNotes,
+        amount: totalAmount.toString()
+      })
+    })
+  }
+
+  const getUserAccount = async () => {
+    try {
+      setIsLoading(true);
+      await sleep(1000);
+      const accounts = await getAccountsFromDb();
+      
+      if (accounts.length > 0) {
+        const _id = accounts[0].id().to_string();
+        const _balance = await getBalance(_id);
+        setIsAccountCreated(true);
+        setAccount(accounts[0]);
+        setUserName(_id);
+        setSelectedAccountBalance(_balance);
+        setUserAccountId(_id);
+        setIsLoading(false);
+      } else {
+        setIsLoading(false);
+      }
+    } catch (error: any) {
+      console.error("Error fetching existing accounts:", error.message);
+    }
+}
+
+  useEffect(() => {
+    getUserAccount();
+    getHistories();
+  }, [])
+
   return (
     <div className="p-6 px-8 py-10 flex flex-col bg-white rounded-[32px] shadow-[0px_0px_4px_0px_rgba(0,0,0,0.12)] w-[433px] min-h-[430px]">
       <h2 className="text-[#191711] text-2xl font-bold font-inter leading-8 mb-4">
