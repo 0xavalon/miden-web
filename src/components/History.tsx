@@ -50,7 +50,7 @@ const History = () => {
         setIsLoading(false);
       }
     } catch (error) {
-      console.error("Error fetching existing accounts:", error.message);
+      console.error("Error fetching existing accounts:", error);
     }
   };
 
@@ -66,7 +66,7 @@ const History = () => {
       </h2>
       <ul className="flex flex-col gap-6 max-h-[296px]  overflow-scroll pr-5">
         {historyData.map((item) => (
-          <li key={item.id} className="flex items-center justify-between gap-4">
+          <li key={item.title} className="flex items-center justify-between gap-4">
             <div className="flex items-center">
               <div className="w-14 h-14 bg-[#d9bbff] rounded-full flex items-center justify-center text-[#49404d] text-2xl font-bold font-inter leading-6">
                 M
@@ -81,7 +81,7 @@ const History = () => {
               </div>
             </div>
             <div className="text-[#151515] text-base font-semibold font-inter leading-6">
-              {item.amount}
+              {item.amount} Miden
             </div>
           </li>
         ))}

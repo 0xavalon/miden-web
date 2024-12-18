@@ -97,14 +97,14 @@ const AccountCard = ({
           </span>
         </div>
         <div className="relative" ref={tooltipRef}>
-          <button
+          {/* <button
             onClick={handleDownload}
             className="bg-[#0b3ceb] px-6 py-4 rounded-[64px]"
           >
             <span className="text-white text-base font-semibold font-inter leading-6">
               Export
             </span>
-          </button>
+          </button> */}
 
           {/* Tooltip */}
           {showTooltip && (
@@ -140,7 +140,7 @@ const AccountCard = ({
         >
           <Icons.import />
           <span className="text-[#151515] text-base font-semibold font-inter leading-normal ml-2">
-            Import
+            Import Notes
           </span>
         </button>
         <button

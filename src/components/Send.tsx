@@ -34,10 +34,7 @@ const Send = ({ onClose }: SendProps) => {
   const [accountId, setAccountId] = useState("");
   const [balance, setBalance] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  // const [files, setFiles] = useState<{ name: string; content: string }[]>([]);
-  // const [fileName, setFileName] = useState("");
   const [noteResults, setNoteResults] = useState<{ noteData: any; recipientId: string; filename: string; }[]>([]);
-  
 
   const {
     control,
@@ -88,28 +85,13 @@ const Send = ({ onClose }: SendProps) => {
   }, []);
 
   const downloadFile = (fileName: string, result: any) => {
-    // const blob = new Blob([content], { type: "text/plain" });
-    // const link = document.createElement("a");
-    // link.href = URL.createObjectURL(blob);
-    // link.download = fileName;
-    // document.body.appendChild(link);
-    // link.click();
-    // document.body.removeChild(link);
-
     const byteArray = new Uint8Array(result);
           exportNote(byteArray, fileName);
 
   };
 
   const downloadAllFiles = () => {
-    // recipients.map(createFile).forEach((file) => downloadFile(file.name, file.content));
-    // noteResults.forEach((noteResult, i) => {
-    //   const file = createFile(noteResult, i);
-    //   downloadFile(file.name, file.content)
-    // });
-
     noteResults.forEach(({filename, noteData}) => {
-
       downloadFile(filename, noteData)
     })
   };
@@ -121,23 +103,8 @@ const Send = ({ onClose }: SendProps) => {
       console.log("account not valid or not enough balance");
     }
     setIsLoading(true);
-    // setFileName("December123");
     await sleep(100);
     await syncClient();
-    // setRecipients(data.recipients)
-    // let noteData = await createNote(accountId, recipient.username, String(recipient.amount));
-
-
-    // let noteData = await createNote(accountId, recipients[0].username, recipients[0].amount);
-    // // createMultipleNotes(accountId, recipients);
-    // const generatedFiles = data.recipients.map(createFile);
-
- 
-    // recipients.forEach((recipient) => {
-    // let noteData = await createNote(accountId, recipient.username, String(recipient.amount));
-    // return noteData;
-    // });
-
     const recipients: {username: string; amount: number;}[] = data.recipients;
 
 

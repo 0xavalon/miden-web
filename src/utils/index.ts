@@ -169,8 +169,6 @@ export const createNote = async (sender: AccountId, receiver: AccountId, amountT
           await syncClient();
           console.log('noteId',noteId);
           let result = await webClient.export_note(noteId, "Full");
-          // let byteArray = new Uint8Array(result);
-          // exportNote(byteArray, `single_tx_note.mno`);
           return result;
 
         } catch (error: any) {
