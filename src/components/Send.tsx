@@ -74,7 +74,7 @@ const Send = ({ onClose }: SendProps) => {
         setAccountId(accounts[0].id().to_string());
         setBalance(_balance);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching existing accounts:", error.message);
     }
   };
@@ -112,7 +112,7 @@ let _noteResults = []
     for (let recipient of recipients) {
       const {username, amount} = recipient;
     const noteData = await createNote(accountId, username, String(amount));
-    _noteResults.push({noteData, recipientId:username, filename: `${username}_${amount}.mno` })
+      _noteResults.push({noteData, recipientId:username, filename: `${username}_${amount}.mno` })
     }
     console.log(_noteResults);
     setNoteResults(_noteResults)

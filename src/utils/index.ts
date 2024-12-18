@@ -152,6 +152,7 @@ export const consumeAvailableNotes = async (targetAccount: string) => {
 
 export const createNote = async (sender: AccountId, receiver: AccountId, amountToSend: string, assetId:AccountId = "0x29b86f9443ad907a") => {
     try {
+      console.log(sender, receiver);
       await webClient.fetch_and_cache_account_auth_by_pub_key(AccountId.from_hex(sender)) // Need to understand more what this does.
       const faucetAccount =  AccountId.from_hex(assetId);
       if(faucetAccount.is_faucet()) {
@@ -165,9 +166,12 @@ export const createNote = async (sender: AccountId, receiver: AccountId, amountT
           );
           console.log('transaction result',transaction);
           const noteId = transaction.created_notes().get_note().id().to_string();
+          // const noteId = '0x09c36336269b16052448cda51a3d133829a07bbd99e0573ed546bfd6eb277296';
           await sleep(20000);
           await syncClient();
-          console.log('noteId',noteId);
+          const noteDetails = await webClient.get_output_note(noteId);
+          console.log('noteId',noteDetails);
+          // console.log('note details', );
           let result = await webClient.export_note(noteId, "Full");
           return result;
 
