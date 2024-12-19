@@ -107,7 +107,7 @@ const Send = ({ onClose }: SendProps) => {
     await syncClient();
     const recipients: {username: string; amount: number;}[] = data.recipients;
 
-    // createMultipleNotes(accountId, recipients);
+    // await createMultipleNotes(accountId, recipients);
 
     let _noteResults = []
     for (let recipient of recipients) {

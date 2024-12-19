@@ -205,7 +205,7 @@ export const createMultipleNotes = async (
       const noteMetadata = new NoteMetadata(
         AccountId.from_hex(sender),
         NoteType.private(),
-        NoteTag.from_account_id(AccountId.from_hex(sender), NoteExecutionMode.new_local()),
+        NoteTag.from_account_id(AccountId.from_hex(receiver), NoteExecutionMode.new_local()),
         NoteExecutionHint.none()
       );
 
