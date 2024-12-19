@@ -115,7 +115,7 @@ export const syncClient = async () => {
     await webClient.sync_state();
     console.log("syncing done ...", new Date())
   } catch (error: any) {
-      console.log("Error syncing accounts: ", error.message);
+      console.log("Error syncing accounts: ", error);
   }
 }
 
@@ -133,7 +133,6 @@ export const consumeAvailableNotes = async (targetAccount: string) => {
       console.log(noteId, ' ',isConsumed, notes[i].input_note_record())
       notelist.push(noteId);
     }
-    console.log(notes, notelist[1]);
     
     try{
       sleep(100);
@@ -152,7 +151,6 @@ export const consumeAvailableNotes = async (targetAccount: string) => {
 
 export const createNote = async (sender: AccountId, receiver: AccountId, amountToSend: string, assetId:AccountId = "0x29b86f9443ad907a") => {
     try {
-      console.log(sender, receiver);
       await webClient.fetch_and_cache_account_auth_by_pub_key(AccountId.from_hex(sender)) // Need to understand more what this does.
       const faucetAccount =  AccountId.from_hex(assetId);
       if(faucetAccount.is_faucet()) {
@@ -166,12 +164,8 @@ export const createNote = async (sender: AccountId, receiver: AccountId, amountT
           );
           console.log('transaction result',transaction);
           const noteId = transaction.created_notes().get_note().id().to_string();
-          // const noteId = '0x09c36336269b16052448cda51a3d133829a07bbd99e0573ed546bfd6eb277296';
           await sleep(20000);
           await syncClient();
-          const noteDetails = await webClient.get_output_note(noteId);
-          console.log('noteId',noteDetails);
-          // console.log('note details', );
           let result = await webClient.export_note(noteId, "Full");
           return result;
 
@@ -191,7 +185,7 @@ export const createNote = async (sender: AccountId, receiver: AccountId, amountT
 
 export const createMultipleNotes = async (
   sender: any, // Sender account ID
-  recipients: { username: string; amount: string }[], // List of recipients with account ID and amount
+  recipients: { username: string; amount: number }[], // List of recipients with account ID and amount
   assetId: any = "0x29b86f9443ad907a" // Default faucet ID
 ) => {
   try {
@@ -237,6 +231,14 @@ export const createMultipleNotes = async (
 
     try {
       const result = await webClient.submit_transaction(txResult);
+      await sleep(20000);
+      await syncClient();
+
+      const noteId = txResult.created_notes().notes()[0].id().to_string();
+      const note = await webClient.export_note(noteId, "Full");
+      console.log(note);
+      const byteArray = new Uint8Array(note);
+      exportNote(byteArray, 'a1.mno');
       console.log("Final Submission Result:", result);
     } catch(error: any) {
       console.log("error getting submitted result", error)
