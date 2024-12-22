@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { WebClient } from "../../node_modules/@demox-labs/miden-sdk/dist/index";
 import {
   sleep,
   getAccountsFromDb,
   getBalance,
   getAccountHistory,
-} from "../utils/index";
+} from "../utils";
+import { AccountHeader } from "@demox-labs/miden-sdk";
 
 interface HistoryItem {
   id: number;
@@ -17,12 +17,11 @@ interface HistoryItem {
 const historyData: HistoryItem[] = [];
 
 const History = () => {
-
   const [activeTab, setActiveTab] = useState<string>("Business");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [userName, setUserName] = useState("");
   const [userAccountId, setUserAccountId] = useState("");
-  const [account, setAccount] = useState("");
+  const [account, setAccount] = useState<AccountHeader>();
   const [selectedAccountBalance, setSelectedAccountBalance] = useState("0");
   const [isAccountCreated, setIsAccountCreated] = useState<boolean>(false);
 
@@ -43,7 +42,7 @@ const History = () => {
         setIsAccountCreated(true);
         setAccount(accounts[0]);
         setUserName(_id);
-        setSelectedAccountBalance(_balance);
+        setSelectedAccountBalance(_balance || "");
         setUserAccountId(_id);
         setIsLoading(false);
       } else {
@@ -66,7 +65,10 @@ const History = () => {
       </h2>
       <ul className="flex flex-col gap-6 max-h-[296px]  overflow-scroll pr-5">
         {historyData.map((item) => (
-          <li key={item.title} className="flex items-center justify-between gap-4">
+          <li
+            key={item.title}
+            className="flex items-center justify-between gap-4"
+          >
             <div className="flex items-center">
               <div className="w-14 h-14 bg-[#d9bbff] rounded-full flex items-center justify-center text-[#49404d] text-2xl font-bold font-inter leading-6">
                 M

@@ -12,7 +12,7 @@ import {
   getBalance,
   sleep,
   syncClient,
-} from "../utils/index";
+} from "../utils";
 
 const recipientSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -34,7 +34,9 @@ const Send = ({ onClose }: SendProps) => {
   const [accountId, setAccountId] = useState("");
   const [balance, setBalance] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [noteResults, setNoteResults] = useState<{ noteData: any; recipientId: string; filename: string; }[]>([]);
+  const [noteResults, setNoteResults] = useState<
+    { noteData: any; recipientId: string; filename: string }[]
+  >([]);
 
   const {
     control,
@@ -72,7 +74,7 @@ const Send = ({ onClose }: SendProps) => {
         const _id = accounts[0].id().to_string();
         const _balance = await getBalance(_id);
         setAccountId(accounts[0].id().to_string());
-        setBalance(_balance);
+        setBalance(_balance || "");
       }
     } catch (error: any) {
       console.error("Error fetching existing accounts:", error.message);
@@ -86,17 +88,14 @@ const Send = ({ onClose }: SendProps) => {
 
   const downloadFile = (fileName: string, result: any) => {
     const byteArray = new Uint8Array(result);
-          exportNote(byteArray, fileName);
-
+    exportNote(byteArray, fileName);
   };
 
   const downloadAllFiles = () => {
-    noteResults.forEach(({filename, noteData}) => {
-      downloadFile(filename, noteData)
-    })
+    noteResults.forEach(({ filename, noteData }) => {
+      downloadFile(filename, noteData);
+    });
   };
-
-
 
   const onSubmit = async (data: FormSchema) => {
     if (!accountId || !Number(balance)) {
@@ -105,17 +104,20 @@ const Send = ({ onClose }: SendProps) => {
     setIsLoading(true);
     await sleep(100);
     await syncClient();
-    const recipients: {username: string; amount: number;}[] = data.recipients;
+    const recipients: { username: string; amount: number }[] = data.recipients;
 
-    // await createMultipleNotes(accountId, recipients);
-
-    let _noteResults = []
+    let _noteResults = [];
     for (let recipient of recipients) {
-      const {username, amount} = recipient;
+      const { username, amount } = recipient;
       const noteData = await createNote(accountId, username, String(amount));
-      _noteResults.push({noteData, recipientId:username, filename: `${username}_${amount}.mno` })
+      _noteResults.push({
+        noteData,
+        recipientId: username,
+        filename: `${username}_${amount}.mno`,
+      });
     }
-    setNoteResults(_noteResults)
+    console.log(_noteResults);
+    setNoteResults(_noteResults);
 
     // setFiles(generatedFiles);
     setIsLoading(false);
@@ -125,8 +127,6 @@ const Send = ({ onClose }: SendProps) => {
       recipients: [{ username: "", amount: undefined }],
     });
   };
-
-
 
   return (
     <div className=" px-8 py-10 flex flex-col bg-white rounded-[32px] shadow-lg min-h-[430px] w-[433px]">
@@ -153,7 +153,7 @@ const Send = ({ onClose }: SendProps) => {
             </button>
           </div>
           <div className="space-y-4 min-h-[228px]">
-            {noteResults.map(({filename, noteData}, index) => (
+            {noteResults.map(({ filename, noteData }, index) => (
               <div
                 key={filename}
                 className="flex items-center justify-between bg-yellow-100 p-4 rounded-lg"

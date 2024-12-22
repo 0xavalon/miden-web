@@ -26,7 +26,7 @@ const AccountCard = ({
   const toggleTooltip = () => setShowTooltip((prev) => !prev);
 
   const handleDownload = () => {
-    try{
+    try {
       const fileContent = JSON.stringify(
         {
           username,
@@ -38,28 +38,27 @@ const AccountCard = ({
         2 // Indentation for readability
       );
       _createNDownloadFile(fileContent);
-    } catch(error){
-      console.log(error.message);
+    } catch (error: any) {
+      console.log(error?.message);
     }
   };
 
-
   const _createNDownloadFile = (fileContent: any) => {
-      const blob = new Blob([fileContent], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
+    const blob = new Blob([fileContent], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
 
-      const tempLink = document.createElement("a");
-      tempLink.href = url;
-      tempLink.download = `${username}_backup.mac`; // File name
-      console.log("downloading...", downloadRef.current)
+    const tempLink = document.createElement("a");
+    tempLink.href = url;
+    tempLink.download = `${username}_backup.mac`; // File name
+    console.log("downloading...", downloadRef.current);
 
-        // Append the anchor to the document body
-      document.body.appendChild(tempLink);
-      tempLink.click(); // Trigger download
-      document.body.removeChild(tempLink); // Remove the anchor from the DOM
+    // Append the anchor to the document body
+    document.body.appendChild(tempLink);
+    tempLink.click(); // Trigger download
+    document.body.removeChild(tempLink); // Remove the anchor from the DOM
 
-      URL.revokeObjectURL(url); // Clean up the URL object
-  }
+    URL.revokeObjectURL(url); // Clean up the URL object
+  };
 
   // Close the tooltip when clicking outside
   useEffect(() => {

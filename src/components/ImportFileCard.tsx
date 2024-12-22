@@ -4,7 +4,7 @@ import teamwork from "../assets/images/teamwork.png";
 interface ImportFileCardProps {
   selectedFile: string | null;
   importStatus: "idle" | "importing" | "success" | "error";
-  handleImportFile: () => void;
+  handleImportFile?: () => void;
   resetImport: () => void;
 }
 

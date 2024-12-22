@@ -1,16 +1,15 @@
 {
-    "include": [
-        "./src/**/*"
-    ],
+    "include": ["src/**/*"],
     "compilerOptions": {
-        "strict": true,
-        "esModuleInterop": true,
-        "lib": [
-            "dom",
-            "es2022"
-        ],
-        "target": "es2022",
-        "types": ["node"],
-        "jsx": "react-jsx"
+    "strict": true, // Enable all strict type-checking options
+    "esModuleInterop": true, // Allow default imports for CommonJS modules
+    "lib": ["dom", "es2022"], // Include DOM and modern ECMAScript features
+    "target": "es2022", // Specify ECMAScript version for emitted code
+    "module": "esnext", // Use ESNext modules (common for modern tools like Vite)
+    "moduleResolution": "node", // Resolve modules in the Node.js style
+    "types": ["node"], // Include Node.js type definitions
+    "jsx": "react-jsx", // Use the new JSX runtime (React 17+)
+    "skipLibCheck": true, // Skip type checks of declaration files for faster builds
+    "forceConsistentCasingInFileNames": true // Ensure consistent file naming
     }
 }

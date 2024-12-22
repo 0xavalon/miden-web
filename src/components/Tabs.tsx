@@ -6,14 +6,24 @@ import AccountCard from "./AccountCard";
 import ImportFileCard from "./ImportFileCard";
 import Send from "./Send";
 import History from "./History";
-import { consumeAvailableNotes, createAccount, getAccountId, getAccountsFromDb, getBalance, importNoteFiles, sleep, syncClient } from "../utils/index";
+import {
+  consumeAvailableNotes,
+  createAccount,
+  getAccountId,
+  getAccountsFromDb,
+  getBalance,
+  importNoteFiles,
+  sleep,
+  syncClient,
+} from "../utils";
+import { Account } from "@demox-labs/miden-sdk";
 
 const Tabs = () => {
   const [activeTab, setActiveTab] = useState<string>("Business");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [userName, setUserName] = useState("");
   const [userAccountId, setUserAccountId] = useState("");
-  const [account, setAccount] = useState("");
+  const [account, setAccount] = useState<Account>();
   const [selectedAccountBalance, setSelectedAccountBalance] = useState("0");
   const [isAccountCreated, setIsAccountCreated] = useState<boolean>(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
@@ -23,20 +33,19 @@ const Tabs = () => {
   const [showSend, setShowSend] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-
   const handleCreateAccount = async (): Promise<void> => {
     setIsLoading(true);
     await sleep(1000);
     const _account = await createAccount();
     const _id = _account.id().to_string();
     const _balance = await getBalance(_id);
-    setSelectedAccountBalance(_balance);
+    setSelectedAccountBalance(_balance || "");
     setAccount(_account);
     setUserName(_id);
     setUserAccountId(_id);
     setIsLoading(false);
     setIsAccountCreated(true);
-};
+  };
   const handleImportClick = (): void => {
     // Close Send view and open Import view
     setShowSend(false);
@@ -72,10 +81,10 @@ const Tabs = () => {
 
   const _consumeAvailableNotes = async (file: File) => {
     await importNoteFiles(file);
-    await sleep(3000); // Artificial wait, Need to understand more!  
-    await syncClient(); 
+    await sleep(3000); // Artificial wait, Need to understand more!
+    await syncClient();
     await consumeAvailableNotes(userAccountId);
-  }
+  };
 
   const resetImport = (): void => {
     setSelectedFile(null);
@@ -98,28 +107,25 @@ const Tabs = () => {
       setIsLoading(true);
       await sleep(1000);
       const accounts = await getAccountsFromDb();
-      
+
       if (accounts.length > 0) {
         const _id = accounts[0].id().to_string();
         const _balance = await getBalance(_id);
         setIsAccountCreated(true);
-        setAccount(accounts[0]);
+        setAccount(accounts[0] as unknown as Account);
         setUserName(_id);
-        setSelectedAccountBalance(_balance);
+        setSelectedAccountBalance(_balance || "");
         setUserAccountId(_id);
         setIsLoading(false);
       } else {
         setIsLoading(false);
       }
-    } catch (error) {
+    } catch (error:any) {
       console.error("Error fetching existing accounts:", error.message);
     }
   };
 
-  const exportAccount = () => {
-
-  }
-
+  const exportAccount = () => {};
 
   useEffect(() => {
     getExistingAccounts();
@@ -168,7 +174,6 @@ const Tabs = () => {
             walletAddress="0xdhb3rg3g8rfgffgeuyfbefbfhbfrebijbhfssbu4gf74gsbjd"
             onImportClick={handleImportClick}
             onSendClick={handleSendClick}
-            
           />
 
           {selectedFile ? (
