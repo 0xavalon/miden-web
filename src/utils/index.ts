@@ -95,6 +95,7 @@ export const getAccountHistory = async (accountId: string) => {
   const historyList: {
     id: any;
     title: string;
+    hash: string;
     recipients: any;
     amount: string;
   }[] = [];
@@ -111,6 +112,7 @@ export const getAccountHistory = async (accountId: string) => {
     historyList.push({
       id: index,
       title: `${hash.slice(0, 3)}...${hash.slice(-3)}`,
+      hash: hash,
       recipients: totalNotes,
       amount: totalAmount.toString(),
     });

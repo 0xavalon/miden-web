@@ -1,4 +1,7 @@
 import { useState, useRef, useEffect } from "react";
+import { Account } from "@demox-labs/miden-sdk";
+
+// components
 import LoadingScreen from "./LoadingScreen";
 import TabContent from "./TabContent";
 import TabButton from "./TabButton";
@@ -6,6 +9,8 @@ import AccountCard from "./AccountCard";
 import ImportFileCard from "./ImportFileCard";
 import Send from "./Send";
 import History from "./History";
+
+// utils
 import {
   consumeAvailableNotes,
   createAccount,
@@ -16,11 +21,10 @@ import {
   sleep,
   syncClient,
 } from "../utils";
-import { Account } from "@demox-labs/miden-sdk";
 
 const Tabs = () => {
   const [activeTab, setActiveTab] = useState<string>("Business");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [userName, setUserName] = useState("");
   const [userAccountId, setUserAccountId] = useState("");
   const [account, setAccount] = useState<Account>();
@@ -47,6 +51,7 @@ const Tabs = () => {
     setIsAccountCreated(true);
   };
   const handleImportClick = (): void => {
+    console.log(">>>handleImportClick");
     // Close Send view and open Import view
     setShowSend(false);
     if (fileInputRef.current) {
@@ -120,7 +125,7 @@ const Tabs = () => {
       } else {
         setIsLoading(false);
       }
-    } catch (error:any) {
+    } catch (error: any) {
       console.error("Error fetching existing accounts:", error.message);
     }
   };
@@ -132,10 +137,11 @@ const Tabs = () => {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-purple-100 p-4">
+    // <div className="flex flex-col items-center justify-center min-h-screen bg-purple-100 p-4">
+    <>
       {isLoading && <LoadingScreen />}
       {!isLoading && !isAccountCreated && (
-        <>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-[#D9BBFF] p-4">
           <div className="flex bg-white rounded-full shadow-md p-1 w-[420px]">
             <TabButton
               activeTab={activeTab}
@@ -161,12 +167,13 @@ const Tabs = () => {
                 : "Create an account to manage your personal tasks"
             }
             handleCreateAccount={handleCreateAccount}
+            handleImportAccount={handleImportClick}
           />
-        </>
+        </div>
       )}
 
       {isAccountCreated && !isLoading && (
-        <div className="flex flex-col lg:flex-row justify-center items-center gap-6 p-8 bg-white">
+        <div className="flex flex-col min-h-screen lg:flex-row justify-center items-center gap-6 p-8 bg-white">
           <AccountCard
             username={userName}
             balance={selectedAccountBalance}
@@ -189,15 +196,23 @@ const Tabs = () => {
             <History />
           )}
 
-          <input
+          {/* <input
             type="file"
             ref={fileInputRef}
             style={{ display: "none" }}
             onChange={handleFileChange}
-          />
+          /> */}
         </div>
       )}
-    </div>
+      {/* </div> */}
+
+      <input
+        type="file"
+        ref={fileInputRef}
+        style={{ display: "none" }}
+        onChange={handleFileChange}
+      />
+    </>
   );
 };
 
