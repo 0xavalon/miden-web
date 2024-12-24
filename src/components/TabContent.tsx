@@ -1,18 +1,21 @@
+// images
 import teamwork from "../assets/images/teamwork.png";
 
 interface TabContentProps {
   title: string;
   description: string;
   handleCreateAccount: () => void;
+  handleImportAccount: () => void;
 }
 
 export default function TabContent({
   title,
   description,
   handleCreateAccount,
+  handleImportAccount,
 }: TabContentProps) {
   return (
-    <div className="mt-3 p-6 bg-white rounded-lg shadow-md max-w-md text-center w-[420px] h-[447px]">
+    <div className="mt-3 p-6 bg-white rounded-lg shadow-md max-w-md text-center w-[420px] h-[514px]">
       <div className="flex justify-center">
         <div className="w-[175px] h-[175px] rounded-full flex items-center justify-center">
           <img src={teamwork} alt="illustration" />
@@ -25,8 +28,14 @@ export default function TabContent({
         {description}
       </p>
       <button
-        onClick={handleCreateAccount}
+        onClick={handleImportAccount}
         className="mt-8 w-full px-6 py-3 bg-[#0b3ceb] text-white rounded-full shadow hover:bg-[#0b3ceb]/90"
+      >
+        Import account
+      </button>
+      <button
+        onClick={handleCreateAccount}
+        className="mt-4 w-full px-6 py-3 bg-[#0b3ceb] text-white rounded-full shadow hover:bg-[#0b3ceb]/90"
       >
         Create account
       </button>

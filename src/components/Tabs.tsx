@@ -1,4 +1,7 @@
 import { useState, useRef, useEffect } from "react";
+import { Account } from "@demox-labs/miden-sdk";
+
+// components
 import LoadingScreen from "./LoadingScreen";
 import TabContent from "./TabContent";
 import TabButton from "./TabButton";
@@ -6,14 +9,25 @@ import AccountCard from "./AccountCard";
 import ImportFileCard from "./ImportFileCard";
 import Send from "./Send";
 import History from "./History";
-import { consumeAvailableNotes, createAccount, getAccountId, getAccountsFromDb, getBalance, importNoteFiles, sleep, syncClient } from "../utils/index";
+
+// utils
+import {
+  consumeAvailableNotes,
+  createAccount,
+  getAccountId,
+  getAccountsFromDb,
+  getBalance,
+  importNoteFiles,
+  sleep,
+  syncClient,
+} from "../utils";
 
 const Tabs = () => {
   const [activeTab, setActiveTab] = useState<string>("Business");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [userName, setUserName] = useState("");
   const [userAccountId, setUserAccountId] = useState("");
-  const [account, setAccount] = useState("");
+  const [account, setAccount] = useState<Account>();
   const [selectedAccountBalance, setSelectedAccountBalance] = useState("0");
   const [isAccountCreated, setIsAccountCreated] = useState<boolean>(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
@@ -23,21 +37,21 @@ const Tabs = () => {
   const [showSend, setShowSend] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-
   const handleCreateAccount = async (): Promise<void> => {
     setIsLoading(true);
     await sleep(1000);
     const _account = await createAccount();
     const _id = _account.id().to_string();
     const _balance = await getBalance(_id);
-    setSelectedAccountBalance(_balance);
+    setSelectedAccountBalance(_balance || "");
     setAccount(_account);
     setUserName(_id);
     setUserAccountId(_id);
     setIsLoading(false);
     setIsAccountCreated(true);
-};
+  };
   const handleImportClick = (): void => {
+    console.log(">>>handleImportClick");
     // Close Send view and open Import view
     setShowSend(false);
     if (fileInputRef.current) {
@@ -72,10 +86,10 @@ const Tabs = () => {
 
   const _consumeAvailableNotes = async (file: File) => {
     await importNoteFiles(file);
-    await sleep(3000); // Artificial wait, Need to understand more!  
-    await syncClient(); 
+    await sleep(3000); // Artificial wait, Need to understand more!
+    await syncClient();
     await consumeAvailableNotes(userAccountId);
-  }
+  };
 
   const resetImport = (): void => {
     setSelectedFile(null);
@@ -98,38 +112,36 @@ const Tabs = () => {
       setIsLoading(true);
       await sleep(1000);
       const accounts = await getAccountsFromDb();
-      
+
       if (accounts.length > 0) {
         const _id = accounts[0].id().to_string();
         const _balance = await getBalance(_id);
         setIsAccountCreated(true);
-        setAccount(accounts[0]);
+        setAccount(accounts[0] as unknown as Account);
         setUserName(_id);
-        setSelectedAccountBalance(_balance);
+        setSelectedAccountBalance(_balance || "");
         setUserAccountId(_id);
         setIsLoading(false);
       } else {
         setIsLoading(false);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching existing accounts:", error.message);
     }
   };
 
-  const exportAccount = () => {
-
-  }
-
+  const exportAccount = () => {};
 
   useEffect(() => {
     getExistingAccounts();
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-purple-100 p-4">
+    // <div className="flex flex-col items-center justify-center min-h-screen bg-purple-100 p-4">
+    <>
       {isLoading && <LoadingScreen />}
       {!isLoading && !isAccountCreated && (
-        <>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-[#D9BBFF] p-4">
           <div className="flex bg-white rounded-full shadow-md p-1 w-[420px]">
             <TabButton
               activeTab={activeTab}
@@ -155,12 +167,13 @@ const Tabs = () => {
                 : "Create an account to manage your personal tasks"
             }
             handleCreateAccount={handleCreateAccount}
+            handleImportAccount={handleImportClick}
           />
-        </>
+        </div>
       )}
 
       {isAccountCreated && !isLoading && (
-        <div className="flex flex-col lg:flex-row justify-center items-center gap-6 p-8 bg-white">
+        <div className="flex flex-col min-h-screen lg:flex-row justify-center items-center gap-6 p-8 bg-white">
           <AccountCard
             username={userName}
             balance={selectedAccountBalance}
@@ -168,7 +181,6 @@ const Tabs = () => {
             walletAddress="0xdhb3rg3g8rfgffgeuyfbefbfhbfrebijbhfssbu4gf74gsbjd"
             onImportClick={handleImportClick}
             onSendClick={handleSendClick}
-            
           />
 
           {selectedFile ? (
@@ -184,15 +196,23 @@ const Tabs = () => {
             <History />
           )}
 
-          <input
+          {/* <input
             type="file"
             ref={fileInputRef}
             style={{ display: "none" }}
             onChange={handleFileChange}
-          />
+          /> */}
         </div>
       )}
-    </div>
+      {/* </div> */}
+
+      <input
+        type="file"
+        ref={fileInputRef}
+        style={{ display: "none" }}
+        onChange={handleFileChange}
+      />
+    </>
   );
 };
 

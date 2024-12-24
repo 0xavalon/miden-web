@@ -1,11 +1,6 @@
 import { useEffect, useState } from "react";
 import { AccountHeader } from "@demox-labs/miden-sdk";
-import {
-  createAccount,
-  createClient,
-  getAccounts,
-  recoverSecretKey,
-} from "../utils";
+import { createAccount, createClient, recoverSecretKey } from "../utils";
 
 export default function Miden() {
   const [accounts, setAccounts] = useState<AccountHeader[]>([]);
@@ -34,7 +29,5 @@ export default function Miden() {
     // console.log(encodeToBase64(recoverAccountId))
   };
 
-  return (
-    <div></div>
-  );
+  return <div></div>;
 }
