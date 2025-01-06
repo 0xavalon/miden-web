@@ -19,7 +19,7 @@ interface HistoryItem {
   hash: string;
   recipients: number;
   amount: string;
-  // type: "Send" | "Receive"; // Add a type field to distinguish between send and receive
+  type: "Send" | "Receive"; // Add a type field to distinguish between send and receive
 }
 
 const historyData: HistoryItem[] = [];
@@ -62,9 +62,9 @@ const History = () => {
   };
 
   // Filter items based on the active tab
-  // const filteredHistory = historyData.filter(
-  //   (item) => item.type === activeTab
-  // );
+  const filteredHistory = historyData.filter(
+    (item) => item.type === activeTab
+  );
 
   useEffect(() => {
     getUserAccount();
@@ -92,7 +92,7 @@ const History = () => {
       </div>
 
       <ul className="flex flex-col gap-6 max-h-[296px]  overflow-scroll pr-5">
-        {historyData.map((item) => (
+        {filteredHistory.map((item) => (
           <li
             key={item.title}
             className="flex items-center justify-between gap-4"

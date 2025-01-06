@@ -107,7 +107,7 @@ const AccountCard = ({
             className="bg-[#0b3ceb] px-6 py-4 rounded-[64px]"
           >
             <span className="text-white text-base font-semibold font-inter leading-6">
-              Export
+              Export Acc
             </span>
           </button>
 
@@ -139,10 +139,10 @@ const AccountCard = ({
         <h1 className="mt-4 text-4xl font-bold text-black">{balance} Miden</h1>
         <div className="flex items-center mt-2">
           <CopyToClipboard
-            textToCopy="0xdhb3rg3g8rfgffgeuyfbefbfhbfrebijbhfssbu4gf74gsbjd"
-            displayText="0xdheh...38hd"
+            textToCopy="0x29b86f9443ad907a"
+            displayText="0x29b86f9443ad907a"
             className="mt-2"
-            textClassName="text-2xl font-semibold leading-[16px] text-[#151515] opacity-60"
+            textClassName="text-xl font-semibold leading-[16px] text-[#151515] opacity-60"
           />
         </div>
       </div>

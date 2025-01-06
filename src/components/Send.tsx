@@ -219,7 +219,7 @@ const Send = ({ onClose }: SendProps) => {
                   />
                   {errors.recipients?.[index]?.username && (
                     <p className="text-sm text-red-600">
-                      {errors.recipients[index].username?.message}
+                      {errors.recipients[index]?.username?.message}
                     </p>
                   )}
                 </div>
@@ -250,7 +250,7 @@ const Send = ({ onClose }: SendProps) => {
 
                   {errors.recipients?.[index]?.amount && (
                     <p className="text-sm text-red-600">
-                      {errors.recipients[index].amount?.message}
+                      {errors.recipients[index]?.amount?.message}
                     </p>
                   )}
                 </div>

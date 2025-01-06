@@ -22,6 +22,7 @@ import {
   OutputNote,
   OutputNotesArray,
 } from "@demox-labs/miden-sdk";
+import { any } from "zod";
 
 const webClient = new WebClient();
 
@@ -96,27 +97,50 @@ export const getAccountHistory = async (accountId: string) => {
     id: any;
     title: string;
     hash: string;
+    type: "Send" | "Receive";
     recipients: any;
     amount: string;
   }[] = [];
-  const histories = await webClient.get_transactions(TransactionFilter.all());
-  histories.map((history: any, index: any) => {
+  const sendHistories = await webClient.get_transactions(TransactionFilter.all());
+  const inputNote = await webClient.get_input_notes(new NoteFilter(NoteFilterTypes.Consumed));
+  inputNote.map((history: any, index:any) => {
+    try{
+      console.log(history);
+      let id = index;
+      let hash = history.consumer_transaction_id();
+      let title = `${hash.slice(0, 3)}...${hash.slice(-3)}`;
+      let amount = history.details().assets().assets()[0].amount().toString();
+      let recipients = history.metadata().sender().to_string();
+
+      historyList.push({id, hash, type: "Receive", title, amount, recipients});
+    } catch(error) {
+      console.log(error);
+    }
+  })
+
+  
+  sendHistories.map((history: any, index: any) => {
     let totalAmount = 0;
     const outputNotes = history.output_notes();
     const totalNotes = outputNotes.num_notes();
+    const type = "Send";
     const hash = history.id().to_hex();
     for (let i = 0; i < totalNotes; i++) {
       const amount = outputNotes.notes()[i].assets().assets()[0].amount(); // assuming single asset
       totalAmount += Number(amount);
     }
-    historyList.push({
-      id: index,
-      title: `${hash.slice(0, 3)}...${hash.slice(-3)}`,
-      hash: hash,
-      recipients: totalNotes,
-      amount: totalAmount.toString(),
-    });
+    if(Number(totalNotes) > 0) {
+      historyList.push({
+        id: index,
+        type: type,
+        title: `${hash.slice(0, 3)}...${hash.slice(-3)}`,
+        hash: hash,
+        recipients: totalNotes,
+        amount: totalAmount.toString(),
+      });
+    }
   });
+  console.log('history list', historyList);
   return historyList;
 };
 
