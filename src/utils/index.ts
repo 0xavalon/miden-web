@@ -105,7 +105,6 @@ export const getAccountHistory = async (accountId: string) => {
   const inputNote = await webClient.get_input_notes(new NoteFilter(NoteFilterTypes.Consumed));
   inputNote.map((history: any, index:any) => {
     try{
-      console.log(history);
       let id = index;
       let hash = history.consumer_transaction_id();
       let title = `${hash.slice(0, 3)}...${hash.slice(-3)}`;
