@@ -3,15 +3,31 @@ import {
   AccountId,
   AccountStorageMode,
   WebClient,
+  FeltArray,
+  FungibleAsset,
   NoteType,
+  NoteTag,
+  Note,
+  Felt,
+  NoteFilter,
+  NoteFilterTypes,
+  NoteAssets,
+  NoteExecutionHint,
+  NoteRecipient,
+  NoteInputs,
+  NoteExecutionMode,
+  TransactionFilter,
+  NoteMetadata,
   TransactionRequest,
-  AccountHeader,
+  OutputNote,
+  OutputNotesArray,
 } from "@demox-labs/miden-sdk";
-import exp from "constants";
+import { any } from "zod";
 
 const webClient = new WebClient();
 
-export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+export const sleep = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 const _getAccountId = (accountId: any) => {
   let _accountId;
@@ -25,7 +41,7 @@ const _getAccountId = (accountId: any) => {
     _accountId = accountId;
   }
   return _accountId;
-}
+};
 
 export const createClient = async () => {
   await webClient.create_client();
@@ -36,15 +52,18 @@ export const getAccountsFromDb = async () => {
   return _accounts;
 };
 
-export const getBalance = async (accountId: any, faucetAccountId: AccountId = "0x29b86f9443ad907a") => {
+export const getBalance = async (
+  accountId: string,
+  faucetAccountId: string = "0x29b86f9443ad907a"
+) => {
   let _accountId = _getAccountId(accountId);
   const faucetAccount = AccountId.from_hex(faucetAccountId);
   let _account = await getAccountDetails(_accountId);
-  let _balance = _account.vault().get_balance(faucetAccount)
-  return _balance.toString();
-}
+  let _balance = _account?.vault().get_balance(faucetAccount);
+  return _balance?.toString();
+};
 
-export const getAccountId = (accountId: any) => {
+export const getAccountId = (accountId: string) => {
   const _account = AccountId.from_hex(accountId);
   return _account;
 };
@@ -61,10 +80,10 @@ export const importNoteFiles = async (file: File): Promise<void> => {
         console.log(byteArray);
 
         try {
-          await webClient.import_note(byteArray, true); // Assuming `webClient` is correctly typed
-          console.log('Note successfully imported!');
+          await webClient.import_note(byteArray); // Assuming `webClient` is correctly typed
+          console.log("Note successfully imported!");
         } catch (error) {
-          console.error('Error importing note:', error);
+          console.error("Error importing note:", error);
         }
       }
     };
@@ -73,84 +92,256 @@ export const importNoteFiles = async (file: File): Promise<void> => {
   }
 };
 
+export const getAccountHistory = async (accountId: string) => {
+  const historyList: {
+    id: any;
+    title: string;
+    hash: string;
+    type: "Send" | "Receive";
+    recipients: any;
+    amount: string;
+  }[] = [];
+  const sendHistories = await webClient.get_transactions(TransactionFilter.all());
+  const inputNote = await webClient.get_input_notes(new NoteFilter(NoteFilterTypes.Consumed));
+  inputNote.map((history: any, index:any) => {
+    try{
+      let id = index;
+      let hash = history.consumer_transaction_id();
+      let title = `${hash.slice(0, 3)}...${hash.slice(-3)}`;
+      let amount = history.details().assets().assets()[0].amount().toString();
+      let recipients = 1;
+      // let recipients = history.metadata().sender().to_string();
+
+      historyList.push({id, hash, type: "Receive", title, amount, recipients});
+    } catch(error) {
+      console.log(error);
+    }
+  })
+
+  
+  sendHistories.map((history: any, index: any) => {
+    let totalAmount = 0;
+    const outputNotes = history.output_notes();
+    const totalNotes = outputNotes.num_notes();
+    const type = "Send";
+    const hash = history.id().to_hex();
+    for (let i = 0; i < totalNotes; i++) {
+      const amount = outputNotes.notes()[i].assets().assets()[0].amount(); // assuming single asset
+      totalAmount += Number(amount);
+    }
+    if(Number(totalNotes) > 0) {
+      historyList.push({
+        id: index,
+        type: type,
+        title: `${hash.slice(0, 3)}...${hash.slice(-3)}`,
+        hash: hash,
+        recipients: totalNotes,
+        amount: totalAmount.toString(),
+      });
+    }
+  });
+  console.log('history list', historyList);
+  return historyList;
+};
+
 export const syncClient = async () => {
-  try{
+  try {
     console.log("Attempting to sync the client ...", new Date());
     await webClient.sync_state();
-    console.log("syncing done ...", new Date())
-  } catch (error) {
-      console.log("Error syncing accounts: ", error.message);
+    console.log("syncing done ...", new Date());
+  } catch (error: any) {
+      console.log("Error syncing accounts: ", error);
   }
-}
+};
 
-export const consumeAvailableNotes = async (targetAccount: any) => {
-  const _accountId = _getAccountId(targetAccount);
-  await webClient.fetch_and_cache_account_auth_by_pub_key(_accountId);
-  let accountId2 = _getAccountId(targetAccount);
-  const notes = await webClient.get_consumable_notes(accountId2);
-  let accountId = _getAccountId(targetAccount);
-  await webClient.fetch_and_cache_account_auth_by_pub_key(accountId);
-  console.log(`consuming notes for account id: ${targetAccount}, Notes Found: ${notes.length}`);
-  console.log('logging for account vanishes ... ',accountId, targetAccount);
-  
+export const consumeAvailableNotes = async (targetAccount: string) => {
+  await webClient.fetch_and_cache_account_auth_by_pub_key(
+    AccountId.from_hex(targetAccount)
+  );
+  const notes = await webClient.get_consumable_notes(
+    AccountId.from_hex(targetAccount)
+  );
+  console.log(
+    `consuming notes for account id: ${targetAccount}, Notes Found: ${notes.length}`
+  );
 
-  if(notes.length) {
+  if (notes.length) {
+    await sleep(100);
     let notelist = [];
-    for(let i=0; i<notes.length; i++) {
+    for (let i = 0; i < notes.length; i++) {
       const noteId = notes[i].input_note_record().id().to_string();
       const isConsumed = notes[i].input_note_record().is_consumed();
-      console.log(noteId, ' ',isConsumed)
+      console.log(noteId, " ", isConsumed, notes[i].input_note_record());
       notelist.push(noteId);
     }
     
-    console.log(accountId, targetAccount);
     try{
+      sleep(100);
       const txResult = await webClient.new_consume_transaction(
-        accountId,
+        AccountId.from_hex(targetAccount),
         notelist
       );
-      console.log('Tx Result: ',txResult);
-    } catch (error){
-      console.log("error cosuming notes", error.message);
+      console.log("Tx Result: ", txResult);
+    } catch (error: any) {
+      console.log("error cosuming notes", error);
     }
   } else {
-    console.log('No notes found for this user.')
+    console.log("No notes found for this user.");
   }
-}
+};
 
-export const createNote = async (sender: AccountId, receiver: AccountId, amountToSend: string, assetId:AccountId = "0x29b86f9443ad907a") => {
-    try {
-      const senderAccount =  _getAccountId(sender);
-      await webClient.fetch_and_cache_account_auth_by_pub_key(senderAccount) // Need to understand more what this does.
-      const faucetAccount = _getAccountId(assetId);
-      const recipientAccount = _getAccountId(receiver);
-      if(faucetAccount.is_faucet()) {
-  
+export const createNote = async (
+  sender: string,
+  receiver: string,
+  amountToSend: string,
+  assetId: string = "0x29b86f9443ad907a"
+) => {
+  try {
+    console.log(sender, receiver);
+    await webClient.fetch_and_cache_account_auth_by_pub_key(
+      AccountId.from_hex(sender)
+    ); // Need to understand more what this does.
+    const faucetAccount = AccountId.from_hex(assetId);
+    if (faucetAccount.is_faucet()) {
       try {
         const transaction = await webClient.new_send_transaction(
-          senderAccount,
-          recipientAccount,
-          faucetAccount,
+          AccountId.from_hex(sender),
+          AccountId.from_hex(receiver),
+          AccountId.from_hex(assetId),
           NoteType.private(),
           BigInt(amountToSend.toString())
         );
-        console.log('transaction result',transaction);
-        return transaction;
+        console.log("transaction result", transaction);
+        // FIXME: get_note(0)
+        // const noteId = transaction.created_notes().get_note().id().to_string();
+        const noteId = transaction.created_notes().get_note(0).id().to_string();
 
-      } catch (error) {
-        console.log("Error creating the transaction note.", error.message)
+        // const noteId = '0x09c36336269b16052448cda51a3d133829a07bbd99e0573ed546bfd6eb277296';
+        await sleep(20000);
+        await syncClient();
+        const noteDetails = await webClient.get_output_note(noteId);
+        console.log("noteId", noteDetails);
+        // console.log('note details', );
+        let result = await webClient.export_note(noteId, "Full");
+        return result;
+      } catch (error: any) {
+        console.log("Error creating the transaction note.", error);
       }
-      } else {
-        console.log("Not a valid faucet");
-      }
-      
-    } catch (error) {
-      console.error("Error creating or submitting notes:", error);
-      throw error;
+    } else {
+      console.log("Not a valid faucet");
     }
-}
+  } catch (error) {
+    console.error("Error creating or submitting notes:", error);
+    throw error;
+  }
+};
 
-export const importAccount = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+export const createMultipleNotes = async (
+  sender: any, // Sender account ID
+  recipients: { username: string; amount: number }[], // List of recipients with account ID and amount
+  assetId: any = "0x29b86f9443ad907a" // Default faucet ID
+) => {
+  try {
+    const ownOutputNotes = new OutputNotesArray();
+    await webClient.fetch_and_cache_account_auth_by_pub_key(
+      AccountId.from_hex(sender)
+    );
+    const minimalScript = `
+        begin
+          push.0 # Placeholder logic for the note script
+        end
+    `;
+
+    const noteScript = await webClient.compile_note_script(minimalScript);
+    for (const { username: receiver, amount } of recipients) {
+      const recipientAccount = AccountId.from_hex(receiver);
+      console.log("Recipient Account:", recipientAccount.to_string());
+
+      const noteMetadata = new NoteMetadata(
+        AccountId.from_hex(sender),
+        NoteType.private(),
+        NoteTag.from_account_id(
+          AccountId.from_hex(receiver),
+          NoteExecutionMode.new_local()
+        ),
+        NoteExecutionHint.none()
+      );
+
+      const noteAssets = new NoteAssets([
+        new FungibleAsset(
+          AccountId.from_hex(assetId),
+          BigInt(amount.toString())
+        ),
+      ]);
+
+      const noteInputs = new NoteInputs(
+        new FeltArray([recipientAccount.to_felt()])
+      );
+      const noteRecipient = new NoteRecipient(noteScript, noteInputs);
+
+      const note = new Note(noteAssets, noteMetadata, noteRecipient);
+      ownOutputNotes.append(OutputNote.full(note));
+
+      console.log(
+        `Created note for recipient: ${receiver} with amount: ${amount}`
+      );
+      await sleep(100);
+    }
+
+    await syncClient();
+
+    const transactionRequest = new TransactionRequest().with_own_output_notes(
+      ownOutputNotes
+    );
+    const txResult = await webClient.new_transaction(
+      AccountId.from_hex(sender),
+      transactionRequest
+    );
+    console.log("Transaction Result:", txResult);
+
+    try {
+      const result = await webClient.submit_transaction(txResult);
+      await sleep(20000);
+      await syncClient();
+
+      const noteId = txResult.created_notes().notes()[0].id().to_string();
+      const note = await webClient.export_note(noteId, "Full");
+      console.log(note);
+      const byteArray = new Uint8Array(note);
+      exportNote(byteArray, 'a1.mno');
+      console.log("Final Submission Result:", result);
+    } catch (error: any) {
+      console.log("error getting submitted result", error);
+    }
+
+    return txResult;
+  } catch (error) {
+    console.error("Error creating multiple notes:", error);
+    throw error;
+  }
+};
+
+export const exportNote = (byteArray: any, fileName: string) => {
+  const blob = new Blob([byteArray], { type: "application/octet-stream" });
+  // Generate a URL for the blob
+  const url = URL.createObjectURL(blob);
+
+  // Create an anchor element to trigger the download
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName; // Set the file name with .mno extension
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  console.log(`${fileName} downloaded successfully.`);
+  // Revoke the object URL to free up resources
+  URL.revokeObjectURL(url);
+};
+
+export const importAccount = async (
+  event: React.ChangeEvent<HTMLInputElement>
+): Promise<void> => {
   const file = event.target.files?.[0]; // Ensure the file exists
   if (file) {
     const reader = new FileReader();
@@ -163,9 +354,9 @@ export const importAccount = async (event: React.ChangeEvent<HTMLInputElement>):
 
         try {
           await webClient.import_account(byteArray); // Assuming `webClient` is typed correctly
-          console.log('Account successfully imported!');
+          console.log("Account successfully imported!");
         } catch (error) {
-          console.error('Error importing account:', error);
+          console.error("Error importing account:", error);
         }
       }
     };
@@ -174,12 +365,11 @@ export const importAccount = async (event: React.ChangeEvent<HTMLInputElement>):
   }
 };
 
-
 export const getAccountDetails = async (accountId: AccountId) => {
   try {
     const _accountDetails = await webClient.get_account(accountId);
     return _accountDetails;
-  } catch(error) {
+  } catch (error: any) {
     console.log("error fetching account details", error.message);
   }
 };
@@ -190,7 +380,7 @@ export const createAccount = async () => {
     AccountStorageMode.private(),
     true
   );
-  console.log('new account',newAccount);
+  console.log("new account", newAccount);
   return newAccount;
 };
 
@@ -220,15 +410,6 @@ export const recoverSecretKey = async (recoverAccountId: string) => {
   return keys;
 };
 
-export const createNotes = async (sender: string, target: string) => {
-  // Setup note arguments
-  //  const ownOutputNotes = [];
-  //  const noteType = NoteType.private;
-  //  let transactions = new TransactionRequest();
-  //  let notes = transactions.with_own_output_notes(ownOutputNotes);
-  //  return notes;
-};
-
 const encodeFeltArrayToHex = (feltArray: { __wbg_ptr: number }[]) => {
   // Convert each `__wbg_ptr` value to hex and pad to 8 characters
   return feltArray
@@ -237,7 +418,7 @@ const encodeFeltArrayToHex = (feltArray: { __wbg_ptr: number }[]) => {
 };
 
 const decodeHexToFeltArray = (hexString: {
-  match: (arg0: RegExp) => any[];
+  match: (arg0: RegExp) => any[]; 
   map: (arg0: (chunk: any) => { __wbg_ptr: number }) => any;
 }) => {
   // Split the hex string into chunks of 8 characters (32 bits each)
