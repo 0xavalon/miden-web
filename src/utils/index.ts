@@ -109,7 +109,8 @@ export const getAccountHistory = async (accountId: string) => {
       let hash = history.consumer_transaction_id();
       let title = `${hash.slice(0, 3)}...${hash.slice(-3)}`;
       let amount = history.details().assets().assets()[0].amount().toString();
-      let recipients = history.metadata().sender().to_string();
+      let recipients = 1;
+      // let recipients = history.metadata().sender().to_string();
 
       historyList.push({id, hash, type: "Receive", title, amount, recipients});
     } catch(error) {
@@ -417,7 +418,7 @@ const encodeFeltArrayToHex = (feltArray: { __wbg_ptr: number }[]) => {
 };
 
 const decodeHexToFeltArray = (hexString: {
-  match: (arg0: RegExp) => any[];
+  match: (arg0: RegExp) => any[]; 
   map: (arg0: (chunk: any) => { __wbg_ptr: number }) => any;
 }) => {
   // Split the hex string into chunks of 8 characters (32 bits each)
