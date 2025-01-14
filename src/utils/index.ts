@@ -140,7 +140,6 @@ export const getAccountHistory = async (accountId: string) => {
       });
     }
   });
-  console.log('history list', historyList);
   return historyList;
 };
 
@@ -197,7 +196,6 @@ export const createNote = async (
   assetId: string = "0x29b86f9443ad907a"
 ) => {
   try {
-    console.log(sender, receiver);
     await webClient.fetch_and_cache_account_auth_by_pub_key(
       AccountId.from_hex(sender)
     ); // Need to understand more what this does.

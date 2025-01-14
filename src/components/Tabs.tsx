@@ -51,7 +51,6 @@ const Tabs = () => {
     setIsAccountCreated(true);
   };
   const handleImportClick = (): void => {
-    console.log(">>>handleImportClick");
     // Close Send view and open Import view
     setShowSend(false);
     if (fileInputRef.current) {
