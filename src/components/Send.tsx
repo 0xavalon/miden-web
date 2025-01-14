@@ -106,20 +106,20 @@ const Send = ({ onClose }: SendProps) => {
     await syncClient();
     const recipients: { username: string; amount: number }[] = data.recipients;
     
-    // await createMultipleNotes(accountId, recipients);
+    await createMultipleNotes(accountId, recipients);
 
-    let _noteResults = [];
-    for (let recipient of recipients) {
-      const { username, amount } = recipient;
-      const noteData = await createNote(accountId, username, String(amount));
-      _noteResults.push({
-        noteData,
-        recipientId: username,
-        filename: `${username}_${amount}.mno`,
-      });
-    }
-    console.log(_noteResults);
-    setNoteResults(_noteResults);
+    // let _noteResults = [];
+    // for (let recipient of recipients) {
+    //   const { username, amount } = recipient;
+    //   const noteData = await createNote(accountId, username, String(amount));
+    //   _noteResults.push({
+    //     noteData,
+    //     recipientId: username,
+    //     filename: `${username}_${amount}.mno`,
+    //   });
+    // }
+    // console.log(_noteResults);
+    // setNoteResults(_noteResults);
 
     // setFiles(generatedFiles);
     setIsLoading(false);
