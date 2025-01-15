@@ -105,7 +105,24 @@ const Send = ({ onClose }: SendProps) => {
     await sleep(100);
     await syncClient();
     const recipients: { username: string; amount: number }[] = data.recipients;
-    let _noteResults = await createMultipleNotes(accountId, recipients);
+    let txResult = await createMultipleNotes(accountId, recipients);
+    const outputNotes = txResult.created_notes().notes().map((note) => {
+      return note.id().to_string()
+    })
+
+    let _noteResults = [];
+    let id = 0;
+    for (let recipient of recipients) {
+      const { username, amount } = recipient;
+
+      const noteData = await exportNote(outputNotes[id++], `${username}_${amount}.mno`);
+      _noteResults.push({
+        noteData,
+        recipientId: username,
+        filename: `${username}_${amount}.mno`,
+      });
+    }
+    console.log(_noteResults);
   
     setNoteResults(_noteResults);
 
