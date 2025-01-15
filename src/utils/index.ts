@@ -346,11 +346,11 @@ export const createMultipleNotes = async (
         # => [...]
     end
   `;
-
-    const noteScript = await webClient.compile_note_script(standard_p2id_script);
+  let _noteResults: { noteData: any; recipientId: string; filename: string; }[] = [];
+  const noteScript = await webClient.compile_note_script(standard_p2id_script);
     for (const { username: receiver, amount } of recipients) {
       const recipientAccount = AccountId.from_hex(receiver);
-      
+    
       const noteAssets = new NoteAssets([
         new FungibleAsset(
           AccountId.from_hex(assetId),
@@ -388,6 +388,7 @@ export const createMultipleNotes = async (
     const transactionRequest = new TransactionRequest().with_own_output_notes(
       ownOutputNotes
     );
+
     const txResult = await webClient.new_transaction(
       AccountId.from_hex(sender),
       transactionRequest
@@ -395,21 +396,35 @@ export const createMultipleNotes = async (
     console.log("Transaction Result:", txResult);
 
     try {
+      await sleep(20000);
       const result = await webClient.submit_transaction(txResult);
-      await sleep(2000);
+      let exportedNoteDetails: any[] = [];
       await syncClient();
+      const createdNoteIds = txResult.created_notes().notes().map((note) => {
+        return note.id().to_string()
+      })
 
-      const noteId = txResult.created_notes().notes()[0].id().to_string();
-      const note = await webClient.export_note(noteId, "Full");
-      console.log(note, noteId);
-      const byteArray = new Uint8Array(note);
-      exportNote(byteArray, 'a1.mno');
-      console.log("Final Submission Result:", result);
+      for (const note of createdNoteIds) {
+        try {
+          const exportedNote = await webClient.export_note(note, "Full");
+          exportedNoteDetails.push(exportedNote);
+        } catch (error) {
+          console.error('Error with Note:', note, error);
+        }
+      }
+
+      exportedNoteDetails.map((note, id) => {
+        _noteResults.push({
+          noteData: note,
+          recipientId: recipients[id].username,
+          filename: `${recipients[id].username}_${recipients[id].amount}.mno`,
+        })
+      });
     } catch (error) {
       console.log("Error getting submitted result", error);
     }
 
-    return txResult;
+    return _noteResults;
   } catch (error) {
     console.error("Error creating multiple notes:", error);
     throw error;
