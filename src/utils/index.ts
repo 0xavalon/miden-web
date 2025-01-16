@@ -45,10 +45,12 @@ const _getAccountId = (accountId: any) => {
 };
 
 export const createClient = async () => {
+  await sleep(100);
   await webClient.create_client();
 };
 
 export const getAccountsFromDb = async () => {
+  await sleep(100);
   const _accounts = await webClient.get_accounts();
   return _accounts;
 };
@@ -78,9 +80,9 @@ export const importNoteFiles = async (file: File): Promise<void> => {
       if (e.target?.result) {
         const arrayBuffer = e.target.result as ArrayBuffer; // Assert type
         const byteArray = new Uint8Array(arrayBuffer);
-        console.log(byteArray);
 
         try {
+          await sleep(100);
           await webClient.import_note(byteArray); // Assuming `webClient` is correctly typed
           console.log("Note successfully imported!");
         } catch (error) {
@@ -147,6 +149,7 @@ export const getAccountHistory = async (accountId: string) => {
 export const syncClient = async () => {
   try {
     console.log("Attempting to sync the client ...", new Date());
+    await sleep(2000);
     await webClient.sync_state();
     console.log("syncing done ...", new Date());
   } catch (error: any) {
@@ -273,14 +276,37 @@ export const createMultipleNotes = async (
     }
 
     const transactionRequest = new TransactionRequest().with_own_output_notes(ownOutputNotes);
+    await syncClient();
 
     await webClient.fetch_and_cache_account_auth_by_pub_key(senderAccount);
     const transactionResult = await webClient.new_transaction(senderAccount, transactionRequest);
     await syncClient();
+  
 
-    await webClient.submit_transaction(transactionResult);
-    await sleep(20000);
-    return transactionResult;
+    try {
+      // await webClient.submit_transaction(transactionResult);
+    } catch (error) {
+      console.log(error);  
+    }
+    // await sleep(20000);
+
+    const outputNotes = transactionResult.created_notes().notes().map((note) => {
+      return note.id().to_string();
+    })
+    // Fetch noteData for each noteId asynchronously
+    const noteDataLists = await Promise.all(
+      outputNotes.map(async (noteId) => {
+        try {
+          const noteData = await webClient.export_note(noteId, "Full");
+          return { noteId, noteData };
+        } catch (error) {
+          console.error(`Failed to fetch noteData for noteId: ${noteId}`, error);
+          return { noteId };
+        }
+      })
+    );
+    console.log(noteDataLists, 'notedatalist');
+    return noteDataLists;
 
   } catch (error) {
     console.error("Error creating multiple notes:", error);
