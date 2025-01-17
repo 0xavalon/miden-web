@@ -107,21 +107,24 @@ const Send = ({ onClose }: SendProps) => {
     const recipients: { username: string; amount: number }[] = data.recipients;
     let txResult = await createMultipleNotes(accountId, recipients);
 
-    let _noteResults = [];
-    let id = 0;
-    if(txResult.length) {
-      for (let recipient of recipients) {
-        const { username, amount } = recipient;
-  
-        // const noteData = await exportNote(outputNotes[id++], `${username}_${amount}.mno`);
-        _noteResults.push({
-          noteData: txResult[id++].noteData,
-          recipientId: username,
-          filename: `${username}_${amount}.mno`,
-        });
-      }
-      setNoteResults(_noteResults);
-    }
+    // let _noteResults = [];
+    // if(txResult.length) {
+    //   for (let [id, recipient] of recipients.entries()) {
+    //     const { username, amount } = recipient;
+    //     const _noteData = txResult[id].noteData;
+    //     if(_noteData) {
+    //       _noteResults.push({
+    //         noteData: _noteData,
+    //         recipientId: username,
+    //         filename: `${username}_${amount}.mno`,
+    //       });
+    //     } else {
+    //       console.log(`Note data is not found. id:${id}, account: ${username}`)
+    //     }
+        
+    //   }
+    //   setNoteResults(_noteResults);
+    // }
 
     // let _noteResults = [];
     // for (let recipient of recipients) {

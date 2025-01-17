@@ -149,7 +149,7 @@ export const getAccountHistory = async (accountId: string) => {
 export const syncClient = async () => {
   try {
     console.log("Attempting to sync the client ...", new Date());
-    await sleep(2000);
+    await sleep(20000);
     await webClient.sync_state();
     console.log("syncing done ...", new Date());
   } catch (error: any) {
@@ -276,37 +276,36 @@ export const createMultipleNotes = async (
     }
 
     const transactionRequest = new TransactionRequest().with_own_output_notes(ownOutputNotes);
-    await syncClient();
 
     await webClient.fetch_and_cache_account_auth_by_pub_key(senderAccount);
     const transactionResult = await webClient.new_transaction(senderAccount, transactionRequest);
-    await syncClient();
-  
 
     try {
-      // await webClient.submit_transaction(transactionResult);
+      await webClient.submit_transaction(transactionResult);
+      await syncClient();
     } catch (error) {
       console.log(error);  
     }
-    // await sleep(20000);
-
+  
     const outputNotes = transactionResult.created_notes().notes().map((note) => {
       return note.id().to_string();
     })
-    // Fetch noteData for each noteId asynchronously
-    const noteDataLists = await Promise.all(
-      outputNotes.map(async (noteId) => {
-        try {
-          const noteData = await webClient.export_note(noteId, "Full");
-          return { noteId, noteData };
-        } catch (error) {
-          console.error(`Failed to fetch noteData for noteId: ${noteId}`, error);
-          return { noteId };
-        }
-      })
-    );
-    console.log(noteDataLists, 'notedatalist');
-    return noteDataLists;
+
+    console.log('output note ids ==>', outputNotes)
+
+    // const noteDataLists = await Promise.all(
+    //   outputNotes.map(async (noteId) => {
+    //     try {
+    //       const noteData = await webClient.export_note(noteId, "Full");
+    //       return { noteId, noteData };
+    //     } catch (error) {
+    //       console.error(`Failed to fetch noteData for noteId: ${noteId}`, error);
+    //       return { noteId };
+    //     }
+    //   })
+    // );
+
+    // return noteDataLists;
 
   } catch (error) {
     console.error("Error creating multiple notes:", error);
