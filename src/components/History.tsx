@@ -62,6 +62,11 @@ const History = () => {
     }
   };
 
+  const _downloadSpecificNotes = (item: any) => {
+    console.log("Downloading specific notes", item);
+    return;
+  }
+
   // Filter items based on the active tab
   const filteredHistory = historyData.filter(
     (item) => item.type === activeTab
@@ -110,7 +115,7 @@ const History = () => {
                   textClassName="text-[#151515] text-base font-semibold font-inter leading-6"
                 />
                 <button
-                    onClick={() => {}}
+                    onClick={() => {_downloadSpecificNotes(item)}}
                     className="text-[#151515] opacity-60"
                   >
                     <Icons.arrowDownToLine className="h-5 w-5" />
