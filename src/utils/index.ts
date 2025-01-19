@@ -71,6 +71,25 @@ export const getAccountId = (accountId: string) => {
   return _account;
 };
 
+export const downloadNotesFromHash = async (item: any) => {
+  console.log(item.outputNotes.notes());
+
+  const outputNotes = item.outputNotes.notes().map((note: any) => {
+    return note.id().to_string();
+  });
+  
+  let outputNotesData =  await _exportNotesArray(outputNotes);
+  console.log('output note data', outputNotesData);
+
+  for (let i = 0; i < outputNotesData.length; i++) {
+    exportNote(
+      new Uint8Array(outputNotesData[i].noteData),
+      `${outputNotesData[i].noteId}.mno`
+    );
+  }
+
+}
+
 export const importNoteFiles = async (file: File): Promise<void> => {
   // const file = event.target.files?.[0]; // Check if a file is selected
   if (file) {
@@ -103,6 +122,7 @@ export const getAccountHistory = async (accountId: string) => {
     type: "Send" | "Receive";
     recipients: any;
     amount: string;
+    outputNotes?: OutputNotesArray;
   }[] = [];
   const sendHistories = await webClient.get_transactions(TransactionFilter.all());
   const inputNote = await webClient.get_input_notes(new NoteFilter(NoteFilterTypes.Consumed));
@@ -140,6 +160,7 @@ export const getAccountHistory = async (accountId: string) => {
         hash: hash,
         recipients: totalNotes,
         amount: totalAmount.toString(),
+        outputNotes: outputNotes,
       });
     }
   });
@@ -283,19 +304,7 @@ export const createMultipleNotes = async (
     })
 
     console.log('output note ids ==>', outputNotes)
-
-    const noteDataLists = [];
-
-    for (const noteId of outputNotes) {
-      try {
-        const noteData = await webClient.export_note(noteId, "Full");
-        noteDataLists.push({ noteId, noteData });
-      } catch (error) {
-        console.error(`Failed to fetch noteData for noteId: ${noteId}`, error);
-        noteDataLists.push({ noteId });
-      }
-    }
-
+    const noteDataLists = await _exportNotesArray(outputNotes);
     return noteDataLists;
 
   } catch (error) {
@@ -304,6 +313,25 @@ export const createMultipleNotes = async (
   }
 };
 
+const _exportNotesArray = async (outputNotes: string[]) => {
+  const noteDataLists = [];
+  for (const noteId of outputNotes) {
+    try {
+      const noteData = await webClient.export_note(noteId, "Full");
+      if(noteData) noteDataLists.push({ noteId, noteData });
+    } catch (error) {
+      console.error(`Failed to fetch noteData for noteId: ${noteId}`, error);
+      // noteDataLists.push({ noteId });
+    }
+  }
+  return noteDataLists;
+}
+
+/**
+ * Download the note as a file
+ * @param byteArray 
+ * @param fileName 
+ */
 export const exportNote = (byteArray: any, fileName: string) => {
   const blob = new Blob([byteArray], { type: "application/octet-stream" });
   // Generate a URL for the blob

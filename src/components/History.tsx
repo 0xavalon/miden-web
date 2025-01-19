@@ -11,6 +11,7 @@ import {
   getAccountsFromDb,
   getBalance,
   getAccountHistory,
+  downloadNotesFromHash,
 } from "../utils";
 import { Icons } from "./icons";
 
@@ -63,8 +64,7 @@ const History = () => {
   };
 
   const _downloadSpecificNotes = (item: any) => {
-    console.log("Downloading specific notes", item);
-    return;
+    downloadNotesFromHash(item);
   }
 
   // Filter items based on the active tab
