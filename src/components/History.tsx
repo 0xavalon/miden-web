@@ -11,7 +11,9 @@ import {
   getAccountsFromDb,
   getBalance,
   getAccountHistory,
+  downloadNotesFromHash,
 } from "../utils";
+import { Icons } from "./icons";
 
 interface HistoryItem {
   id: number;
@@ -61,6 +63,10 @@ const History = () => {
     }
   };
 
+  const _downloadSpecificNotes = (item: any) => {
+    downloadNotesFromHash(item);
+  }
+
   // Filter items based on the active tab
   const filteredHistory = historyData.filter(
     (item) => item.type === activeTab
@@ -102,12 +108,19 @@ const History = () => {
                 M
               </div>
               <div className="ml-3">
+              <div className="w-full gap-3 flex flex-row items-center mt-2">
                 <CopyToClipboard
                   textToCopy={item.hash}
                   displayText={item.title}
-                  className="mt-2"
                   textClassName="text-[#151515] text-base font-semibold font-inter leading-6"
                 />
+                <button
+                    onClick={() => {_downloadSpecificNotes(item)}}
+                    className="text-[#151515] opacity-60"
+                  >
+                    <Icons.arrowDownToLine className="h-5 w-5" />
+                  </button>
+                  </div>
                 <p className="text-[#75808a] text-sm font-medium font-inter leading-[21px]">
                   To {item.recipients} recipients
                 </p>
