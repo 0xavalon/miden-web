@@ -14,6 +14,7 @@ import History from "./History";
 import {
   consumeAvailableNotes,
   createAccount,
+  createCompanyAccountInBackend,
   getAccountId,
   getAccountsFromDb,
   getBalance,
@@ -42,6 +43,12 @@ const Tabs = () => {
     await sleep(1000);
     const _account = await createAccount();
     const _id = _account.id().to_string();
+    try{
+      const userType = activeTab === "Business" ? "employer" : "employee";
+      createCompanyAccountInBackend(_id,userType);
+    } catch(error) {
+      console.log(error);
+    }
     const _balance = await getBalance(_id);
     setSelectedAccountBalance(_balance || "");
     setAccount(_account);

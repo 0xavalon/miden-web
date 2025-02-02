@@ -24,8 +24,10 @@ import {
 } from "@demox-labs/miden-sdk";
 
 import { standard_p2id_scripts } from "./srcipts/p2id";
+import axios from "axios";
 
 const webClient = new WebClient();
+const API_URL = `http://localhost:5001`;
 
 export const sleep = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
@@ -457,3 +459,53 @@ const decodeFromBase64 = (base64String: string) => {
   const uintArray = new Uint32Array(buffer.buffer);
   return Array.from(uintArray).map((value) => ({ __wbg_ptr: value }));
 };
+
+
+/***
+ * API SECTION FROM HERE
+ */
+
+function generateRandomString(length = 6) {
+  return Math.random().toString(36).substring(2, 2 + length);
+}
+
+export const createCompanyAccountInBackend = async (accountId: string, userType: string, employerId: string="679b3bc22803685c61bcba6a") => { 
+  try {
+    const randomSuffix = generateRandomString();
+  
+    if(userType === 'employer') {
+      const email = `company_${randomSuffix}@example.com`;  // Dynamic email
+      const username = `company_username_${randomSuffix}`;  // Dynamic username
+      const payload = {
+        name: "Company XYZ",
+        email,
+        password: "securepassword",
+        userType: "employer",
+        companyName: "Company XYZ Ltd.",
+        username,
+        walletId: accountId
+      }
+
+      console.log('payload',payload);
+      const response = await axios.post(`${API_URL}/api/users/register`, payload);
+      return response.data;
+    } else if( userType === 'employee') {
+      const email = `employee_${randomSuffix}@example.com`;  // Dynamic email
+      const username = `employee_username_${randomSuffix}`;  // Dynamic username
+      
+      const response = await axios.post(`${API_URL}/accounts`, {
+        name: "John Doe",
+        email,
+        password: "securepassword",
+        userType: "employee",
+        username,
+        walletId: accountId,
+        employerId
+    } );
+      return response.data;
+    }
+  } catch (error) {
+    console.error("Error creating account in backend:", error);
+    throw error;
+  }
+}

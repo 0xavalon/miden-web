@@ -17,6 +17,7 @@
   "dependencies": {
     "@demox-labs/miden-sdk": "^0.0.20",
     "@hookform/resolvers": "^3.9.1",
+    "axios": "^1.7.9",
     "lucide-react": "^0.465.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
