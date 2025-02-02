@@ -12,9 +12,11 @@ import History from "./History";
 
 // utils
 import {
+  checkForFaucetAccount,
   consumeAvailableNotes,
   createAccount,
   createCompanyAccountInBackend,
+  createNewFaucetAccount,
   getAccountId,
   getAccountsFromDb,
   getBalance,
@@ -41,6 +43,7 @@ const Tabs = () => {
   const [userName, setUserName] = useState("");
   const [userAccountId, setUserAccountId] = useState("");
   const [userType, setUserType] = useState("");
+  const [faucet, setFaucet] = useState<Account | null>(null);
   const [accountDetails, setAccountDetails] = useState<AccountDetails>({} as AccountDetails);
   const [account, setAccount] = useState<Account>();
   const [selectedAccountBalance, setSelectedAccountBalance] = useState("0");
@@ -143,6 +146,16 @@ const Tabs = () => {
         } catch(error: any) {
           console.error("Error fetching account details:", error.message);
         }
+
+        try {
+          const _faucet = await checkForFaucetAccount();
+          if(_faucet) {
+            setFaucet(_faucet);
+          }
+        } catch (error) {
+          console.error("Error creating new faucet account:", error);
+        }
+
         const _balance = await getBalance(_id);
         setIsAccountCreated(true);
         setAccount(accounts[0] as unknown as Account);

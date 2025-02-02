@@ -57,6 +57,37 @@ export const getAccountsFromDb = async () => {
   return _accounts;
 };
 
+export const checkForFaucetAccount = async () => {
+  const _allAccounts = await getAccountsFromDb();
+  let _faucetAccount = null;
+  for (const account of _allAccounts) {
+    const _id = account.id().to_string();
+    const _accountDetails = await getAccountDetails(AccountId.from_hex(_id));
+
+    if (_accountDetails?.is_faucet()) {
+      return _accountDetails;
+    }
+  }
+
+  if (_faucetAccount) {
+    return _faucetAccount;
+  }
+  return null;
+};
+
+
+export const createNewFaucteAccount = async () => {
+  const faucetId = await webClient.new_faucet(AccountStorageMode.private(), false, "TOK", 6, BigInt(1000000000));
+  return faucetId;
+};
+
+export const mintFaucteAccount = async (accountId: string, faucetId: string, amount: any) => {
+  let _accountId = _getAccountId(accountId);
+  let _faucetId = _getAccountId(faucetId);
+  await sleep(10000);
+  await webClient.new_mint_transaction(_accountId, _faucetId, NoteType.private(), BigInt(amount));
+};
+
 export const getBalance = async (
   accountId: string,
   faucetAccountId: string = "0x29b86f9443ad907a"
