@@ -469,7 +469,7 @@ function generateRandomString(length = 6) {
   return Math.random().toString(36).substring(2, 2 + length);
 }
 
-export const createCompanyAccountInBackend = async (accountId: string, userType: string, employerId: string="679b3bc22803685c61bcba6a") => { 
+export const createCompanyAccountInBackend = async (accountId: string, userType: string, employerId: string="679f1ddb49e80051f944f1f7") => { 
   try {
     const randomSuffix = generateRandomString();
   
@@ -486,7 +486,6 @@ export const createCompanyAccountInBackend = async (accountId: string, userType:
         walletId: accountId
       }
 
-      console.log('payload',payload);
       const response = await axios.post(`${API_URL}/api/users/register`, payload);
       return response.data;
     } else if( userType === 'employee') {
@@ -501,7 +500,8 @@ export const createCompanyAccountInBackend = async (accountId: string, userType:
         username,
         walletId: accountId,
         employerId
-    } );
+    });
+
       return response.data;
     }
   } catch (error) {

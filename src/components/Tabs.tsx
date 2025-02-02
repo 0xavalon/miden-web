@@ -45,7 +45,8 @@ const Tabs = () => {
     const _id = _account.id().to_string();
     try{
       const userType = activeTab === "Business" ? "employer" : "employee";
-      createCompanyAccountInBackend(_id,userType);
+      const response = await createCompanyAccountInBackend(_id,userType);
+      console.log('response', response);
     } catch(error) {
       console.log(error);
     }
