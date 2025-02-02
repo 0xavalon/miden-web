@@ -10,6 +10,7 @@ import {
   exportNote,
   getAccountsFromDb,
   getBalance,
+  getExistingAccountFromBackend,
   sleep,
   syncClient,
 } from "../utils";
@@ -33,6 +34,8 @@ type SendProps = {
 const Send = ({ onClose }: SendProps) => {
   const [accountId, setAccountId] = useState("");
   const [balance, setBalance] = useState("");
+  const [accountDetails, setAccountDetails] = useState({});
+  const [userType, setUserType] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [noteResults, setNoteResults] = useState<
     { noteData: any; recipientId: string; filename: string }[]
@@ -72,6 +75,9 @@ const Send = ({ onClose }: SendProps) => {
 
       if (accounts.length > 0) {
         const _id = accounts[0].id().to_string();
+        const accountDetails = await getExistingAccountFromBackend(_id);
+        setAccountDetails(accountDetails);
+        setUserType(accountDetails.userType);
         const _balance = await getBalance(_id);
         setAccountId(accounts[0].id().to_string());
         setBalance(_balance || "");
@@ -268,7 +274,12 @@ const Send = ({ onClose }: SendProps) => {
             }}
             className="text-blue-600 flex items-center space-x-1 mt-4"
           >
-            <span>+</span> <span>Add another recipient</span>
+             {/* Conditionally render this section if userType is 'employee' */}
+          {userType === "employer" && (
+            <div>
+              <span>+</span> <span>Add another recipient</span>
+            </div>
+          )}
           </button>
 
           <button
