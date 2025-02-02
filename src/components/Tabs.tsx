@@ -133,11 +133,11 @@ const Tabs = () => {
       if (accounts.length > 0) {
         const _id = accounts[0].id().to_string();
         const accountDetails = await getExistingAccountFromBackend(_id);
-        // console.log('response', response);
         const _balance = await getBalance(_id);
         setIsAccountCreated(true);
+        setAccountDetails(accountDetails);
         setAccount(accounts[0] as unknown as Account);
-        setUserName(accountDetails.username);
+        setUserName(_id);
         setSelectedAccountBalance(_balance || "");
         setUserAccountId(_id);
         setIsLoading(false);
@@ -200,6 +200,7 @@ const Tabs = () => {
             walletAddress="0xdhb3rg3g8rfgffgeuyfbefbfhbfrebijbhfssbu4gf74gsbjd"
             onImportClick={handleImportClick}
             onSendClick={handleSendClick}
+            walletId = {userAccountId}
           />
 
           {selectedFile ? (

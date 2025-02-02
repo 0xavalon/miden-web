@@ -14,6 +14,7 @@ interface AccountCardProps {
   walletAddress: string;
   onImportClick: () => void;
   onSendClick: () => void;
+  walletId: string;
 }
 
 const AccountCard = ({
@@ -23,6 +24,7 @@ const AccountCard = ({
   walletAddress,
   onImportClick,
   onSendClick,
+  walletId,
 }: AccountCardProps) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
