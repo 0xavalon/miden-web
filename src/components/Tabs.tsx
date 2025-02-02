@@ -40,6 +40,7 @@ const Tabs = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [userName, setUserName] = useState("");
   const [userAccountId, setUserAccountId] = useState("");
+  const [userType, setUserType] = useState("");
   const [accountDetails, setAccountDetails] = useState<AccountDetails>({} as AccountDetails);
   const [account, setAccount] = useState<Account>();
   const [selectedAccountBalance, setSelectedAccountBalance] = useState("0");
@@ -57,9 +58,13 @@ const Tabs = () => {
     const _account = await createAccount();
     const _id = _account.id().to_string();
     const userType = activeTab === "Business" ? "employer" : "employee";
-    const response = await createCompanyAccountInBackend(_id,userType);
-    setAccountDetails(response);
-    await sleep(1000);
+    try{
+      const response = await createCompanyAccountInBackend(_id,userType);
+      setAccountDetails(response);
+      setUserType(response.userType);
+    } catch (error: any) {
+      console.log(error);
+    }
     const _balance = await getBalance(_id);
     setSelectedAccountBalance(_balance || "");
     setAccount(_account);
@@ -132,10 +137,14 @@ const Tabs = () => {
 
       if (accounts.length > 0) {
         const _id = accounts[0].id().to_string();
-        const accountDetails = await getExistingAccountFromBackend(_id);
+        try {
+          const accountDetails = await getExistingAccountFromBackend(_id);
+          setAccountDetails(accountDetails);
+        } catch(error: any) {
+          console.error("Error fetching account details:", error.message);
+        }
         const _balance = await getBalance(_id);
         setIsAccountCreated(true);
-        setAccountDetails(accountDetails);
         setAccount(accounts[0] as unknown as Account);
         setUserName(_id);
         setSelectedAccountBalance(_balance || "");

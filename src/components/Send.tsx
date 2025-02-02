@@ -11,6 +11,7 @@ import {
   getAccountsFromDb,
   getBalance,
   getExistingAccountFromBackend,
+  savePayrollNoteDataToBackend,
   sleep,
   syncClient,
 } from "../utils";
@@ -118,17 +119,20 @@ const Send = ({ onClose }: SendProps) => {
       for (let [id, recipient] of recipients.entries()) {
         const { username, amount } = recipient;
         const _noteData = txResult[id].noteData;
+        const _noteId = txResult[id].noteId;
         if(_noteData) {
           _noteResults.push({
+            noteId: _noteId,
             noteData: _noteData,
             recipientId: username,
+            amount: amount,
             filename: `${username}_${amount}.mno`,
           });
         } else {
           console.log(`Note data is not found. id:${id}, account: ${username}`)
-        }
-        
+        } 
       }
+      savePayrollNoteDataToBackend(_noteResults, accountId, recipients);
       setNoteResults(_noteResults);
     }
     setIsLoading(false);
@@ -223,7 +227,7 @@ const Send = ({ onClose }: SendProps) => {
 
                   <input
                     {...register(`recipients.${index}.username` as const)}
-                    placeholder="Enter username"
+                    placeholder="Enter wallet"
                     className="w-full p-2 border border-gray-300 rounded-lg focus:outline-blue-500"
                   />
                   {errors.recipients?.[index]?.username && (

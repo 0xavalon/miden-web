@@ -295,8 +295,8 @@ export const createMultipleNotes = async (
     const transactionResult = await webClient.new_transaction(senderAccount, transactionRequest);
 
     try {
-      await webClient.submit_transaction(transactionResult);
-      await syncClient();
+      // await webClient.submit_transaction(transactionResult);
+      // await syncClient();
     } catch (error) {
       console.log('Error in multi note submission',error);  
     }
@@ -520,4 +520,31 @@ export const getExistingAccountFromBackend = async (accountId: string) => {
     console.error("Error fetching account in backend:", error);
     throw error;
   }
+}
+
+
+
+export const savePayrollNoteDataToBackend = (noteResults: { noteData: any; noteId: string,recipientId: string; filename: string; amount: any}[], sender: string, recipients: { username: string; amount: number }[]) => {
+  const randomSuffix = generateRandomString();
+  const payrollName = `payroll_${randomSuffix}-${Date.now()}`;
+  const payments = noteResults.map((noteData, index) => {
+    return {
+      noteId: noteData.noteId,
+      noteData: noteData.noteData,
+      employeeId: noteData.recipientId,
+      amount: noteData.amount
+    }
+  });
+
+  const payload = { payrollName, payments };
+  console.log("Payload", payload);
+  axios.post(`${API_URL}/api/payroll`, payload)
+    .then(response => {
+      console.log("Payroll response", response.data);
+    }
+  ).catch(error => {
+    console.error("Error creating payroll in backend:", error);
+    throw error;
+  });
+
 }
