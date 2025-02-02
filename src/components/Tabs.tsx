@@ -23,11 +23,23 @@ import {
   syncClient,
 } from "../utils";
 
+interface AccountDetails {
+  _id: string;
+  name: string;
+  email: string;
+  userType: string;
+  companyName?: string;
+  notesCreated: number;
+  canCreateMultipleNotes: boolean;
+  createdAt: string;
+}
+
 const Tabs = () => {
   const [activeTab, setActiveTab] = useState<string>("Business");
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [userName, setUserName] = useState("");
   const [userAccountId, setUserAccountId] = useState("");
+  const [accountDetails, setAccountDetails] = useState<AccountDetails>({} as AccountDetails);
   const [account, setAccount] = useState<Account>();
   const [selectedAccountBalance, setSelectedAccountBalance] = useState("0");
   const [isAccountCreated, setIsAccountCreated] = useState<boolean>(false);
@@ -43,17 +55,14 @@ const Tabs = () => {
     await sleep(1000);
     const _account = await createAccount();
     const _id = _account.id().to_string();
-    try{
-      const userType = activeTab === "Business" ? "employer" : "employee";
-      const response = await createCompanyAccountInBackend(_id,userType);
-      console.log('response', response);
-    } catch(error) {
-      console.log(error);
-    }
+    const userType = activeTab === "Business" ? "employer" : "employee";
+    const response = await createCompanyAccountInBackend(_id,userType);
+    setAccountDetails(response);
+    await sleep(1000);
     const _balance = await getBalance(_id);
     setSelectedAccountBalance(_balance || "");
     setAccount(_account);
-    setUserName(_id);
+    setUserName(response.email);
     setUserAccountId(_id);
     setIsLoading(false);
     setIsAccountCreated(true);

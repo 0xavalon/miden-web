@@ -487,7 +487,7 @@ export const createCompanyAccountInBackend = async (accountId: string, userType:
       }
 
       const response = await axios.post(`${API_URL}/api/users/register`, payload);
-      return response.data;
+      return response.data.data;
     } else if( userType === 'employee') {
       const email = `employee_${randomSuffix}@example.com`;  // Dynamic email
       const username = `employee_username_${randomSuffix}`;  // Dynamic username
@@ -502,7 +502,7 @@ export const createCompanyAccountInBackend = async (accountId: string, userType:
         employerId
     });
 
-      return response.data;
+      return response.data.data;
     }
   } catch (error) {
     console.error("Error creating account in backend:", error);
