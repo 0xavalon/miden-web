@@ -6,6 +6,7 @@ import CopyToClipboard from "./CopyToClipboard";
 
 // images
 import bg from "../assets/images/purple-bg.png";
+import { FilePlus } from "lucide-react";
 
 interface AccountCardProps {
   username: string;
@@ -146,6 +147,9 @@ const AccountCard = ({
             className="mt-2"
             textClassName="text-xl font-semibold leading-[16px] text-[#151515] opacity-60"
           />
+          {/* <Icons.import 
+            onClick={handleAddClick}
+          /> */}
         </div>
       </div>
       <div className="flex justify-between gap-4 mt-6 px-8 pb-8">

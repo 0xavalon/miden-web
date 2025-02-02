@@ -76,7 +76,7 @@ export const checkForFaucetAccount = async () => {
 };
 
 
-export const createNewFaucteAccount = async () => {
+export const createNewFaucetAccount = async () => {
   const faucetId = await webClient.new_faucet(AccountStorageMode.private(), false, "TOK", 6, BigInt(1000000000));
   return faucetId;
 };

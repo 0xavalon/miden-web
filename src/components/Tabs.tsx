@@ -16,7 +16,6 @@ import {
   consumeAvailableNotes,
   createAccount,
   createCompanyAccountInBackend,
-  createNewFaucetAccount,
   getAccountId,
   getAccountsFromDb,
   getBalance,
