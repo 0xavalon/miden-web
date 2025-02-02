@@ -18,6 +18,7 @@ import {
   getAccountId,
   getAccountsFromDb,
   getBalance,
+  getExistingAccountFromBackend,
   importNoteFiles,
   sleep,
   syncClient,
@@ -62,7 +63,7 @@ const Tabs = () => {
     const _balance = await getBalance(_id);
     setSelectedAccountBalance(_balance || "");
     setAccount(_account);
-    setUserName(response.email);
+    setUserName(_id);
     setUserAccountId(_id);
     setIsLoading(false);
     setIsAccountCreated(true);
@@ -131,10 +132,12 @@ const Tabs = () => {
 
       if (accounts.length > 0) {
         const _id = accounts[0].id().to_string();
+        const accountDetails = await getExistingAccountFromBackend(_id);
+        // console.log('response', response);
         const _balance = await getBalance(_id);
         setIsAccountCreated(true);
         setAccount(accounts[0] as unknown as Account);
-        setUserName(_id);
+        setUserName(accountDetails.username);
         setSelectedAccountBalance(_balance || "");
         setUserAccountId(_id);
         setIsLoading(false);

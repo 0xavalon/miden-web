@@ -474,8 +474,8 @@ export const createCompanyAccountInBackend = async (accountId: string, userType:
     const randomSuffix = generateRandomString();
   
     if(userType === 'employer') {
-      const email = `company_${randomSuffix}@example.com`;  // Dynamic email
-      const username = `company_username_${randomSuffix}`;  // Dynamic username
+      const email = `co_${randomSuffix}@example.com`;  // Dynamic email
+      const username = `co_username_${randomSuffix}`;  // Dynamic username
       const payload = {
         name: "Company XYZ",
         email,
@@ -489,23 +489,35 @@ export const createCompanyAccountInBackend = async (accountId: string, userType:
       const response = await axios.post(`${API_URL}/api/users/register`, payload);
       return response.data.data;
     } else if( userType === 'employee') {
-      const email = `employee_${randomSuffix}@example.com`;  // Dynamic email
-      const username = `employee_username_${randomSuffix}`;  // Dynamic username
+      const email = `em_${randomSuffix}@example.com`;  // Dynamic email
+      const username = `em_username_${randomSuffix}`;  // Dynamic username
       
-      const response = await axios.post(`${API_URL}/accounts`, {
+      const response = await axios.post(`${API_URL}/api/users/register`, {
         name: "John Doe",
         email,
         password: "securepassword",
         userType: "employee",
         username,
         walletId: accountId,
-        employerId
+        employerId: !employerId ? "679f1ddb49e80051f944f1f7" : employerId
     });
 
       return response.data.data;
     }
   } catch (error) {
     console.error("Error creating account in backend:", error);
+    throw error;
+  }
+}
+
+export const getExistingAccountFromBackend = async (accountId: string) => {
+  try {
+    const response = await axios.post(`${API_URL}/api/users/profile-with-token`,{
+      walletId: accountId
+    });
+    return response.data.data;
+  } catch (error) {
+    console.error("Error fetching account in backend:", error);
     throw error;
   }
 }
