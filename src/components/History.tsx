@@ -45,16 +45,16 @@ const History = () => {
       const { data: _histories } = await getHistoryFromBackend(activeTab, token);
       const historyBackend: HistoryItem[] = [];
       _histories.forEach((item: any) => {
-        historyBackend.push({
+        historyData.push({
           id: item.noteId,
           title: item.title,
-          hash: 'item.hash',
+          hash: `${item._id.slice(0, 3)}...${item._id.slice(-3)}`,
           recipients: 1, // set this for count of notes
           amount: item.amount,
           type: activeTab === 'Send' ? 'Send' : 'Receive'
         });
       });
-      historyData.push(...historyBackend);
+      // historyData.push(...historyBackend);
 
     } catch (error) {
       console.error("Error fetching existing accounts:", error);
@@ -125,7 +125,7 @@ const History = () => {
       <ul className="flex flex-col gap-6 max-h-[296px]  overflow-scroll pr-5">
         {filteredHistory.map((item) => (
           <li
-            key={item.title}
+            key={item.hash + Date.now()}
             className="flex items-center justify-between gap-4"
           >
             <div className="flex items-center">

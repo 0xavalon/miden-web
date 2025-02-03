@@ -617,7 +617,7 @@ export const savePayrollNoteDataToBackend = async (
       return {
         noteId: noteData.noteId,
         noteData: noteData.noteData,
-        employeeId: noteData.recipientId,
+        walletId: noteData.recipientId,
         amount: noteData.amount,
       };
     });
@@ -627,6 +627,8 @@ export const savePayrollNoteDataToBackend = async (
       payments,
       hash: `0x${generateRandomString()}1234`,
     };
+
+    console.log("Payload to save payroll data to backend", payload);
     const token = await getExistingAccountFromBackend(sender);
     const response = await axios.post(`${API_URL}/api/payroll`, payload, {
       headers: {
@@ -634,6 +636,7 @@ export const savePayrollNoteDataToBackend = async (
         "Content-Type": "application/json",
       },
     });
+    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error("Error saving payroll data to backend:", error);
