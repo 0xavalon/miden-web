@@ -14,6 +14,7 @@ import {
   downloadNotesFromHash,
   getExistingAccountFromBackend,
   getHistoryFromBackend,
+  downloadNotesFromBackend,
 } from "../utils";
 import { Icons } from "./icons";
 
@@ -21,6 +22,8 @@ interface HistoryItem {
   id: number;
   title: string;
   hash: string;
+  noteId: string;
+  noteData: Uint8Array,
   recipients: number;
   amount: string;
   type: "Send" | "Receive"; // Add a type field to distinguish between send and receive
@@ -46,8 +49,10 @@ const History = () => {
       const historyBackend: HistoryItem[] = [];
       _histories.forEach((item: any) => {
         historyData.push({
-          id: item.noteId,
+          id: item._id,
           title: item.title,
+          noteId: item.noteId,
+          noteData: item.noteData.data,
           hash: `${item._id.slice(0, 3)}...${item._id.slice(-3)}`,
           recipients: 1, // set this for count of notes
           amount: item.amount,
@@ -85,7 +90,8 @@ const History = () => {
   };
 
   const _downloadSpecificNotes = (item: any) => {
-    downloadNotesFromHash(item);
+    // downloadNotesFromHash(item);
+    downloadNotesFromBackend(item);
   }
 
   // Filter items based on the active tab

@@ -119,8 +119,6 @@ export const getAccountId = (accountId: string) => {
 };
 
 export const downloadNotesFromHash = async (item: any) => {
-  console.log(item.outputNotes.notes());
-
   const outputNotes = item.outputNotes.notes().map((note: any) => {
     return note.id().to_string();
   });
@@ -134,6 +132,10 @@ export const downloadNotesFromHash = async (item: any) => {
       `${outputNotesData[i].noteId}.mno`
     );
   }
+};
+
+export const downloadNotesFromBackend = async (item: any) => {
+  exportNote(item.noteData,`${item.noteId}.mno`);
 };
 
 export const importNoteFiles = async (file: File): Promise<void> => {
@@ -649,7 +651,6 @@ export const getHistoryFromBackend = async (
 ) => {
   try {
     const _type = historyType === "Send" ? "sent" : "receive";
-    console.log("Fetching history from backend", _type);
 
     let config = {
       method: "get",
