@@ -47,9 +47,10 @@ const History = () => {
     try{
       const {token} = await getExistingAccountFromBackend(userAccountId);
       const { data: _histories } = await getHistoryFromBackend(activeTab, token);
+      console.log(_histories);
       const historyBackend: HistoryItem[] = [];
       _histories.forEach((item: any) => {
-        historyData.push({
+        historyBackend.push({
           id: item._id,
           title: item.title,
           noteId: item.noteId,
@@ -61,7 +62,12 @@ const History = () => {
           type: activeTab === 'Send' ? 'Send' : 'Receive'
         });
       });
-      // historyData.push(...historyBackend);
+      // insert the backend history to the historyData, avoid duplicate
+      historyBackend.forEach((item) => {
+        if (!historyData.some((history) => history.id === item.id)) {
+          historyData.push(item);
+        }
+      });
 
     } catch (error) {
       console.error("Error fetching existing accounts:", error);
