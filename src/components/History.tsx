@@ -12,6 +12,8 @@ import {
   getBalance,
   getAccountHistory,
   downloadNotesFromHash,
+  getExistingAccountFromBackend,
+  getHistoryFromBackend,
 } from "../utils";
 import { Icons } from "./icons";
 
@@ -36,8 +38,27 @@ const History = () => {
   const [isAccountCreated, setIsAccountCreated] = useState<boolean>(false);
 
   const getHistories = async () => {
-    const histories = await getAccountHistory(userAccountId);
-    historyData.push(...histories);
+    if(!userAccountId) return;
+    
+    try{
+      const {token} = await getExistingAccountFromBackend(userAccountId);
+      const { data: _histories } = await getHistoryFromBackend(activeTab, token);
+      const historyBackend: HistoryItem[] = [];
+      _histories.forEach((item: any) => {
+        historyBackend.push({
+          id: item.noteId,
+          title: item.title,
+          hash: 'item.hash',
+          recipients: 1, // set this for count of notes
+          amount: item.amount,
+          type: activeTab === 'Send' ? 'Send' : 'Receive'
+        });
+      });
+      historyData.push(...historyBackend);
+
+    } catch (error) {
+      console.error("Error fetching existing accounts:", error);
+    }
   };
 
   const getUserAccount = async () => {
@@ -75,7 +96,11 @@ const History = () => {
   useEffect(() => {
     getUserAccount();
     getHistories();
-  }, []);
+  }, [userAccountId]);
+
+  useEffect(() => {
+    getHistories();
+  }, [activeTab]);
 
   return (
     <div className="p-6 px-8 py-10 flex flex-col bg-white rounded-[32px] shadow-[0px_0px_4px_0px_rgba(0,0,0,0.12)] w-[433px] min-h-[430px]">

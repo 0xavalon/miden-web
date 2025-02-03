@@ -140,7 +140,7 @@ const Tabs = () => {
       if (accounts.length > 0) {
         const _id = accounts[0].id().to_string();
         try {
-          const accountDetails = await getExistingAccountFromBackend(_id);
+          // const accountDetails = await getExistingAccountFromBackend(_id);
           setAccountDetails(accountDetails);
         } catch(error: any) {
           console.error("Error fetching account details:", error.message);

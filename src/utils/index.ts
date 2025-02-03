@@ -586,13 +586,11 @@ export const createCompanyAccountInBackend = async (
 
 export const getExistingAccountFromBackend = async (accountId: string) => {
   try {
-    const response = await axios.post(
-      `${API_URL}/api/users/profile-with-token`,
-      {
-        walletId: accountId,
-      }
-    );
-    return response.data.data;
+    const response = await axios.post(`${API_URL}/api/users/profile-with-token`, {
+      walletId: accountId,
+    })
+    console.log("Response", response);
+    return response.data;
   } catch (error) {
     console.error("Error fetching account in backend:", error);
     throw error;
@@ -622,7 +620,6 @@ export const savePayrollNoteDataToBackend = (
   });
 
   const payload = { payrollName, payments };
-  console.log("Payload", payload);
   axios
     .post(`${API_URL}/api/payroll`, payload)
     .then((response) => {
@@ -640,11 +637,12 @@ export const getHistoryFromBackend = async (
 ) => {
   try {
     const _type = historyType === "Send" ? "sent" : "receive";
+    console.log("Fetching history from backend",_type);
 
     let config = {
       method: "get",
       maxBodyLength: Infinity,
-      url: `http://localhost:5001/api/notes/tx/${_type}`,
+      url: `${API_URL}/api/notes/tx/${_type}`,
       headers: {
         Authorization: "Bearer " + authToken,
       },

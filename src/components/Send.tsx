@@ -76,9 +76,7 @@ const Send = ({ onClose }: SendProps) => {
 
       if (accounts.length > 0) {
         const _id = accounts[0].id().to_string();
-        const accountDetails = await getExistingAccountFromBackend(_id);
         setAccountDetails(accountDetails);
-        setUserType(accountDetails.userType);
         const _balance = await getBalance(_id);
         setAccountId(accounts[0].id().to_string());
         setBalance(_balance || "");
