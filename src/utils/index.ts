@@ -75,17 +75,31 @@ export const checkForFaucetAccount = async () => {
   return null;
 };
 
-
 export const createNewFaucetAccount = async () => {
-  const faucetId = await webClient.new_faucet(AccountStorageMode.private(), false, "TOK", 6, BigInt(1000000000));
+  const faucetId = await webClient.new_faucet(
+    AccountStorageMode.private(),
+    false,
+    "TOK",
+    6,
+    BigInt(1000000000)
+  );
   return faucetId;
 };
 
-export const mintFaucteAccount = async (accountId: string, faucetId: string, amount: any) => {
+export const mintFaucteAccount = async (
+  accountId: string,
+  faucetId: string,
+  amount: any
+) => {
   let _accountId = _getAccountId(accountId);
   let _faucetId = _getAccountId(faucetId);
   await sleep(10000);
-  await webClient.new_mint_transaction(_accountId, _faucetId, NoteType.private(), BigInt(amount));
+  await webClient.new_mint_transaction(
+    _accountId,
+    _faucetId,
+    NoteType.private(),
+    BigInt(amount)
+  );
 };
 
 export const getBalance = async (
@@ -110,9 +124,9 @@ export const downloadNotesFromHash = async (item: any) => {
   const outputNotes = item.outputNotes.notes().map((note: any) => {
     return note.id().to_string();
   });
-  
-  let outputNotesData =  await _exportNotesArray(outputNotes);
-  console.log('output note data', outputNotesData);
+
+  let outputNotesData = await _exportNotesArray(outputNotes);
+  console.log("output note data", outputNotesData);
 
   for (let i = 0; i < outputNotesData.length; i++) {
     exportNote(
@@ -120,8 +134,7 @@ export const downloadNotesFromHash = async (item: any) => {
       `${outputNotesData[i].noteId}.mno`
     );
   }
-
-}
+};
 
 export const importNoteFiles = async (file: File): Promise<void> => {
   // const file = event.target.files?.[0]; // Check if a file is selected
@@ -157,10 +170,14 @@ export const getAccountHistory = async (accountId: string) => {
     amount: string;
     outputNotes?: OutputNotesArray;
   }[] = [];
-  const sendHistories = await webClient.get_transactions(TransactionFilter.all());
-  const inputNote = await webClient.get_input_notes(new NoteFilter(NoteFilterTypes.Consumed));
-  inputNote.map((history: any, index:any) => {
-    try{
+  const sendHistories = await webClient.get_transactions(
+    TransactionFilter.all()
+  );
+  const inputNote = await webClient.get_input_notes(
+    new NoteFilter(NoteFilterTypes.Consumed)
+  );
+  inputNote.map((history: any, index: any) => {
+    try {
       let id = index;
       let hash = history.consumer_transaction_id();
       let title = `${hash.slice(0, 3)}...${hash.slice(-3)}`;
@@ -168,13 +185,19 @@ export const getAccountHistory = async (accountId: string) => {
       let recipients = 1;
       // let recipients = history.metadata().sender().to_string();
 
-      historyList.push({id, hash, type: "Receive", title, amount, recipients});
-    } catch(error) {
+      historyList.push({
+        id,
+        hash,
+        type: "Receive",
+        title,
+        amount,
+        recipients,
+      });
+    } catch (error) {
       console.log(error);
     }
-  })
+  });
 
-  
   sendHistories.map((history: any, index: any) => {
     let totalAmount = 0;
     const outputNotes = history.output_notes();
@@ -185,7 +208,7 @@ export const getAccountHistory = async (accountId: string) => {
       const amount = outputNotes.notes()[i].assets().assets()[0].amount(); // assuming single asset
       totalAmount += Number(amount);
     }
-    if(Number(totalNotes) > 0) {
+    if (Number(totalNotes) > 0) {
       historyList.push({
         id: index,
         type: type,
@@ -207,7 +230,7 @@ export const syncClient = async () => {
     await webClient.sync_state();
     console.log("syncing done ...", new Date());
   } catch (error: any) {
-      console.log("Error syncing accounts: ", error);
+    console.log("Error syncing accounts: ", error);
   }
 };
 
@@ -231,8 +254,8 @@ export const consumeAvailableNotes = async (targetAccount: string) => {
       console.log(noteId, " ", isConsumed, notes[i].input_note_record());
       notelist.push(noteId);
     }
-    
-    try{
+
+    try {
       sleep(100);
       const txResult = await webClient.new_consume_transaction(
         AccountId.from_hex(targetAccount),
@@ -283,7 +306,6 @@ export const createNote = async (
   }
 };
 
-
 export const createMultipleNotes = async (
   sender: any, // Sender account ID
   recipients: { username: string; amount: number }[], // List of recipients with account ID and amount
@@ -298,9 +320,10 @@ export const createMultipleNotes = async (
       AccountId.from_hex(sender)
     );
 
-    let compiledNoteScript =
-      await webClient.compile_note_script(standard_p2id_scripts);
-  
+    let compiledNoteScript = await webClient.compile_note_script(
+      standard_p2id_scripts
+    );
+
     for (const recipient of recipients) {
       const noteAssets = new NoteAssets([
         new FungibleAsset(faucetAccount, BigInt(recipient.amount)),
@@ -309,37 +332,49 @@ export const createMultipleNotes = async (
       const noteMetadata = new NoteMetadata(
         senderAccount,
         NoteType.public(),
-        NoteTag.from_account_id(AccountId.from_hex(recipient.username), NoteExecutionMode.new_local()),
+        NoteTag.from_account_id(
+          AccountId.from_hex(recipient.username),
+          NoteExecutionMode.new_local()
+        ),
         NoteExecutionHint.none(),
         undefined
       );
 
-      const noteInputs = new NoteInputs(new FeltArray([AccountId.from_hex(recipient.username).to_felt()]));
+      const noteInputs = new NoteInputs(
+        new FeltArray([AccountId.from_hex(recipient.username).to_felt()])
+      );
       const noteRecipient = new NoteRecipient(compiledNoteScript, noteInputs);
       const note = new Note(noteAssets, noteMetadata, noteRecipient);
       ownOutputNotes.append(OutputNote.full(note));
     }
 
-    const transactionRequest = new TransactionRequest().with_own_output_notes(ownOutputNotes);
+    const transactionRequest = new TransactionRequest().with_own_output_notes(
+      ownOutputNotes
+    );
 
     await webClient.fetch_and_cache_account_auth_by_pub_key(senderAccount);
-    const transactionResult = await webClient.new_transaction(senderAccount, transactionRequest);
+    const transactionResult = await webClient.new_transaction(
+      senderAccount,
+      transactionRequest
+    );
 
     try {
       // await webClient.submit_transaction(transactionResult);
       // await syncClient();
     } catch (error) {
-      console.log('Error in multi note submission',error);  
+      console.log("Error in multi note submission", error);
     }
-    
-    const outputNotes = transactionResult.created_notes().notes().map((note) => {
-      return note.id().to_string();
-    })
 
-    console.log('output note ids ==>', outputNotes)
+    const outputNotes = transactionResult
+      .created_notes()
+      .notes()
+      .map((note) => {
+        return note.id().to_string();
+      });
+
+    console.log("output note ids ==>", outputNotes);
     const noteDataLists = await _exportNotesArray(outputNotes);
     return noteDataLists;
-
   } catch (error) {
     console.error("Error creating multiple notes:", error);
     throw error;
@@ -351,19 +386,19 @@ const _exportNotesArray = async (outputNotes: string[]) => {
   for (const noteId of outputNotes) {
     try {
       const noteData = await webClient.export_note(noteId, "Full");
-      if(noteData) noteDataLists.push({ noteId, noteData });
+      if (noteData) noteDataLists.push({ noteId, noteData });
     } catch (error) {
       console.error(`Failed to fetch noteData for noteId: ${noteId}`, error);
       // noteDataLists.push({ noteId });
     }
   }
   return noteDataLists;
-}
+};
 
 /**
  * Download the note as a file
- * @param byteArray 
- * @param fileName 
+ * @param byteArray
+ * @param fileName
  */
 export const exportNote = (byteArray: any, fileName: string) => {
   const blob = new Blob([byteArray], { type: "application/octet-stream" });
@@ -460,7 +495,7 @@ const encodeFeltArrayToHex = (feltArray: { __wbg_ptr: number }[]) => {
 };
 
 const decodeHexToFeltArray = (hexString: {
-  match: (arg0: RegExp) => any[]; 
+  match: (arg0: RegExp) => any[];
   map: (arg0: (chunk: any) => { __wbg_ptr: number }) => any;
 }) => {
   // Split the hex string into chunks of 8 characters (32 bits each)
@@ -491,22 +526,27 @@ const decodeFromBase64 = (base64String: string) => {
   return Array.from(uintArray).map((value) => ({ __wbg_ptr: value }));
 };
 
-
 /***
  * API SECTION FROM HERE
  */
 
 function generateRandomString(length = 6) {
-  return Math.random().toString(36).substring(2, 2 + length);
+  return Math.random()
+    .toString(36)
+    .substring(2, 2 + length);
 }
 
-export const createCompanyAccountInBackend = async (accountId: string, userType: string, employerId: string="679f1ddb49e80051f944f1f7") => { 
+export const createCompanyAccountInBackend = async (
+  accountId: string,
+  userType: string,
+  employerId: string = "679f1ddb49e80051f944f1f7"
+) => {
   try {
     const randomSuffix = generateRandomString();
-  
-    if(userType === 'employer') {
-      const email = `co_${randomSuffix}@example.com`;  // Dynamic email
-      const username = `co_username_${randomSuffix}`;  // Dynamic username
+
+    if (userType === "employer") {
+      const email = `co_${randomSuffix}@example.com`; // Dynamic email
+      const username = `co_username_${randomSuffix}`; // Dynamic username
       const payload = {
         name: "Company XYZ",
         email,
@@ -514,15 +554,18 @@ export const createCompanyAccountInBackend = async (accountId: string, userType:
         userType: "employer",
         companyName: "Company XYZ Ltd.",
         username,
-        walletId: accountId
-      }
+        walletId: accountId,
+      };
 
-      const response = await axios.post(`${API_URL}/api/users/register`, payload);
+      const response = await axios.post(
+        `${API_URL}/api/users/register`,
+        payload
+      );
       return response.data.data;
-    } else if( userType === 'employee') {
-      const email = `em_${randomSuffix}@example.com`;  // Dynamic email
-      const username = `em_username_${randomSuffix}`;  // Dynamic username
-      
+    } else if (userType === "employee") {
+      const email = `em_${randomSuffix}@example.com`; // Dynamic email
+      const username = `em_username_${randomSuffix}`; // Dynamic username
+
       const response = await axios.post(`${API_URL}/api/users/register`, {
         name: "John Doe",
         email,
@@ -530,8 +573,8 @@ export const createCompanyAccountInBackend = async (accountId: string, userType:
         userType: "employee",
         username,
         walletId: accountId,
-        employerId: !employerId ? "679f1ddb49e80051f944f1f7" : employerId
-    });
+        employerId: !employerId ? "679f1ddb49e80051f944f1f7" : employerId,
+      });
 
       return response.data.data;
     }
@@ -539,23 +582,34 @@ export const createCompanyAccountInBackend = async (accountId: string, userType:
     console.error("Error creating account in backend:", error);
     throw error;
   }
-}
+};
 
 export const getExistingAccountFromBackend = async (accountId: string) => {
   try {
-    const response = await axios.post(`${API_URL}/api/users/profile-with-token`,{
-      walletId: accountId
-    });
+    const response = await axios.post(
+      `${API_URL}/api/users/profile-with-token`,
+      {
+        walletId: accountId,
+      }
+    );
     return response.data.data;
   } catch (error) {
     console.error("Error fetching account in backend:", error);
     throw error;
   }
-}
+};
 
-
-
-export const savePayrollNoteDataToBackend = (noteResults: { noteData: any; noteId: string,recipientId: string; filename: string; amount: any}[], sender: string, recipients: { username: string; amount: number }[]) => {
+export const savePayrollNoteDataToBackend = (
+  noteResults: {
+    noteData: any;
+    noteId: string;
+    recipientId: string;
+    filename: string;
+    amount: any;
+  }[],
+  sender: string,
+  recipients: { username: string; amount: number }[]
+) => {
   const randomSuffix = generateRandomString();
   const payrollName = `payroll_${randomSuffix}-${Date.now()}`;
   const payments = noteResults.map((noteData, index) => {
@@ -563,19 +617,47 @@ export const savePayrollNoteDataToBackend = (noteResults: { noteData: any; noteI
       noteId: noteData.noteId,
       noteData: noteData.noteData,
       employeeId: noteData.recipientId,
-      amount: noteData.amount
-    }
+      amount: noteData.amount,
+    };
   });
 
   const payload = { payrollName, payments };
   console.log("Payload", payload);
-  axios.post(`${API_URL}/api/payroll`, payload)
-    .then(response => {
+  axios
+    .post(`${API_URL}/api/payroll`, payload)
+    .then((response) => {
       console.log("Payroll response", response.data);
-    }
-  ).catch(error => {
-    console.error("Error creating payroll in backend:", error);
-    throw error;
-  });
+    })
+    .catch((error) => {
+      console.error("Error creating payroll in backend:", error);
+      throw error;
+    });
+};
 
-}
+export const getHistoryFromBackend = async (
+  historyType: string,
+  authToken: string
+) => {
+  try {
+    const _type = historyType === "Send" ? "sent" : "receive";
+
+    let config = {
+      method: "get",
+      maxBodyLength: Infinity,
+      url: `http://localhost:5001/api/notes/tx/${_type}`,
+      headers: {
+        Authorization: "Bearer " + authToken,
+      },
+    };
+
+    const response = await axios.request(config);
+    if (response.status === 200) {
+      return response.data;
+    } else {
+      throw new Error("Error fetching history from backend");
+    }
+  } catch (error) {
+    console.error("Error fetching history from backend:", error);
+    throw error;
+  }
+};
