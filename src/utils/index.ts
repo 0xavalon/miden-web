@@ -135,7 +135,10 @@ export const downloadNotesFromHash = async (item: any) => {
 };
 
 export const downloadNotesFromBackend = async (item: any) => {
-  exportNote(item.noteData,`${item.ownerId ? item.ownerId : item.noteId}_${item.amount}.mno`);
+  exportNote(
+    item.noteData,
+    `${item.ownerId ? item.ownerId : item.noteId}_${item.amount}.mno`
+  );
 };
 
 export const importNoteFiles = async (file: File): Promise<void> => {
@@ -667,6 +670,32 @@ export const getHistoryFromBackend = async (
     } else {
       throw new Error("Error fetching history from backend");
     }
+  } catch (error) {
+    console.error("Error fetching history from backend:", error);
+    throw error;
+  }
+};
+
+export const markNoteAsConsumed = async (
+  noteId: string,
+  authToken: string
+) => {
+  try {
+    const axios = require("axios");
+
+    let config = {
+      method: "put",
+      maxBodyLength: Infinity,
+      url: `${API_URL}/api/notes/${noteId}/consume`,
+      headers: {
+        Authorization:
+          "Bearer " + authToken,
+      },
+    };
+
+    const response = await axios.request(config);
+    console.log(response.data);
+    return response.data;
   } catch (error) {
     console.error("Error fetching history from backend:", error);
     throw error;
