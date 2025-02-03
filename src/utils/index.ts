@@ -267,6 +267,12 @@ export const consumeAvailableNotes = async (targetAccount: string) => {
         notelist
       );
       console.log("Tx Result: ", txResult);
+      // mark each note as consumed
+      for (let i = 0; i < notes.length; i++) {
+        const noteId = notes[i].input_note_record().id().to_string();
+        markNoteAsConsumed(noteId, targetAccount)
+      }
+
     } catch (error: any) {
       console.log("error cosuming notes", error);
     }
@@ -678,11 +684,10 @@ export const getHistoryFromBackend = async (
 
 export const markNoteAsConsumed = async (
   noteId: string,
-  authToken: string
+  targetAccount: string
 ) => {
   try {
-    const axios = require("axios");
-
+    const authToken = await getExistingAccountFromBackend(targetAccount);
     let config = {
       method: "put",
       maxBodyLength: Infinity,
