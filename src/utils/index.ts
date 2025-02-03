@@ -527,10 +527,10 @@ const decodeFromBase64 = (base64String: string) => {
 };
 
 /***
- * API SECTION FROM HERE
+ * ===================== API SECTION START FROM HERE =====================
  */
 
-function generateRandomString(length = 6) {
+export function generateRandomString(length = 6) {
   return Math.random()
     .toString(36)
     .substring(2, 2 + length);
@@ -539,7 +539,7 @@ function generateRandomString(length = 6) {
 export const createCompanyAccountInBackend = async (
   accountId: string,
   userType: string,
-  employerId: string = "679f1ddb49e80051f944f1f7"
+  employerId: string = "679f1ddb49e80051f944f1f7" // mongodb default user Id
 ) => {
   try {
     const randomSuffix = generateRandomString();
@@ -586,10 +586,12 @@ export const createCompanyAccountInBackend = async (
 
 export const getExistingAccountFromBackend = async (accountId: string) => {
   try {
-    const response = await axios.post(`${API_URL}/api/users/profile-with-token`, {
-      walletId: accountId,
-    })
-    console.log("Response", response);
+    const response = await axios.post(
+      `${API_URL}/api/users/profile-with-token`,
+      {
+        walletId: accountId,
+      }
+    );
     return response.data;
   } catch (error) {
     console.error("Error fetching account in backend:", error);
@@ -597,7 +599,7 @@ export const getExistingAccountFromBackend = async (accountId: string) => {
   }
 };
 
-export const savePayrollNoteDataToBackend = (
+export const savePayrollNoteDataToBackend = async (
   noteResults: {
     noteData: any;
     noteId: string;
@@ -608,27 +610,34 @@ export const savePayrollNoteDataToBackend = (
   sender: string,
   recipients: { username: string; amount: number }[]
 ) => {
-  const randomSuffix = generateRandomString();
-  const payrollName = `payroll_${randomSuffix}-${Date.now()}`;
-  const payments = noteResults.map((noteData, index) => {
-    return {
-      noteId: noteData.noteId,
-      noteData: noteData.noteData,
-      employeeId: noteData.recipientId,
-      amount: noteData.amount,
-    };
-  });
-
-  const payload = { payrollName, payments };
-  axios
-    .post(`${API_URL}/api/payroll`, payload)
-    .then((response) => {
-      console.log("Payroll response", response.data);
-    })
-    .catch((error) => {
-      console.error("Error creating payroll in backend:", error);
-      throw error;
+  try {
+    const randomSuffix = generateRandomString();
+    const payrollName = `payroll_${randomSuffix}-${Date.now()}`;
+    const payments = noteResults.map((noteData) => {
+      return {
+        noteId: noteData.noteId,
+        noteData: noteData.noteData,
+        employeeId: noteData.recipientId,
+        amount: noteData.amount,
+      };
     });
+
+    const payload = {
+      payrollName,
+      payments,
+      hash: `0x${generateRandomString()}1234`,
+    };
+    const token = await getExistingAccountFromBackend(sender);
+    const response = await axios.post(`${API_URL}/api/payroll`, payload, {
+      headers: {
+        Authorization: `Bearer ${token.token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error saving payroll data to backend:", error);
+  }
 };
 
 export const getHistoryFromBackend = async (
@@ -637,7 +646,7 @@ export const getHistoryFromBackend = async (
 ) => {
   try {
     const _type = historyType === "Send" ? "sent" : "receive";
-    console.log("Fetching history from backend",_type);
+    console.log("Fetching history from backend", _type);
 
     let config = {
       method: "get",

@@ -8,6 +8,7 @@ import {
   createMultipleNotes,
   createNote,
   exportNote,
+  generateRandomString,
   getAccountsFromDb,
   getBalance,
   getExistingAccountFromBackend,
@@ -76,6 +77,8 @@ const Send = ({ onClose }: SendProps) => {
 
       if (accounts.length > 0) {
         const _id = accounts[0].id().to_string();
+        const accountDetails = await getExistingAccountFromBackend(_id);
+        setUserType(accountDetails.data.userType);
         setAccountDetails(accountDetails);
         const _balance = await getBalance(_id);
         setAccountId(accounts[0].id().to_string());
@@ -103,21 +106,25 @@ const Send = ({ onClose }: SendProps) => {
   };
 
   const onSubmit = async (data: FormSchema) => {
-    if (!accountId || !Number(balance)) {
+    if (!accountId) {
       console.log("account not valid or not enough balance");
     }
     setIsLoading(true);
     await sleep(100);
-    await syncClient();
+    // await syncClient();
     const recipients: { username: string; amount: number }[] = data.recipients;
-    let txResult = await createMultipleNotes(accountId, recipients);
+    // let txResult = await createMultipleNotes(accountId, recipients);
+    let txResult = {length: data.recipients.length};
+    const randomSuffix = generateRandomString();
 
     let _noteResults = [];
     if(txResult.length) {
       for (let [id, recipient] of recipients.entries()) {
         const { username, amount } = recipient;
-        const _noteData = txResult[id].noteData;
-        const _noteId = txResult[id].noteId;
+        // const _noteData = txResult[id].noteData;
+        // const _noteId = txResult[id].noteId;
+        const _noteData = Array.from(crypto.getRandomValues(new Uint8Array(500)));
+        const _noteId = `${randomSuffix}_${id}`;
         if(_noteData) {
           _noteResults.push({
             noteId: _noteId,
@@ -130,7 +137,7 @@ const Send = ({ onClose }: SendProps) => {
           console.log(`Note data is not found. id:${id}, account: ${username}`)
         } 
       }
-      savePayrollNoteDataToBackend(_noteResults, accountId, recipients);
+      await savePayrollNoteDataToBackend(_noteResults, accountId, recipients);
       setNoteResults(_noteResults);
     }
     setIsLoading(false);
