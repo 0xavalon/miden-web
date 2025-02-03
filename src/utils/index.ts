@@ -135,7 +135,7 @@ export const downloadNotesFromHash = async (item: any) => {
 };
 
 export const downloadNotesFromBackend = async (item: any) => {
-  exportNote(item.noteData,`${item.noteId}.mno`);
+  exportNote(item.noteData,`${item.ownerId ? item.ownerId : item.noteId}_${item.amount}.mno`);
 };
 
 export const importNoteFiles = async (file: File): Promise<void> => {

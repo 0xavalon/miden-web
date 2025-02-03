@@ -26,6 +26,7 @@ interface HistoryItem {
   noteData: Uint8Array,
   recipients: number;
   amount: string;
+  ownerId: string;
   type: "Send" | "Receive"; // Add a type field to distinguish between send and receive
 }
 
@@ -56,6 +57,7 @@ const History = () => {
           hash: `${item._id.slice(0, 3)}...${item._id.slice(-3)}`,
           recipients: 1, // set this for count of notes
           amount: item.amount,
+          ownerId: item.ownerId?.walletId,
           type: activeTab === 'Send' ? 'Send' : 'Receive'
         });
       });
