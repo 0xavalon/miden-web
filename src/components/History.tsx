@@ -47,7 +47,6 @@ const History = () => {
     try{
       const {token} = await getExistingAccountFromBackend(userAccountId);
       const { data: _histories } = await getHistoryFromBackend(activeTab, token);
-      console.log(_histories);
       const historyBackend: HistoryItem[] = [];
       _histories.forEach((item: any) => {
         historyBackend.push({
