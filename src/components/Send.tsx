@@ -81,6 +81,7 @@ const Send = ({ onClose }: SendProps) => {
         setUserType(accountDetails.data.userType);
         setAccountDetails(accountDetails);
         const _balance = await getBalance(_id);
+        setBalance(_balance || "");
         setAccountId(accounts[0].id().to_string());
         setBalance(_balance || "");
       }
@@ -92,7 +93,7 @@ const Send = ({ onClose }: SendProps) => {
   // Use useEffect to check for existing accounts when the component mounts
   useEffect(() => {
     getExistingAccounts();
-  }, []);
+  }, [balance]);
 
   const downloadFile = (fileName: string, result: any) => {
     const byteArray = new Uint8Array(result);

@@ -48,6 +48,7 @@ const Tabs = () => {
   const [selectedAccountBalance, setSelectedAccountBalance] = useState("0");
   const [isAccountCreated, setIsAccountCreated] = useState<boolean>(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [accountBalance, setAccountBalance] = useState<string>("");
   const [importStatus, setImportStatus] = useState<
     "idle" | "importing" | "success" | "error"
   >("idle");
@@ -68,6 +69,7 @@ const Tabs = () => {
       console.log(error);
     }
     const _balance = await getBalance(_id);
+    setAccountBalance(_balance || "");
     setSelectedAccountBalance(_balance || "");
     setAccount(_account);
     setUserName(_id);
@@ -174,7 +176,7 @@ const Tabs = () => {
 
   useEffect(() => {
     getExistingAccounts();
-  }, []);
+  }, [accountBalance]);
 
   return (
     // <div className="flex flex-col items-center justify-center min-h-screen bg-purple-100 p-4">

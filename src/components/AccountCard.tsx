@@ -6,7 +6,6 @@ import CopyToClipboard from "./CopyToClipboard";
 
 // images
 import bg from "../assets/images/purple-bg.png";
-import { FilePlus } from "lucide-react";
 
 interface AccountCardProps {
   username: string;
@@ -160,8 +159,8 @@ const AccountCard = ({
           />
 
           <div className="mt-2 ml-2 text-[#151515] opacity-60 text font-semibold">
-          <Icons.addCustomAsset
-            onClick={() => {}}
+          <Icons.deployNewAsset
+            onClick={console.log}
             size={20}
           />
           </div>
