@@ -5,6 +5,7 @@ import * as z from "zod";
 import { Icons } from "./icons";
 import teamwork from "../assets/images/teamwork.png";
 import {
+  checkForNonFaucetAccount,
   createMultipleNotes,
   createNote,
   exportNote,
@@ -71,28 +72,29 @@ const Send = ({ onClose }: SendProps) => {
     };
   };
 
-  const getExistingAccounts = async () => {
-    try {
-      const accounts = await getAccountsFromDb();
+  // const getExistingAccounts = async () => {
+  //   try {
+  //     const accounts = await getAccountsFromDb();
 
-      if (accounts.length > 0) {
-        const _id = accounts[0].id().to_string();
-        const accountDetails = await getExistingAccountFromBackend(_id);
-        setUserType(accountDetails.data.userType);
-        setAccountDetails(accountDetails);
-        const _balance = await getBalance(_id);
-        setBalance(_balance || "");
-        setAccountId(accounts[0].id().to_string());
-        setBalance(_balance || "");
-      }
-    } catch (error: any) {
-      console.error("Error fetching existing accounts:", error.message);
-    }
-  };
+  //     if (accounts.length > 0) {
+  //       let _id = "";
+  //       _id = await checkForNonFaucetAccount();
+  //       // const accountDetails = await getExistingAccountFromBackend(_id);
+  //       // setUserType(accountDetails.data.userType);
+  //       // setAccountDetails(accountDetails);
+  //       const _balance = await getBalance(_id);
+  //       setBalance(_balance || "");
+  //       setAccountId(accounts[0].id().to_string());
+  //       setBalance(_balance || "");
+  //     }
+  //   } catch (error: any) {
+  //     console.error("Error fetching existing accounts:", error.message);
+  //   }
+  // };
 
   // Use useEffect to check for existing accounts when the component mounts
   useEffect(() => {
-    getExistingAccounts();
+    // getExistingAccounts();
   }, [balance]);
 
   const downloadFile = (fileName: string, result: any) => {

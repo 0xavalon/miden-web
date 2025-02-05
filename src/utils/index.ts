@@ -59,7 +59,7 @@ export const getAccountsFromDb = async () => {
   return _accounts;
 };
 
-export const checkForFaucetAccount = async () => {
+export const checkForFaucetAccount = async (setActiveFaucet: React.Dispatch<React.SetStateAction<string>>) => {
   const _allAccounts = await getAccountsFromDb();
   let _faucetAccount = null;
   for (const account of _allAccounts) {
@@ -67,6 +67,8 @@ export const checkForFaucetAccount = async () => {
     const _accountDetails = await getAccountDetails(AccountId.from_hex(_id));
 
     if (_accountDetails?.is_faucet()) {
+      setActiveFaucet(_id);
+      console.log('first faucet account',_id);
       return _accountDetails;
     }
   }
@@ -77,7 +79,26 @@ export const checkForFaucetAccount = async () => {
   return null;
 };
 
-export const createNewFaucetAccount = async () => {
+export const checkForNonFaucetAccount = async () => {
+  const _allAccounts = await getAccountsFromDb();
+  let _faucetAccount = null;
+  for (const account of _allAccounts) {
+    const _id = account.id().to_string();
+    const _accountDetails = await getAccountDetails(AccountId.from_hex(_id));
+
+    if (!_accountDetails?.is_faucet()) {
+      console.log("First user account",_accountDetails);
+      return _id;
+    }
+  }
+
+  if (_faucetAccount) {
+    return _faucetAccount;
+  }
+  return "";
+};
+
+export const createNewFaucetAccount = async (setActiveFaucet: React.Dispatch<React.SetStateAction<string>>) => {
   await syncClient();
   const faucetId = await webClient.new_faucet(
     AccountStorageMode.private(),
@@ -86,7 +107,11 @@ export const createNewFaucetAccount = async () => {
     6,
     BigInt(1_000_000_000)
   );
-  return faucetId;
+  const faucetIdHex = faucetId.id().to_string();
+  setActiveFaucet(faucetIdHex);
+  await webClient.fetch_and_cache_account_auth_by_pub_key(AccountId.from_hex(faucetIdHex));
+  const accountDetails = await webClient.get_account(AccountId.from_hex(faucetIdHex));
+  return accountDetails;
 };
 
 export const mintFaucetAccount = async (

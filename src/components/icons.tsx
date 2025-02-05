@@ -38,7 +38,7 @@ export const Icons = {
   ),
   addDefaultAsset: CircleArrowOutDownLeft,
   addCustomAsset: CircleFadingPlus,
-  deployNewAsset: RefreshCcwDot,
+  findAvailableAsset: RefreshCcwDot,
   import: ({
     className,
     width,

@@ -13,6 +13,7 @@ import History from "./History";
 // utils
 import {
   checkForFaucetAccount,
+  checkForNonFaucetAccount,
   consumeAvailableNotes,
   createAccount,
   createCompanyAccountInBackend,
@@ -54,6 +55,10 @@ const Tabs = () => {
   >("idle");
   const [showSend, setShowSend] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [activeFaucet, setActiveFaucet] = useState(
+    "No faucet Account Found"
+  ); // Dummy faucet address
+
 
   const handleCreateAccount = async (): Promise<void> => {
     setIsLoading(true);
@@ -136,33 +141,14 @@ const Tabs = () => {
   const getExistingAccounts = async () => {
     try {
       setIsLoading(true);
-      await sleep(1000);
-      const accounts = await getAccountsFromDb();
-
-      if (accounts.length > 0) {
-        const _id = accounts[0].id().to_string();
-        try {
-          // const accountDetails = await getExistingAccountFromBackend(_id);
-          setAccountDetails(accountDetails);
-        } catch(error: any) {
-          console.error("Error fetching account details:", error.message);
-        }
-
-        try {
-          const _faucet = await checkForFaucetAccount();
-          if(_faucet) {
-            setFaucet(_faucet);
-          }
-        } catch (error) {
-          console.error("Error creating new faucet account:", error);
-        }
-
-        const _balance = await getBalance(_id);
+      await sleep(100);
+      const _id = await checkForNonFaucetAccount();
+    
+      if (_id) {
         setIsAccountCreated(true);
-        setAccount(accounts[0] as unknown as Account);
-        setUserName(_id);
-        setSelectedAccountBalance(_balance || "");
         setUserAccountId(_id);
+        const _balance = await getBalance(userAccountId);
+        setSelectedAccountBalance(_balance || "");
         setIsLoading(false);
       } else {
         setIsLoading(false);
@@ -177,6 +163,11 @@ const Tabs = () => {
   useEffect(() => {
     getExistingAccounts();
   }, [accountBalance]);
+
+
+  useEffect(() => {
+    checkForFaucetAccount(setActiveFaucet);
+  }, [activeFaucet]);
 
   return (
     // <div className="flex flex-col items-center justify-center min-h-screen bg-purple-100 p-4">
@@ -224,6 +215,8 @@ const Tabs = () => {
             onImportClick={handleImportClick}
             onSendClick={handleSendClick}
             walletId = {userAccountId}
+            currentFaucet = {activeFaucet}
+            setActiveFaucet={setActiveFaucet}
           />
 
           {selectedFile ? (

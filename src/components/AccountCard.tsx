@@ -6,6 +6,8 @@ import CopyToClipboard from "./CopyToClipboard";
 
 // images
 import bg from "../assets/images/purple-bg.png";
+import GenerateNewFaucet from "./GenerateNewFaucet";
+import FindAvailableFaucet from "./FindAvailableFaucet";
 
 interface AccountCardProps {
   username: string;
@@ -15,6 +17,8 @@ interface AccountCardProps {
   onImportClick: () => void;
   onSendClick: () => void;
   walletId: string;
+  currentFaucet: string;
+  setActiveFaucet: React.Dispatch<React.SetStateAction<string>>
 }
 
 const AccountCard = ({
@@ -25,13 +29,12 @@ const AccountCard = ({
   onImportClick,
   onSendClick,
   walletId,
+  currentFaucet,
+  setActiveFaucet,
 }: AccountCardProps) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const downloadRef = useRef<HTMLAnchorElement | null>(null);
-  const [activeFaucet, setActiveFaucet] = useState(
-    "0xdad295168a6bb0200000b98e42853a"
-  ); // Dummy faucet address
 
   const toggleTooltip = () => setShowTooltip((prev) => !prev);
 
@@ -102,7 +105,7 @@ const AccountCard = ({
       <div className="flex items-center justify-between px-4 pt-4">
         <div className="bg-yellow-200 p-4 rounded-full flex items-center">
           <CopyToClipboard
-            textToCopy={username}
+            textToCopy={walletId}
             textClassName="text-[#151515] text-base font-semibold leading-6"
           />
         </div>
@@ -115,14 +118,6 @@ const AccountCard = ({
               Export Acc
             </span>
           </button> */}
-          <div className="flex justify-between px-2 pb-2">
-            <button
-              onClick={() => {}}
-              className="flex items-center justify-center px-2 py-2 bg-white border rounded-full shadow"
-            >
-              <Icons.addCustomAsset />
-            </button>
-          </div>
 
           {/* Tooltip */}
           {showTooltip && (
@@ -152,18 +147,21 @@ const AccountCard = ({
         <h1 className="mt-4 text-4xl font-bold text-black">{balance} Miden</h1>
         <div className="flex items-center mt-2">
           <CopyToClipboard
-            textToCopy={activeFaucet}
-            displayText={activeFaucet}
+            textToCopy={currentFaucet}
+            displayText={currentFaucet}
             className="mt-2"
             textClassName="text font-semibold leading-[16px] text-[#151515] opacity-60"
           />
 
-          <div className="mt-2 ml-2 text-[#151515] opacity-60 text font-semibold">
-          <Icons.deployNewAsset
-            onClick={console.log}
-            size={20}
+          <GenerateNewFaucet
+            className="mt-2 ml-2 text-[#151515] opacity-60 text font-semibold"
+            setActiveFaucet={setActiveFaucet}
           />
-          </div>
+
+          <FindAvailableFaucet
+            className="mt-2 ml-2 text-[#151515] opacity-60 text font-semibold"
+            setActiveFaucet={setActiveFaucet}
+          />
         </div>
       </div>
       <div className="flex justify-between gap-4 mt-6 px-8 pb-8">
