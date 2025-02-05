@@ -15,7 +15,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@demox-labs/miden-sdk": "^0.0.20",
+    "@demox-labs/miden-sdk": "^0.6.1-next.4",
     "@hookform/resolvers": "^3.9.1",
     "axios": "^1.7.9",
     "lucide-react": "^0.465.0",

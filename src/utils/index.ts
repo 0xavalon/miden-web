@@ -8,7 +8,6 @@ import {
   NoteType,
   NoteTag,
   Note,
-  Felt,
   NoteFilter,
   NoteFilterTypes,
   NoteAssets,
@@ -18,15 +17,17 @@ import {
   NoteExecutionMode,
   TransactionFilter,
   NoteMetadata,
-  TransactionRequest,
   OutputNote,
   OutputNotesArray,
+  TransactionRequestBuilder, 
+  Word 
 } from "@demox-labs/miden-sdk";
 
 import { standard_p2id_scripts } from "./srcipts/p2id";
 import axios from "axios";
 
 const webClient = new WebClient();
+const nodeEndpoint = "http://localhost:57291";
 const API_URL = `http://localhost:5001`;
 
 export const sleep = (ms: number) =>
@@ -48,7 +49,7 @@ const _getAccountId = (accountId: any) => {
 
 export const createClient = async () => {
   await sleep(100);
-  await webClient.create_client();
+  await webClient.create_client(nodeEndpoint);
 };
 
 export const getAccountsFromDb = async () => {
@@ -76,35 +77,37 @@ export const checkForFaucetAccount = async () => {
 };
 
 export const createNewFaucetAccount = async () => {
+  await syncClient();
   const faucetId = await webClient.new_faucet(
     AccountStorageMode.private(),
     false,
-    "TOK",
+    "MIDEN",
     6,
-    BigInt(1000000000)
+    BigInt(1_000_000_000)
   );
   return faucetId;
 };
 
-export const mintFaucteAccount = async (
+export const mintFaucetAccount = async (
   accountId: string,
   faucetId: string,
   amount: any
 ) => {
   let _accountId = _getAccountId(accountId);
   let _faucetId = _getAccountId(faucetId);
-  await sleep(10000);
+  await syncClient();
   await webClient.new_mint_transaction(
     _accountId,
     _faucetId,
     NoteType.private(),
     BigInt(amount)
   );
+
 };
 
 export const getBalance = async (
   accountId: string,
-  faucetAccountId: string = "0x29b86f9443ad907a"
+  faucetAccountId: string = "0x599a54603f0cf9000000ed7a11e379"
 ) => {
   let _accountId = _getAccountId(accountId);
   const faucetAccount = AccountId.from_hex(faucetAccountId);
@@ -232,6 +235,7 @@ export const syncClient = async () => {
   try {
     console.log("Attempting to sync the client ...", new Date());
     await sleep(20000);
+    await webClient.create_client(nodeEndpoint);
     await webClient.sync_state();
     console.log("syncing done ...", new Date());
   } catch (error: any) {
@@ -352,16 +356,21 @@ export const createMultipleNotes = async (
       );
 
       const noteInputs = new NoteInputs(
-        new FeltArray([AccountId.from_hex(recipient.username).to_felt()])
+        new FeltArray([AccountId.from_hex(recipient.username).prefix(),AccountId.from_hex(recipient.username).suffix()]),
       );
-      const noteRecipient = new NoteRecipient(compiledNoteScript, noteInputs);
+
+      const serialNum = Word.new_from_u64s(
+        new BigUint64Array([BigInt(1), BigInt(2), BigInt(3), BigInt(4)])
+      );
+
+      const noteRecipient = new NoteRecipient(serialNum ,compiledNoteScript, noteInputs);
       const note = new Note(noteAssets, noteMetadata, noteRecipient);
       ownOutputNotes.append(OutputNote.full(note));
     }
 
-    const transactionRequest = new TransactionRequest().with_own_output_notes(
+    const transactionRequest = new TransactionRequestBuilder().with_own_output_notes(
       ownOutputNotes
-    );
+    ).build();
 
     await webClient.fetch_and_cache_account_auth_by_pub_key(senderAccount);
     const transactionResult = await webClient.new_transaction(
@@ -480,8 +489,8 @@ export const _getKeys = async (accountId: AccountId) => {
   console.log("Auth", getAccountAuth);
 
   const _keys = {
-    publicKey: result.get_rpo_falcon_512_public_key_as_word(),
-    secretKey: result.get_rpo_falcon_512_secret_key_as_felts(),
+    // publicKey: result.get_rpo_falcon_512_public_key_as_word(),
+    // secretKey: result.get_rpo_falcon_512_secret_key_as_felts(),
   };
 
   // const recoverAccounts = await webClient.import_account(_keys.secretKey);
@@ -494,8 +503,8 @@ export const recoverSecretKey = async (recoverAccountId: string) => {
   console.log(`Recover account id: ${recoverAccountId}`);
   let accountId = AccountId.from_hex(recoverAccountId);
   const _accountDetails = await webClient.get_account(accountId);
-  const keys = await _getKeys(_accountDetails.id());
-  return keys;
+  // const keys = await _getKeys(_accountDetails.id());
+  // return keys;
 };
 
 const encodeFeltArrayToHex = (feltArray: { __wbg_ptr: number }[]) => {
