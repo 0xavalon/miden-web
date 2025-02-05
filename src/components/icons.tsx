@@ -4,6 +4,8 @@ import {
   LucideIcon,
   LucideProps,
   X,
+  CircleArrowOutDownLeft,
+  CircleFadingPlus,
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -33,6 +35,8 @@ export const Icons = {
       />
     </svg>
   ),
+  addDefaultAsset: CircleArrowOutDownLeft,
+  addCustomAsset: CircleFadingPlus,
   import: ({
     className,
     width,

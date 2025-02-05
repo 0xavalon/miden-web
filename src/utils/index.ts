@@ -29,6 +29,7 @@ import axios from "axios";
 const webClient = new WebClient();
 const nodeEndpoint = "http://localhost:57291";
 const API_URL = `http://localhost:5001`;
+let activeFaucet = "0xdad295168a6bb0200000b98e42853a";
 
 export const sleep = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
@@ -107,7 +108,7 @@ export const mintFaucetAccount = async (
 
 export const getBalance = async (
   accountId: string,
-  faucetAccountId: string = "0x599a54603f0cf9000000ed7a11e379"
+  faucetAccountId: string = activeFaucet
 ) => {
   let _accountId = _getAccountId(accountId);
   const faucetAccount = AccountId.from_hex(faucetAccountId);
@@ -289,7 +290,7 @@ export const createNote = async (
   sender: string,
   receiver: string,
   amountToSend: string,
-  assetId: string = "0x29b86f9443ad907a"
+  assetId: string = activeFaucet
 ) => {
   try {
     await webClient.fetch_and_cache_account_auth_by_pub_key(
@@ -324,7 +325,7 @@ export const createNote = async (
 export const createMultipleNotes = async (
   sender: any, // Sender account ID
   recipients: { username: string; amount: number }[], // List of recipients with account ID and amount
-  assetId: any = "0x29b86f9443ad907a" // Default faucet ID
+  assetId: any = activeFaucet // Default faucet ID
 ) => {
   try {
     const ownOutputNotes = new OutputNotesArray();

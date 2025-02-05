@@ -30,6 +30,9 @@ const AccountCard = ({
   const [showTooltip, setShowTooltip] = useState(false);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const downloadRef = useRef<HTMLAnchorElement | null>(null);
+  const [activeFaucet, setActiveFaucet] = useState(
+    "0xdad295168a6bb0200000b98e42853a"
+  ); // Dummy faucet address
 
   const toggleTooltip = () => setShowTooltip((prev) => !prev);
 
@@ -105,14 +108,22 @@ const AccountCard = ({
           />
         </div>
         <div className="relative" ref={tooltipRef}>
-          <button
+          {/* <button
             onClick={handleDownload}
             className="bg-[#0b3ceb] px-6 py-4 rounded-[64px]"
           >
             <span className="text-white text-base font-semibold font-inter leading-6">
               Export Acc
             </span>
-          </button>
+          </button> */}
+          <div className="flex justify-between px-2 pb-2">
+            <button
+              onClick={() => {}}
+              className="flex items-center justify-center px-2 py-2 bg-white border rounded-full shadow"
+            >
+              <Icons.addCustomAsset />
+            </button>
+          </div>
 
           {/* Tooltip */}
           {showTooltip && (
@@ -142,14 +153,18 @@ const AccountCard = ({
         <h1 className="mt-4 text-4xl font-bold text-black">{balance} Miden</h1>
         <div className="flex items-center mt-2">
           <CopyToClipboard
-            textToCopy="0x29b86f9443ad907a"
-            displayText="0x29b86f9443ad907a"
+            textToCopy={activeFaucet}
+            displayText={activeFaucet}
             className="mt-2"
-            textClassName="text-xl font-semibold leading-[16px] text-[#151515] opacity-60"
+            textClassName="text font-semibold leading-[16px] text-[#151515] opacity-60"
           />
-          {/* <Icons.import 
-            onClick={handleAddClick}
-          /> */}
+
+          <div className="mt-2 ml-2 text-[#151515] opacity-60 text font-semibold">
+          <Icons.addCustomAsset
+            onClick={() => {}}
+            size={20}
+          />
+          </div>
         </div>
       </div>
       <div className="flex justify-between gap-4 mt-6 px-8 pb-8">
