@@ -19,8 +19,8 @@ import {
   NoteMetadata,
   OutputNote,
   OutputNotesArray,
-  TransactionRequestBuilder, 
-  Word 
+  TransactionRequestBuilder,
+  Word,
 } from "@demox-labs/miden-sdk";
 
 import { standard_p2id_scripts } from "./srcipts/p2id";
@@ -59,7 +59,9 @@ export const getAccountsFromDb = async () => {
   return _accounts;
 };
 
-export const checkForFaucetAccount = async (setActiveFaucet: React.Dispatch<React.SetStateAction<string>>) => {
+export const checkForFaucetAccount = async (
+  setActiveFaucet: React.Dispatch<React.SetStateAction<string>>
+) => {
   const _allAccounts = await getAccountsFromDb();
   let _faucetAccount = null;
   for (const account of _allAccounts) {
@@ -68,7 +70,6 @@ export const checkForFaucetAccount = async (setActiveFaucet: React.Dispatch<Reac
 
     if (_accountDetails?.is_faucet()) {
       setActiveFaucet(_id);
-      console.log('first faucet account',_id);
       return _accountDetails;
     }
   }
@@ -87,7 +88,6 @@ export const checkForNonFaucetAccount = async () => {
     const _accountDetails = await getAccountDetails(AccountId.from_hex(_id));
 
     if (!_accountDetails?.is_faucet()) {
-      console.log("First user account",_accountDetails);
       return _id;
     }
   }
@@ -98,7 +98,9 @@ export const checkForNonFaucetAccount = async () => {
   return "";
 };
 
-export const createNewFaucetAccount = async (setActiveFaucet: React.Dispatch<React.SetStateAction<string>>) => {
+export const createNewFaucetAccount = async (
+  setActiveFaucet: React.Dispatch<React.SetStateAction<string>>
+) => {
   await syncClient();
   const faucetId = await webClient.new_faucet(
     AccountStorageMode.private(),
@@ -109,8 +111,12 @@ export const createNewFaucetAccount = async (setActiveFaucet: React.Dispatch<Rea
   );
   const faucetIdHex = faucetId.id().to_string();
   setActiveFaucet(faucetIdHex);
-  await webClient.fetch_and_cache_account_auth_by_pub_key(AccountId.from_hex(faucetIdHex));
-  const accountDetails = await webClient.get_account(AccountId.from_hex(faucetIdHex));
+  await webClient.fetch_and_cache_account_auth_by_pub_key(
+    AccountId.from_hex(faucetIdHex)
+  );
+  const accountDetails = await webClient.get_account(
+    AccountId.from_hex(faucetIdHex)
+  );
   return accountDetails;
 };
 
@@ -119,26 +125,55 @@ export const mintFaucetAccount = async (
   faucetId: string,
   amount: any
 ) => {
-  let _accountId = _getAccountId(accountId);
-  let _faucetId = _getAccountId(faucetId);
-  await syncClient();
-  await webClient.new_mint_transaction(
-    _accountId,
-    _faucetId,
-    NoteType.private(),
-    BigInt(amount)
-  );
+  try {
+    if(!accountId || faucetId === '') return;
+    console.log('==============', accountId, faucetId, amount);
+    await syncClient();
 
+    console.log('minting asset');
+    await webClient.fetch_and_cache_account_auth_by_pub_key(AccountId.from_hex(accountId));
+    await webClient.fetch_and_cache_account_auth_by_pub_key(AccountId.from_hex(faucetId));
+    await webClient.new_mint_transaction(
+      AccountId.from_hex(accountId),
+      AccountId.from_hex(faucetId),
+      NoteType.private(),
+      BigInt(amount)
+    );
+    await syncClient();
+
+    try {
+      // 6. Fetch minted notes
+      const mintedNotes = await webClient.get_consumable_notes(AccountId.from_hex(accountId));
+      const mintedNoteIds = mintedNotes.map((n) =>
+        n.input_note_record().id().to_string()
+      );
+      console.log("Minted note IDs:", mintedNoteIds);
+
+      // 7. Consume minted notes
+      console.log("Consuming minted notes...");
+      await webClient.new_consume_transaction(AccountId.from_hex(accountId), mintedNoteIds);
+      await syncClient();
+      console.log("Notes consumed.");
+    } catch (error) {
+      console.log("errror", error);
+    }
+  } catch (error) {
+    console.log("error in minting asset", error);
+  }
 };
 
 export const getBalance = async (
   accountId: string,
   faucetAccountId: string = activeFaucet
 ) => {
-  let _accountId = _getAccountId(accountId);
+  // if(!accountId || faucetAccountId === '' ) return;
+  accountId = '0x259f748d838b8b9000005f6a19e1f6';
+  faucetAccountId = '0x1013c8ecace59aa000007419048089';
+  let _accountId = AccountId.from_hex('0x259f748d838b8b9000005f6a19e1f6');
   const faucetAccount = AccountId.from_hex(faucetAccountId);
   let _account = await getAccountDetails(_accountId);
   let _balance = _account?.vault().get_balance(faucetAccount);
+  console.log('balance',accountId, _balance, faucetAccountId);
   return _balance?.toString();
 };
 
@@ -300,9 +335,8 @@ export const consumeAvailableNotes = async (targetAccount: string) => {
       // mark each note as consumed
       for (let i = 0; i < notes.length; i++) {
         const noteId = notes[i].input_note_record().id().to_string();
-        markNoteAsConsumed(noteId, targetAccount)
+        markNoteAsConsumed(noteId, targetAccount);
       }
-
     } catch (error: any) {
       console.log("error cosuming notes", error);
     }
@@ -382,21 +416,28 @@ export const createMultipleNotes = async (
       );
 
       const noteInputs = new NoteInputs(
-        new FeltArray([AccountId.from_hex(recipient.username).prefix(),AccountId.from_hex(recipient.username).suffix()]),
+        new FeltArray([
+          AccountId.from_hex(recipient.username).prefix(),
+          AccountId.from_hex(recipient.username).suffix(),
+        ])
       );
 
       const serialNum = Word.new_from_u64s(
         new BigUint64Array([BigInt(1), BigInt(2), BigInt(3), BigInt(4)])
       );
 
-      const noteRecipient = new NoteRecipient(serialNum ,compiledNoteScript, noteInputs);
+      const noteRecipient = new NoteRecipient(
+        serialNum,
+        compiledNoteScript,
+        noteInputs
+      );
       const note = new Note(noteAssets, noteMetadata, noteRecipient);
       ownOutputNotes.append(OutputNote.full(note));
     }
 
-    const transactionRequest = new TransactionRequestBuilder().with_own_output_notes(
-      ownOutputNotes
-    ).build();
+    const transactionRequest = new TransactionRequestBuilder()
+      .with_own_output_notes(ownOutputNotes)
+      .build();
 
     await webClient.fetch_and_cache_account_auth_by_pub_key(senderAccount);
     const transactionResult = await webClient.new_transaction(
@@ -728,8 +769,7 @@ export const markNoteAsConsumed = async (
       maxBodyLength: Infinity,
       url: `${API_URL}/api/notes/${noteId}/consume`,
       headers: {
-        Authorization:
-          "Bearer " + authToken,
+        Authorization: "Bearer " + authToken,
       },
     };
 

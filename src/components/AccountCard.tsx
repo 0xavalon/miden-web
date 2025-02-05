@@ -8,6 +8,7 @@ import CopyToClipboard from "./CopyToClipboard";
 import bg from "../assets/images/purple-bg.png";
 import GenerateNewFaucet from "./GenerateNewFaucet";
 import FindAvailableFaucet from "./FindAvailableFaucet";
+import { mintFaucetAccount } from "../utils";
 
 interface AccountCardProps {
   username: string;
@@ -181,6 +182,15 @@ const AccountCard = ({
           <Icons.send />
           <span className="text-[#151515] text-base font-semibold font-inter leading-normal ml-2">
             Send
+          </span>
+        </button>
+        <button
+          onClick={() => mintFaucetAccount(walletId, currentFaucet, 100)}
+          className="flex items-center justify-center w-[174px] px-4 py-4 bg-white border rounded-full shadow"
+        >
+          <Icons.send />
+          <span className="text-[#151515] text-base font-semibold font-inter leading-normal ml-2">
+            Add Faucet
           </span>
         </button>
       </div>

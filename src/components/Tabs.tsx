@@ -22,6 +22,7 @@ import {
   getBalance,
   getExistingAccountFromBackend,
   importNoteFiles,
+  mintFaucetAccount,
   sleep,
   syncClient,
 } from "../utils";
@@ -55,9 +56,7 @@ const Tabs = () => {
   >("idle");
   const [showSend, setShowSend] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [activeFaucet, setActiveFaucet] = useState(
-    "No faucet Account Found"
-  ); // Dummy faucet address
+  const [activeFaucet, setActiveFaucet] = useState(""); // Dummy faucet address
 
 
   const handleCreateAccount = async (): Promise<void> => {
@@ -147,8 +146,8 @@ const Tabs = () => {
       if (_id) {
         setIsAccountCreated(true);
         setUserAccountId(_id);
-        const _balance = await getBalance(userAccountId);
-        setSelectedAccountBalance(_balance || "");
+        const _balance = await getBalance(userAccountId, activeFaucet);
+        setAccountBalance(_balance || "");
         setIsLoading(false);
       } else {
         setIsLoading(false);
