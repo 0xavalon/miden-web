@@ -123,7 +123,7 @@ export const createNewFaucetAccount = async (
 export const mintFaucetAccount = async (
   accountId: string,
   faucetId: string,
-  amount: any
+  amount: any,
 ) => {
   try {
     if(!accountId || faucetId === '') return;
@@ -142,34 +142,34 @@ export const mintFaucetAccount = async (
     await syncClient();
 
     try {
-      // 6. Fetch minted notes
       const mintedNotes = await webClient.get_consumable_notes(AccountId.from_hex(accountId));
       const mintedNoteIds = mintedNotes.map((n) =>
         n.input_note_record().id().to_string()
       );
       console.log("Minted note IDs:", mintedNoteIds);
 
-      // 7. Consume minted notes
       console.log("Consuming minted notes...");
       await webClient.new_consume_transaction(AccountId.from_hex(accountId), mintedNoteIds);
       await syncClient();
       console.log("Notes consumed.");
+      return true;
     } catch (error) {
       console.log("errror", error);
     }
   } catch (error) {
     console.log("error in minting asset", error);
+    return false;
   }
+  return false;
 };
 
 export const getBalance = async (
   accountId: string,
   faucetAccountId: string = activeFaucet
 ) => {
-  // if(!accountId || faucetAccountId === '' ) return;
-  accountId = '0x259f748d838b8b9000005f6a19e1f6';
-  faucetAccountId = '0x1013c8ecace59aa000007419048089';
-  let _accountId = AccountId.from_hex('0x259f748d838b8b9000005f6a19e1f6');
+  if(!accountId || faucetAccountId === '' ) return;
+  console.log('======>>>>>>>>>>', accountId, faucetAccountId);
+  let _accountId = AccountId.from_hex(accountId);
   const faucetAccount = AccountId.from_hex(faucetAccountId);
   let _account = await getAccountDetails(_accountId);
   let _balance = _account?.vault().get_balance(faucetAccount);
@@ -206,7 +206,6 @@ export const downloadNotesFromBackend = async (item: any) => {
 };
 
 export const importNoteFiles = async (file: File): Promise<void> => {
-  // const file = event.target.files?.[0]; // Check if a file is selected
   if (file) {
     const reader = new FileReader();
 

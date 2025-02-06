@@ -146,8 +146,6 @@ const Tabs = () => {
       if (_id) {
         setIsAccountCreated(true);
         setUserAccountId(_id);
-        const _balance = await getBalance(userAccountId, activeFaucet);
-        setAccountBalance(_balance || "");
         setIsLoading(false);
       } else {
         setIsLoading(false);
@@ -157,12 +155,22 @@ const Tabs = () => {
     }
   };
 
+  const updateAccountBalance = async () => {
+    if (userAccountId && activeFaucet !== '') {
+      const _balance = await getBalance(userAccountId, activeFaucet);
+      setAccountBalance(_balance || "");
+    }
+  }
+
   const exportAccount = () => {};
 
   useEffect(() => {
     getExistingAccounts();
-  }, [accountBalance]);
+  }, []);
 
+  useEffect(() => {
+    updateAccountBalance();
+  },[accountBalance]);
 
   useEffect(() => {
     checkForFaucetAccount(setActiveFaucet);
@@ -208,14 +216,14 @@ const Tabs = () => {
         <div className="flex flex-col min-h-screen lg:flex-row justify-center items-center gap-6 p-8 bg-white">
           <AccountCard
             username={userName}
-            balance={selectedAccountBalance}
+            balance={accountBalance}
             privateKey="0xdhb3rg3g8rfgffgeuyfbefbfhbfrebijbhfssbu4gf74gsbjd"
-            walletAddress="0xdhb3rg3g8rfgffgeuyfbefbfhbfrebijbhfssbu4gf74gsbjd"
+            walletAddress={userAccountId}
             onImportClick={handleImportClick}
             onSendClick={handleSendClick}
-            walletId = {userAccountId}
             currentFaucet = {activeFaucet}
             setActiveFaucet={setActiveFaucet}
+            updateAccountBalance={updateAccountBalance}
           />
 
           {selectedFile ? (

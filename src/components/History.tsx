@@ -73,28 +73,28 @@ const History = () => {
     }
   };
 
-  const getUserAccount = async () => {
-    try {
-      setIsLoading(true);
-      await sleep(1000);
-      const accounts = await getAccountsFromDb();
+  // const getUserAccount = async () => {
+  //   try {
+  //     setIsLoading(true);
+  //     await sleep(1000);
+  //     const accounts = await getAccountsFromDb();
 
-      if (accounts.length > 0) {
-        const _id = accounts[0].id().to_string();
-        const _balance = await getBalance(_id);
-        setIsAccountCreated(true);
-        setAccount(accounts[0]);
-        setUserName(_id);
-        setSelectedAccountBalance(_balance || "");
-        setUserAccountId(_id);
-        setIsLoading(false);
-      } else {
-        setIsLoading(false);
-      }
-    } catch (error) {
-      console.error("Error fetching existing accounts:", error);
-    }
-  };
+  //     if (accounts.length > 0) {
+  //       const _id = accounts[0].id().to_string();
+  //       const _balance = await getBalance(_id);
+  //       setIsAccountCreated(true);
+  //       setAccount(accounts[0]);
+  //       setUserName(_id);
+  //       setSelectedAccountBalance(_balance || "");
+  //       setUserAccountId(_id);
+  //       setIsLoading(false);
+  //     } else {
+  //       setIsLoading(false);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching existing accounts:", error);
+  //   }
+  // };
 
   const _downloadSpecificNotes = (item: any) => {
     // downloadNotesFromHash(item);
@@ -106,10 +106,10 @@ const History = () => {
     (item) => item.type === activeTab
   );
 
-  useEffect(() => {
-    getUserAccount();
-    getHistories();
-  }, [userAccountId]);
+  // useEffect(() => {
+  //   // getUserAccount();
+  //   getHistories();
+  // }, [userAccountId]);
 
   useEffect(() => {
     getHistories();

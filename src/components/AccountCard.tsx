@@ -17,9 +17,9 @@ interface AccountCardProps {
   walletAddress: string;
   onImportClick: () => void;
   onSendClick: () => void;
-  walletId: string;
   currentFaucet: string;
   setActiveFaucet: React.Dispatch<React.SetStateAction<string>>
+  updateAccountBalance: () => Promise<void>;
 }
 
 const AccountCard = ({
@@ -29,9 +29,9 @@ const AccountCard = ({
   walletAddress,
   onImportClick,
   onSendClick,
-  walletId,
   currentFaucet,
   setActiveFaucet,
+  updateAccountBalance,
 }: AccountCardProps) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
@@ -56,6 +56,16 @@ const AccountCard = ({
       console.log(error?.message);
     }
   };
+
+  const handleAddFaucetBalance = async () => { 
+    const isAdded = await mintFaucetAccount(walletAddress, currentFaucet, 100)
+    if(isAdded) {
+       updateAccountBalance();
+    } else {
+      console.log('Failed to add new faucet balance');
+    }
+
+  }
 
   const _createNDownloadFile = (fileContent: any) => {
     const blob = new Blob([fileContent], { type: "application/json" });
@@ -106,7 +116,7 @@ const AccountCard = ({
       <div className="flex items-center justify-between px-4 pt-4">
         <div className="bg-yellow-200 p-4 rounded-full flex items-center">
           <CopyToClipboard
-            textToCopy={walletId}
+            textToCopy={walletAddress}
             textClassName="text-[#151515] text-base font-semibold leading-6"
           />
         </div>
@@ -185,7 +195,7 @@ const AccountCard = ({
           </span>
         </button>
         <button
-          onClick={() => mintFaucetAccount(walletId, currentFaucet, 100)}
+          onClick={handleAddFaucetBalance}
           className="flex items-center justify-center w-[174px] px-4 py-4 bg-white border rounded-full shadow"
         >
           <Icons.send />
