@@ -50,7 +50,7 @@ const Tabs = () => {
   const [selectedAccountBalance, setSelectedAccountBalance] = useState("0");
   const [isAccountCreated, setIsAccountCreated] = useState<boolean>(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
-  const [accountBalance, setAccountBalance] = useState<string>("");
+  const [accountBalance, setAccountBalance] = useState<string>("0");
   const [importStatus, setImportStatus] = useState<
     "idle" | "importing" | "success" | "error"
   >("idle");
@@ -73,8 +73,7 @@ const Tabs = () => {
       console.log(error);
     }
     const _balance = await getBalance(_id);
-    setAccountBalance(_balance || "");
-    setSelectedAccountBalance(_balance || "");
+    setAccountBalance(_balance || "0");
     setAccount(_account);
     setUserName(_id);
     setUserAccountId(_id);
@@ -158,7 +157,10 @@ const Tabs = () => {
   const updateAccountBalance = async () => {
     if (userAccountId && activeFaucet !== '') {
       const _balance = await getBalance(userAccountId, activeFaucet);
-      setAccountBalance(_balance || "");
+      setAccountBalance(_balance || "0");
+    }
+    else {
+      console.log("No account found ==> ");
     }
   }
 
@@ -170,7 +172,7 @@ const Tabs = () => {
 
   useEffect(() => {
     updateAccountBalance();
-  },[accountBalance]);
+  },[accountBalance, activeFaucet, userAccountId]);
 
   useEffect(() => {
     checkForFaucetAccount(setActiveFaucet);

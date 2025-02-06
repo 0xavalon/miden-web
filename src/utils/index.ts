@@ -168,12 +168,10 @@ export const getBalance = async (
   faucetAccountId: string = activeFaucet
 ) => {
   if(!accountId || faucetAccountId === '' ) return;
-  console.log('======>>>>>>>>>>', accountId, faucetAccountId);
   let _accountId = AccountId.from_hex(accountId);
   const faucetAccount = AccountId.from_hex(faucetAccountId);
   let _account = await getAccountDetails(_accountId);
   let _balance = _account?.vault().get_balance(faucetAccount);
-  console.log('balance',accountId, _balance, faucetAccountId);
   return _balance?.toString();
 };
 
