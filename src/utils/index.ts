@@ -21,6 +21,7 @@ import {
   OutputNotesArray,
   TransactionRequestBuilder,
   Word,
+  NoteScript,
 } from "@demox-labs/miden-sdk";
 
 import { standard_p2id_scripts } from "./srcipts/p2id";
@@ -29,7 +30,7 @@ import axios from "axios";
 const webClient = new WebClient();
 const nodeEndpoint = "http://localhost:57291";
 const API_URL = `http://localhost:5001`;
-let activeFaucet = "0xdad295168a6bb0200000b98e42853a";
+let activeFaucet = "0xee1a629024782da00000150b382c06";
 
 export const sleep = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
@@ -168,6 +169,7 @@ export const getBalance = async (
   faucetAccountId: string = activeFaucet
 ) => {
   if(!accountId || faucetAccountId === '' ) return;
+  faucetAccountId = activeFaucet;
   let _accountId = AccountId.from_hex(accountId);
   const faucetAccount = AccountId.from_hex(faucetAccountId);
   let _account = await getAccountDetails(_accountId);
@@ -302,12 +304,15 @@ export const syncClient = async () => {
 };
 
 export const consumeAvailableNotes = async (targetAccount: string) => {
+  //temp1[0].input_note_record().details().assets().assets()[0].faucet_id().to_string() => Faucet Id
+  await webClient.create_client(nodeEndpoint);
   await webClient.fetch_and_cache_account_auth_by_pub_key(
     AccountId.from_hex(targetAccount)
   );
   const notes = await webClient.get_consumable_notes(
     AccountId.from_hex(targetAccount)
   );
+  console.log(notes);
   console.log(
     `consuming notes for account id: ${targetAccount}, Notes Found: ${notes.length}`
   );
@@ -322,6 +327,8 @@ export const consumeAvailableNotes = async (targetAccount: string) => {
       notelist.push(noteId);
     }
 
+    console.log("Note List: ", notelist, AccountId.from_hex(targetAccount));
+
     try {
       sleep(100);
       const txResult = await webClient.new_consume_transaction(
@@ -330,10 +337,10 @@ export const consumeAvailableNotes = async (targetAccount: string) => {
       );
       console.log("Tx Result: ", txResult);
       // mark each note as consumed
-      for (let i = 0; i < notes.length; i++) {
-        const noteId = notes[i].input_note_record().id().to_string();
-        markNoteAsConsumed(noteId, targetAccount);
-      }
+      // for (let i = 0; i < notes.length; i++) {
+        // const noteId = notes[i].input_note_record().id().to_string();
+        // markNoteAsConsumed(noteId, targetAccount);
+      // }
     } catch (error: any) {
       console.log("error cosuming notes", error);
     }
@@ -384,19 +391,17 @@ export const createMultipleNotes = async (
   assetId: any = activeFaucet // Default faucet ID
 ) => {
   try {
-    const ownOutputNotes = new OutputNotesArray();
     const senderAccount = AccountId.from_hex(sender);
     const faucetAccount = AccountId.from_hex(assetId);
+    
+    await webClient.fetch_and_cache_account_auth_by_pub_key(senderAccount);
 
-    await webClient.fetch_and_cache_account_auth_by_pub_key(
-      AccountId.from_hex(sender)
-    );
+    let outputNotesArray = new OutputNotesArray();
 
-    let compiledNoteScript = await webClient.compile_note_script(
-      standard_p2id_scripts
-    );
+    for (let i = 0; i < recipients.length; i++) {
+      const recipient = recipients[i];
+      const targetAccount = AccountId.from_hex(recipient.username);
 
-    for (const recipient of recipients) {
       const noteAssets = new NoteAssets([
         new FungibleAsset(faucetAccount, BigInt(recipient.amount)),
       ]);
@@ -404,61 +409,55 @@ export const createMultipleNotes = async (
       const noteMetadata = new NoteMetadata(
         senderAccount,
         NoteType.public(),
-        NoteTag.from_account_id(
-          AccountId.from_hex(recipient.username),
-          NoteExecutionMode.new_local()
-        ),
+        NoteTag.from_account_id(targetAccount, NoteExecutionMode.new_local()),
         NoteExecutionHint.none(),
         undefined
       );
 
-      const noteInputs = new NoteInputs(
-        new FeltArray([
-          AccountId.from_hex(recipient.username).prefix(),
-          AccountId.from_hex(recipient.username).suffix(),
+      // Generate a unique serial number per note
+      const serialNum = Word.new_from_u64s(
+        new BigUint64Array([
+          BigInt(i * 4 + 1),
+          BigInt(i * 4 + 2),
+          BigInt(i * 4 + 3),
+          BigInt(i * 4 + 4),
         ])
       );
 
-      const serialNum = Word.new_from_u64s(
-        new BigUint64Array([BigInt(1), BigInt(2), BigInt(3), BigInt(4)])
+      const noteInputs = new NoteInputs(
+        new FeltArray([
+          targetAccount.suffix(), // Switch prefix & suffix order
+          targetAccount.prefix(),
+        ])
       );
 
-      const noteRecipient = new NoteRecipient(
-        serialNum,
-        compiledNoteScript,
-        noteInputs
-      );
+      const noteRecipient = new NoteRecipient(serialNum, NoteScript.p2id(), noteInputs);
       const note = new Note(noteAssets, noteMetadata, noteRecipient);
-      ownOutputNotes.append(OutputNote.full(note));
+
+      outputNotesArray.append(OutputNote.full(note));
     }
 
     const transactionRequest = new TransactionRequestBuilder()
-      .with_own_output_notes(ownOutputNotes)
+      .with_own_output_notes(outputNotesArray) // Pass all notes at once
       .build();
 
     await webClient.fetch_and_cache_account_auth_by_pub_key(senderAccount);
-    const transactionResult = await webClient.new_transaction(
-      senderAccount,
-      transactionRequest
-    );
+    const transactionResult = await webClient.new_transaction(senderAccount, transactionRequest);
 
     try {
-      // await webClient.submit_transaction(transactionResult);
-      // await syncClient();
+      await webClient.submit_transaction(transactionResult);
+      await syncClient();
     } catch (error) {
-      console.log("Error in multi note submission", error);
+      console.log("Error in multi-note submission", error);
     }
 
     const outputNotes = transactionResult
       .created_notes()
       .notes()
-      .map((note) => {
-        return note.id().to_string();
-      });
+      .map((note) => note.id().to_string());
 
     console.log("output note ids ==>", outputNotes);
-    const noteDataLists = await _exportNotesArray(outputNotes);
-    return noteDataLists;
+    return await _exportNotesArray(outputNotes);
   } catch (error) {
     console.error("Error creating multiple notes:", error);
     throw error;

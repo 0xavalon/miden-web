@@ -32,12 +32,13 @@ type FormSchema = z.infer<typeof formSchema>;
 
 type SendProps = {
   onClose: () => void;
+  balance: string;
+  userAccountId: string;
+  activeFaucet: string;
+  updateAccountBalance: () => Promise<void>;
 };
 
-const Send = ({ onClose }: SendProps) => {
-  const [accountId, setAccountId] = useState("");
-  const [balance, setBalance] = useState("");
-  const [accountDetails, setAccountDetails] = useState({});
+const Send = ({ onClose, balance, userAccountId, activeFaucet, updateAccountBalance }: SendProps) => {
   const [userType, setUserType] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [noteResults, setNoteResults] = useState<
@@ -72,30 +73,6 @@ const Send = ({ onClose }: SendProps) => {
     };
   };
 
-  // const getExistingAccounts = async () => {
-  //   try {
-  //     const accounts = await getAccountsFromDb();
-
-  //     if (accounts.length > 0) {
-  //       let _id = "";
-  //       _id = await checkForNonFaucetAccount();
-  //       // const accountDetails = await getExistingAccountFromBackend(_id);
-  //       // setUserType(accountDetails.data.userType);
-  //       // setAccountDetails(accountDetails);
-  //       const _balance = await getBalance(_id);
-  //       setBalance(_balance || "");
-  //       setAccountId(accounts[0].id().to_string());
-  //       setBalance(_balance || "");
-  //     }
-  //   } catch (error: any) {
-  //     console.error("Error fetching existing accounts:", error.message);
-  //   }
-  // };
-
-  // Use useEffect to check for existing accounts when the component mounts
-  useEffect(() => {
-    // getExistingAccounts();
-  }, [balance]);
 
   const downloadFile = (fileName: string, result: any) => {
     const byteArray = new Uint8Array(result);
@@ -109,25 +86,20 @@ const Send = ({ onClose }: SendProps) => {
   };
 
   const onSubmit = async (data: FormSchema) => {
-    if (!accountId) {
+    if (!userAccountId) {
       console.log("account not valid or not enough balance");
     }
     setIsLoading(true);
-    await sleep(100);
     // await syncClient();
     const recipients: { username: string; amount: number }[] = data.recipients;
-    // let txResult = await createMultipleNotes(accountId, recipients);
-    let txResult = {length: data.recipients.length};
-    const randomSuffix = generateRandomString();
+    let txResult = await createMultipleNotes(userAccountId, recipients, activeFaucet);
 
     let _noteResults = [];
     if(txResult.length) {
       for (let [id, recipient] of recipients.entries()) {
         const { username, amount } = recipient;
-        // const _noteData = txResult[id].noteData;
-        // const _noteId = txResult[id].noteId;
-        const _noteData = Array.from(crypto.getRandomValues(new Uint8Array(500)));
-        const _noteId = `${randomSuffix}_${id}`;
+        const _noteData = txResult[id].noteData;
+        const _noteId = txResult[id].noteId;
         if(_noteData) {
           _noteResults.push({
             noteId: _noteId,
@@ -140,8 +112,9 @@ const Send = ({ onClose }: SendProps) => {
           console.log(`Note data is not found. id:${id}, account: ${username}`)
         } 
       }
-      await savePayrollNoteDataToBackend(_noteResults, accountId, recipients);
+      // await savePayrollNoteDataToBackend(_noteResults, accountId, recipients);
       setNoteResults(_noteResults);
+      updateAccountBalance();
     }
     setIsLoading(false);
     reset({

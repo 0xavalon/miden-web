@@ -115,7 +115,7 @@ const Tabs = () => {
 
   const _consumeAvailableNotes = async (file: File) => {
     await importNoteFiles(file);
-    await sleep(3000); // Artificial wait, Need to understand more!
+    // await sleep(3000); // Artificial wait, Need to understand more!
     await syncClient();
     await consumeAvailableNotes(userAccountId);
   };
@@ -158,9 +158,9 @@ const Tabs = () => {
     if (userAccountId && activeFaucet !== '') {
       const _balance = await getBalance(userAccountId, activeFaucet);
       setAccountBalance(_balance || "0");
-    }
-    else {
-      console.log("No account found ==> ");
+    } else {
+      const _balance = await getBalance(userAccountId, '0x1f2573c25f7712a0000051dd99ccd1');
+      setAccountBalance(_balance || "0");
     }
   }
 
@@ -223,7 +223,7 @@ const Tabs = () => {
             walletAddress={userAccountId}
             onImportClick={handleImportClick}
             onSendClick={handleSendClick}
-            currentFaucet = {activeFaucet}
+            activeFauct = {activeFaucet}
             setActiveFaucet={setActiveFaucet}
             updateAccountBalance={updateAccountBalance}
           />
@@ -236,7 +236,13 @@ const Tabs = () => {
               resetImport={resetImport}
             />
           ) : showSend ? (
-            <Send onClose={handleCloseSend} />
+            <Send 
+            onClose={handleCloseSend}
+            balance={accountBalance}
+            userAccountId={userAccountId}
+            activeFaucet={activeFaucet}
+            updateAccountBalance={updateAccountBalance}
+            />
           ) : (
             <History />
           )}

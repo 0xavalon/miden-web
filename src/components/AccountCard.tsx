@@ -17,7 +17,7 @@ interface AccountCardProps {
   walletAddress: string;
   onImportClick: () => void;
   onSendClick: () => void;
-  currentFaucet: string;
+  activeFauct: string;
   setActiveFaucet: React.Dispatch<React.SetStateAction<string>>
   updateAccountBalance: () => Promise<void>;
 }
@@ -29,7 +29,7 @@ const AccountCard = ({
   walletAddress,
   onImportClick,
   onSendClick,
-  currentFaucet,
+  activeFauct,
   setActiveFaucet,
   updateAccountBalance,
 }: AccountCardProps) => {
@@ -58,7 +58,7 @@ const AccountCard = ({
   };
 
   const handleAddFaucetBalance = async () => { 
-    const isAdded = await mintFaucetAccount(walletAddress, currentFaucet, 100)
+    const isAdded = await mintFaucetAccount(walletAddress, activeFauct, 100)
     if(isAdded) {
        updateAccountBalance();
     } else {
@@ -158,8 +158,8 @@ const AccountCard = ({
         <h1 className="mt-4 text-4xl font-bold text-black">{balance} Miden</h1>
         <div className="flex items-center mt-2">
           <CopyToClipboard
-            textToCopy={currentFaucet}
-            displayText={currentFaucet}
+            textToCopy={activeFauct}
+            displayText={activeFauct}
             className="mt-2"
             textClassName="text font-semibold leading-[16px] text-[#151515] opacity-60"
           />
