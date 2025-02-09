@@ -6,15 +6,7 @@ import { Icons } from "./icons";
 import teamwork from "../assets/images/teamwork.png";
 import {
   createMultipleNotes,
-  createNote,
   exportNote,
-  generateRandomString,
-  getAccountsFromDb,
-  getBalance,
-  getExistingAccountFromBackend,
-  savePayrollNoteDataToBackend,
-  sleep,
-  syncClient,
 } from "../utils";
 
 const recipientSchema = z.object({

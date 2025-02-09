@@ -1,11 +1,7 @@
-import { useEffect, useState } from "react";
-import { AccountHeader } from "@demox-labs/miden-sdk";
-import { createAccount, createClient, recoverSecretKey } from "../utils";
+import { useEffect } from "react";
+import { createClient } from "../utils";
 
 export default function Miden() {
-  const [accounts, setAccounts] = useState<AccountHeader[]>([]);
-  const [recoverAccountId, setRecoverAccountId] = useState("");
-
   const fetchAccounts = async () => {
     // const _accounts = await getAccounts();
     // console.log(_accounts);
@@ -22,9 +18,9 @@ export default function Miden() {
   }, []);
 
   const retrieveSecretKey = async () => {
-    console.log(`Recover account id: ${recoverAccountId}`);
-    const keys = await recoverSecretKey(recoverAccountId);
-    console.log("keys", keys);
+    // console.log(`Recover account id: ${recoverAccountId}`);
+    // const keys = await recoverSecretKey(recoverAccountId);
+    // console.log("keys", keys);
     // console.log(encodeFeltArrayToHex(recoverAccountId))
     // console.log(encodeToBase64(recoverAccountId))
   };
