@@ -44,7 +44,7 @@ const Tabs = () => {
   const [userName, setUserName] = useState("");
   const [userAccountId, setUserAccountId] = useState("");
   const [userType, setUserType] = useState("");
-  const [faucet, setFaucet] = useState<Account | null>(null);
+  const [activeFaucet, setActiveFaucet] = useState(""); // Dummy faucet address
   const [accountDetails, setAccountDetails] = useState<AccountDetails>({} as AccountDetails);
   const [account, setAccount] = useState<Account>();
   const [selectedAccountBalance, setSelectedAccountBalance] = useState("0");
@@ -56,7 +56,6 @@ const Tabs = () => {
   >("idle");
   const [showSend, setShowSend] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [activeFaucet, setActiveFaucet] = useState(""); // Dummy faucet address
 
 
   const handleCreateAccount = async (): Promise<void> => {
@@ -140,9 +139,11 @@ const Tabs = () => {
     try {
       setIsLoading(true);
       await sleep(100);
-      const _id = await checkForNonFaucetAccount();
+      const accountDetails = await checkForNonFaucetAccount();
     
-      if (_id) {
+      if (accountDetails.nonFaucetAccount) {
+        const _id = accountDetails.nonFaucetAccount;
+        if(accountDetails.faucetAccount) setActiveFaucet(accountDetails.faucetAccount);
         setIsAccountCreated(true);
         setUserAccountId(_id);
         setIsLoading(false);

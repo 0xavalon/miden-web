@@ -5,7 +5,6 @@ import * as z from "zod";
 import { Icons } from "./icons";
 import teamwork from "../assets/images/teamwork.png";
 import {
-  checkForNonFaucetAccount,
   createMultipleNotes,
   createNote,
   exportNote,
@@ -90,7 +89,6 @@ const Send = ({ onClose, balance, userAccountId, activeFaucet, updateAccountBala
       console.log("account not valid or not enough balance");
     }
     setIsLoading(true);
-    // await syncClient();
     const recipients: { username: string; amount: number }[] = data.recipients;
     let txResult = await createMultipleNotes(userAccountId, recipients, activeFaucet);
 
@@ -260,7 +258,7 @@ const Send = ({ onClose, balance, userAccountId, activeFaucet, updateAccountBala
             className="text-blue-600 flex items-center space-x-1 mt-4"
           >
              {/* Conditionally render this section if userType is 'employee' */}
-          {userType === "employer" && (
+          {userType !== "employer" && (
             <div>
               <span>+</span> <span>Add another recipient</span>
             </div>

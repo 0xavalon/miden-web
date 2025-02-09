@@ -83,20 +83,25 @@ export const checkForFaucetAccount = async (
 
 export const checkForNonFaucetAccount = async () => {
   const _allAccounts = await getAccountsFromDb();
-  let _faucetAccount = null;
+  const accounts: {nonFaucetAccount: string, faucetAccount: string} = {
+    nonFaucetAccount: "",
+    faucetAccount: activeFaucet
+  };
+
   for (const account of _allAccounts) {
     const _id = account.id().to_string();
     const _accountDetails = await getAccountDetails(AccountId.from_hex(_id));
 
     if (!_accountDetails?.is_faucet()) {
-      return _id;
+      accounts.nonFaucetAccount = _id;
+      const faucet = await checkForFaucetAccount(() => {});
+      if(faucet) {
+        accounts.faucetAccount = faucet.id().to_string();
+      }
     }
   }
 
-  if (_faucetAccount) {
-    return _faucetAccount;
-  }
-  return "";
+  return accounts;
 };
 
 export const createNewFaucetAccount = async (
