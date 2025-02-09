@@ -32,10 +32,12 @@ const historyData: HistoryItem[] = [];
 
 const History = ({userAccountId}: HistoryProps) => {
   const [activeTab, setActiveTab] = useState<string>("Send");
+  const [loading, setLoading] = useState(true);
 
   const getHistories = async () => {
     if(!userAccountId) return;
-    
+    setLoading(true);
+
     try{
       const {token} = await getExistingAccountFromBackend(userAccountId);
       const { data: _histories } = await getHistoryFromBackend(activeTab, token);
@@ -61,6 +63,8 @@ const History = ({userAccountId}: HistoryProps) => {
       });
     } catch (error) {
       console.error("Error fetching existing accounts:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -74,7 +78,9 @@ const History = ({userAccountId}: HistoryProps) => {
 
   useEffect(() => {
     getHistories();
-  }, [activeTab, ]);
+  }, [activeTab]);
+
+  if(loading) return <HistorySkeleton/>;
 
   return (
     <div className="p-6 px-8 py-10 flex flex-col bg-white rounded-[32px] shadow-[0px_0px_4px_0px_rgba(0,0,0,0.12)] w-[433px] min-h-[430px]">
@@ -130,6 +136,44 @@ const History = ({userAccountId}: HistoryProps) => {
             </div>
           </li>
         ))}
+      </ul>
+    </div>
+  );
+};
+
+const HistorySkeleton = () => {
+  return (
+    <div className="p-6 px-8 py-10 flex flex-col bg-white rounded-[32px] shadow-[0px_0px_4px_0px_rgba(0,0,0,0.12)] w-[433px] min-h-[430px]">
+      {/* Header Skeleton */}
+      <div className="flex justify-between items-center mb-4">
+        <div className="w-32 h-6 bg-gray-200 rounded-md animate-pulse"></div>
+        <div className="flex bg-white rounded-full border-2 border-[#F2F2F2] p-[2px]">
+          <div className="w-16 h-6 bg-gray-200 rounded-md animate-pulse mx-1"></div>
+          <div className="w-16 h-6 bg-gray-200 rounded-md animate-pulse mx-1"></div>
+        </div>
+      </div>
+
+      {/* List Skeleton */}
+      <ul className="flex flex-col gap-6 max-h-[296px] overflow-scroll pr-5">
+        {Array(5)
+          .fill(0)
+          .map((_, index) => (
+            <li
+              key={index}
+              className="flex items-center justify-between gap-4"
+            >
+              {/* Left Section (Avatar + Texts) */}
+              <div className="flex items-center">
+                <div className="w-14 h-14 bg-gray-200 rounded-full animate-pulse"></div>
+                <div className="ml-3">
+                  <div className="w-28 h-5 bg-gray-200 rounded-md animate-pulse mb-2"></div>
+                  <div className="w-40 h-4 bg-gray-200 rounded-md animate-pulse"></div>
+                </div>
+              </div>
+              {/* Right Section (Amount) */}
+              <div className="w-16 h-5 bg-gray-200 rounded-md animate-pulse"></div>
+            </li>
+          ))}
       </ul>
     </div>
   );
