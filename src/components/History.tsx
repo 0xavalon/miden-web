@@ -6,6 +6,7 @@ import {
   getExistingAccountFromBackend,
   getHistoryFromBackend,
   downloadNotesFromBackend,
+  sleep,
 } from "../utils";
 import { Icons } from "./icons";
 
@@ -38,6 +39,7 @@ const History = ({userAccountId}: HistoryProps) => {
     try{
       const {token} = await getExistingAccountFromBackend(userAccountId);
       const { data: _histories } = await getHistoryFromBackend(activeTab, token);
+
       const historyBackend: HistoryItem[] = [];
       _histories.forEach((item: any) => {
         historyBackend.push({
@@ -72,7 +74,7 @@ const History = ({userAccountId}: HistoryProps) => {
 
   useEffect(() => {
     getHistories();
-  }, [activeTab]);
+  }, [activeTab, ]);
 
   return (
     <div className="p-6 px-8 py-10 flex flex-col bg-white rounded-[32px] shadow-[0px_0px_4px_0px_rgba(0,0,0,0.12)] w-[433px] min-h-[430px]">

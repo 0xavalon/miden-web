@@ -6,6 +6,7 @@ import { Icons } from "./icons";
 import teamwork from "../assets/images/teamwork.png";
 import {
   createMultipleNotes,
+  createOneToOneTx,
   exportNote,
   savePayrollNoteDataToBackend,
 } from "../utils";
@@ -28,10 +29,10 @@ type SendProps = {
   userAccountId: string;
   activeFaucet: string;
   updateAccountBalance: () => Promise<void>;
+  userType: string;
 };
 
-const Send = ({ onClose, balance, userAccountId, activeFaucet, updateAccountBalance }: SendProps) => {
-  const [userType, setUserType] = useState("");
+const Send = ({ onClose, balance, userAccountId, activeFaucet, updateAccountBalance, userType}: SendProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [noteResults, setNoteResults] = useState<
     { noteData: any; recipientId: string; filename: string }[]
@@ -105,10 +106,12 @@ const Send = ({ onClose, balance, userAccountId, activeFaucet, updateAccountBala
       }
       setNoteResults(_noteResults);
       updateAccountBalance();
-      try{
-        savePayrollNoteDataToBackend(_noteResults, userAccountId).then((response) => {
-          console.log('payroll data is saved in backend',response);
-        })
+      try {
+        if(userType === 'employer') savePayrollNoteDataToBackend(_noteResults, userAccountId);
+        else if(userType === 'employee') {
+          console.log('saving employee payroll data to backend');
+          createOneToOneTx(_noteResults, userAccountId);
+        }
       } catch{
         console.log('error saving payroll data in backend')
       }

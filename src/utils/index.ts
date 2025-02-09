@@ -29,7 +29,8 @@ import axios from "axios";
 const webClient = new WebClient();
 const nodeEndpoint = "http://localhost:57291";
 const API_URL = `http://localhost:5001`;
-let activeFaucet = "0xee1a629024782da00000150b382c06";
+// let activeFaucet = "0xee1a629024782da00000150b382c06";
+let activeFaucet = "0x12a11f54e5d57ca000000cf2bedf16";
 
 export const sleep = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
@@ -72,14 +73,15 @@ export const checkForFaucetAccount = async (
       return _id;
     }
   }
-  return activeFaucet;
+  return "0x12a11f54e5d57ca000000cf2bedf16";
 };
 
 export const checkForNonFaucetAccount = async () => {
   const _allAccounts = await getAccountsFromDb();
-  const accounts: {nonFaucetAccount: string, faucetAccount: string} = {
+  const accounts: {nonFaucetAccount: string, faucetAccount: string, profile: any} = {
     nonFaucetAccount: "",
-    faucetAccount: activeFaucet
+    faucetAccount: activeFaucet,
+    profile: {}
   };
 
   for (const account of _allAccounts) {
@@ -93,6 +95,13 @@ export const checkForNonFaucetAccount = async () => {
         accounts.faucetAccount = _faucetId;
       }
     }
+  }
+
+  try{
+    const userDetails = await getExistingAccountFromBackend(accounts.nonFaucetAccount);
+    accounts.profile = userDetails.data;
+  } catch(error) {
+    console.log('error in fetching user details', error);
   }
 
   return accounts;
@@ -168,7 +177,6 @@ export const getBalance = async (
   faucetAccountId: string = activeFaucet
 ) => {
   if(!accountId || faucetAccountId === '' ) return;
-  faucetAccountId = activeFaucet;
   let _accountId = AccountId.from_hex(accountId);
   const faucetAccount = AccountId.from_hex(faucetAccountId);
   let _account = await getAccountDetails(_accountId);
@@ -198,10 +206,11 @@ export const downloadNotesFromHash = async (item: any) => {
 };
 
 export const downloadNotesFromBackend = async (item: any) => {
-  exportNote(
-    item.noteData,
-    `${item.ownerId ? item.ownerId : item.noteId}_${item.amount}.mno`
-  );
+  await importNotesFromData(item.noteData, item.ownerId);
+  // exportNote(
+  //   new Uint8Array(item.noteData),
+  //   `${item.ownerId ? item.ownerId : item.noteId}_${item.amount}.mno`
+  // );
 };
 
 export const importNoteFiles = async (file: File): Promise<void> => {
@@ -226,6 +235,35 @@ export const importNoteFiles = async (file: File): Promise<void> => {
     reader.readAsArrayBuffer(file); // Read the file as an ArrayBuffer
   }
 };
+
+
+
+export const importNotesFromData = async (noteData: any, targetWalletAddress: string): Promise<void> => {
+  if (noteData) {
+      const arrayBuffer = noteData as ArrayBuffer; // Assert type
+      const byteArray = new Uint8Array(arrayBuffer);
+      console.log('byte array', byteArray);
+
+      try {
+        await sleep(100);
+        await webClient.import_note(byteArray); // Assuming `webClient` is correctly typed
+        console.log("Note successfully imported!");
+        await syncClient();
+        try{
+          // trying to consume notes
+          await consumeAvailableNotes(targetWalletAddress);
+        } catch (error) {
+          console.error("Error consuming note:", error);
+        }
+      } catch (error) {
+        console.error("Error importing note:", error);
+      }
+     
+  } else { 
+    console.log('note data is not provided');
+  }
+};
+
 
 export const getAccountHistory = async () => {
   const historyList: {
@@ -298,12 +336,11 @@ export const syncClient = async () => {
     await webClient.sync_state();
     console.log("syncing done ...", new Date());
   } catch (error: any) {
-    console.log("Error syncing accounts: ", error);
+    console.log("Error syncing state: ", error);
   }
 };
 
 export const consumeAvailableNotes = async (targetAccount: string) => {
-  //temp1[0].input_note_record().details().assets().assets()[0].faucet_id().to_string() => Faucet Id
   await webClient.create_client(nodeEndpoint);
   await webClient.fetch_and_cache_account_auth_by_pub_key(
     AccountId.from_hex(targetAccount)
@@ -335,11 +372,10 @@ export const consumeAvailableNotes = async (targetAccount: string) => {
         notelist
       );
       console.log("Tx Result: ", txResult);
-      // mark each note as consumed
-      // for (let i = 0; i < notes.length; i++) {
-        // const noteId = notes[i].input_note_record().id().to_string();
-        // markNoteAsConsumed(noteId, targetAccount);
-      // }
+      for (let i = 0; i < notes.length; i++) {
+        const noteId = notes[i].input_note_record().id().to_string();
+        markNoteAsConsumed(noteId, targetAccount);
+      }
     } catch (error: any) {
       console.log("error cosuming notes", error);
     }
@@ -468,6 +504,7 @@ const _exportNotesArray = async (outputNotes: string[]) => {
   for (const noteId of outputNotes) {
     try {
       const noteData = await webClient.export_note(noteId, "Full");
+      console.log("noteData", noteData);
       if (noteData) noteDataLists.push({ noteId, noteData });
     } catch (error) {
       console.error(`Failed to fetch noteData for noteId: ${noteId}`, error);
@@ -682,7 +719,7 @@ export const getExistingAccountFromBackend = async (accountId: string) => {
 
 export const savePayrollNoteDataToBackend = async (
   noteResults: {
-    noteData: any;
+    noteData: Uint8Array;
     noteId: string;
     recipientId: string;
     filename: string;
@@ -716,12 +753,46 @@ export const savePayrollNoteDataToBackend = async (
         "Content-Type": "application/json",
       },
     });
-    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error("Error saving payroll data to backend:", error);
   }
 };
+
+export const createOneToOneTx = async (noteResults: {
+  noteData: Uint8Array;
+  noteId: string;
+  recipientId: string;
+  filename: string;
+  amount: any;
+}[],
+sender: string) => {
+    try{
+      let data = JSON.stringify({
+        "receiverWalletID": noteResults[0].recipientId,
+        "noteId": noteResults[0].noteId,
+        "noteData": noteResults[0].noteData,
+        "amount": noteResults[0].amount,
+      });
+      const token = await getExistingAccountFromBackend(sender);
+      
+      let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: `${API_URL}/api/notes/transfer`,
+        headers: { 
+          'Content-Type': 'application/json', 
+          'Authorization': `Bearer ${token.token}`
+        },
+        data : data
+      };
+  
+      const response = await axios.request(config);
+      return response.data;
+    } catch (error) {
+      console.log("Error creating one to one tx", error);
+    }
+}
 
 export const getHistoryFromBackend = async (
   historyType: string,
@@ -743,11 +814,11 @@ export const getHistoryFromBackend = async (
     if (response.status === 200) {
       return response.data;
     } else {
-      throw new Error("Error fetching history from backend");
+      console.log("Error fetching history from backend");
     }
   } catch (error) {
     console.error("Error fetching history from backend:", error);
-    throw error;
+    // throw error;
   }
 };
 
@@ -762,7 +833,7 @@ export const markNoteAsConsumed = async (
       maxBodyLength: Infinity,
       url: `${API_URL}/api/notes/${noteId}/consume`,
       headers: {
-        Authorization: "Bearer " + authToken,
+        Authorization: "Bearer " + authToken.token,
       },
     };
 

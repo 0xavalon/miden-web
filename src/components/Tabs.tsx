@@ -67,6 +67,7 @@ const Tabs = () => {
         setAccountDetailsBackend(response.data);
       });
       setUserType(userType);
+      console.log('usersss',userType);
     } catch (error: any) {
       console.log(error);
     }
@@ -111,7 +112,6 @@ const Tabs = () => {
 
   const _consumeAvailableNotes = async (file: File) => {
     await importNoteFiles(file);
-    // await sleep(3000); // Artificial wait, Need to understand more!
     await syncClient();
     await consumeAvailableNotes(userAccountId);
   };
@@ -141,6 +141,7 @@ const Tabs = () => {
       if (accountDetails.nonFaucetAccount) {
         const _id = accountDetails.nonFaucetAccount;
         if(accountDetails.faucetAccount) setActiveFaucet(accountDetails.faucetAccount);
+        if(accountDetails?.profile) setUserType(accountDetails?.profile.userType);
         setIsAccountCreated(true);
         setUserAccountId(_id);
         setIsLoading(false);
@@ -240,6 +241,7 @@ const Tabs = () => {
             userAccountId={userAccountId}
             activeFaucet={activeFaucet}
             updateAccountBalance={updateAccountBalance}
+            userType={userType}
             />
           ) : (
             <History 
