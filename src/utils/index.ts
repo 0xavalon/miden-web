@@ -24,7 +24,6 @@ import {
   NoteScript,
 } from "@demox-labs/miden-sdk";
 
-import { standard_p2id_scripts } from "./srcipts/p2id";
 import axios from "axios";
 
 const webClient = new WebClient();
