@@ -64,21 +64,21 @@ export const checkForFaucetAccount = async (
   setActiveFaucet: React.Dispatch<React.SetStateAction<string>>
 ) => {
   const _allAccounts = await getAccountsFromDb();
-  let _faucetAccount = null;
+  let _faucetAccount = activeFaucet;
   for (const account of _allAccounts) {
     const _id = account.id().to_string();
     const _accountDetails = await getAccountDetails(AccountId.from_hex(_id));
 
     if (_accountDetails?.is_faucet()) {
       setActiveFaucet(_id);
-      return _accountDetails;
+      return _id;
     }
   }
 
   if (_faucetAccount) {
     return _faucetAccount;
   }
-  return null;
+  return activeFaucet;
 };
 
 export const checkForNonFaucetAccount = async () => {
@@ -88,15 +88,17 @@ export const checkForNonFaucetAccount = async () => {
     faucetAccount: activeFaucet
   };
 
+  console.log('all accounts', _allAccounts, accounts);
+
   for (const account of _allAccounts) {
     const _id = account.id().to_string();
     const _accountDetails = await getAccountDetails(AccountId.from_hex(_id));
 
     if (!_accountDetails?.is_faucet()) {
       accounts.nonFaucetAccount = _id;
-      const faucet = await checkForFaucetAccount(() => {});
-      if(faucet) {
-        accounts.faucetAccount = faucet.id().to_string();
+      const _faucetId = await checkForFaucetAccount(() => {});
+      if(_faucetId) {
+        accounts.faucetAccount = _faucetId;
       }
     }
   }
@@ -233,7 +235,7 @@ export const importNoteFiles = async (file: File): Promise<void> => {
   }
 };
 
-export const getAccountHistory = async (accountId: string) => {
+export const getAccountHistory = async () => {
   const historyList: {
     id: any;
     title: string;
@@ -545,7 +547,6 @@ export const createAccount = async () => {
     AccountStorageMode.private(),
     true
   );
-  console.log("new account", newAccount);
   return newAccount;
 };
 

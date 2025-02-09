@@ -1,10 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 
-// components
 import { Icons } from "./icons";
 import CopyToClipboard from "./CopyToClipboard";
 
-// images
 import bg from "../assets/images/purple-bg.png";
 import GenerateNewFaucet from "./GenerateNewFaucet";
 import FindAvailableFaucet from "./FindAvailableFaucet";

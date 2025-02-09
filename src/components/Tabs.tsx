@@ -245,7 +245,9 @@ const Tabs = () => {
             updateAccountBalance={updateAccountBalance}
             />
           ) : (
-            <History />
+            <History 
+            userAccountId={userAccountId}
+            />
           )}
 
           {/* <input

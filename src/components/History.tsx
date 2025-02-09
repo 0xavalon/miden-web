@@ -1,22 +1,14 @@
 import { useEffect, useState } from "react";
-import { AccountHeader } from "@demox-labs/miden-sdk";
-
-// components
 import TabButton from "./TabButton";
 import CopyToClipboard from "./CopyToClipboard";
 
-// utils
 import {
-  sleep,
-  getAccountsFromDb,
-  getBalance,
-  getAccountHistory,
-  downloadNotesFromHash,
   getExistingAccountFromBackend,
   getHistoryFromBackend,
   downloadNotesFromBackend,
 } from "../utils";
 import { Icons } from "./icons";
+
 
 interface HistoryItem {
   id: number;
@@ -27,19 +19,18 @@ interface HistoryItem {
   recipients: number;
   amount: string;
   ownerId: string;
-  type: "Send" | "Receive"; // Add a type field to distinguish between send and receive
+  type: "Send" | "Receive";
 }
+
+type HistoryProps = {
+  userAccountId: string;
+};
 
 const historyData: HistoryItem[] = [];
 
-const History = () => {
+
+const History = ({userAccountId}: HistoryProps) => {
   const [activeTab, setActiveTab] = useState<string>("Send");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [userName, setUserName] = useState("");
-  const [userAccountId, setUserAccountId] = useState("");
-  const [account, setAccount] = useState<AccountHeader>();
-  const [selectedAccountBalance, setSelectedAccountBalance] = useState("0");
-  const [isAccountCreated, setIsAccountCreated] = useState<boolean>(false);
 
   const getHistories = async () => {
     if(!userAccountId) return;
@@ -55,13 +46,12 @@ const History = () => {
           noteId: item.noteId,
           noteData: item.noteData.data,
           hash: `${item._id.slice(0, 3)}...${item._id.slice(-3)}`,
-          recipients: 1, // set this for count of notes
+          recipients: 1,
           amount: item.amount,
           ownerId: item.ownerId?.walletId,
           type: activeTab === 'Send' ? 'Send' : 'Receive'
         });
       });
-      // insert the backend history to the historyData, avoid duplicate
       historyBackend.forEach((item) => {
         if (!historyData.some((history) => history.id === item.id)) {
           historyData.push(item);
@@ -74,9 +64,7 @@ const History = () => {
   };
 
   const _downloadSpecificNotes = (item: any) => {
-    console.log("Downloading notes from hash:", item);
-    downloadNotesFromHash(item);
-    // downloadNotesFromBackend(item);
+    downloadNotesFromBackend(item);
   }
 
   const filteredHistory = historyData.filter(
