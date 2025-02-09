@@ -24,6 +24,7 @@ import {
   sleep,
   syncClient,
 } from "../utils";
+import SignupForm from "./SignupForm";
 
 interface AccountDetails {
   _id: string;
@@ -43,41 +44,81 @@ const Tabs = () => {
   const [userAccountId, setUserAccountId] = useState("");
   const [userType, setUserType] = useState("");
   const [activeFaucet, setActiveFaucet] = useState(""); // Dummy faucet address
-  const [accountDetailsBackend, setAccountDetailsBackend] = useState<AccountDetails>({} as AccountDetails);
+  const [accountDetailsBackend, setAccountDetailsBackend] =
+    useState<AccountDetails>({} as AccountDetails);
   const [account, setAccount] = useState<Account>();
   const [selectedAccountBalance, setSelectedAccountBalance] = useState("0");
   const [isAccountCreated, setIsAccountCreated] = useState<boolean>(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [accountBalance, setAccountBalance] = useState<string>("0");
+  const [showSignupForm, setShowSignupForm] = useState<boolean>(false);
   const [importStatus, setImportStatus] = useState<
     "idle" | "importing" | "success" | "error"
   >("idle");
   const [showSend, setShowSend] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  // const handleCreateAccount = async (): Promise<void> => {
+  //   setIsLoading(true);
+  //   await sleep(1000);
+  //   const _account = await createAccount();
+  //   const _id = _account.id().to_string();
+  //   const userType = activeTab === "Business" ? "employer" : "employee";
+  //   try {
+  //     createAccountInBackend(_id, userType).then((response) => {
+  //       setAccountDetailsBackend(response.data);
+  //     });
+  //     setUserType(userType);
+  //     console.log("usersss", userType);
+  //   } catch (error: any) {
+  //     console.log(error);
+  //   }
+  //   const _balance = await getBalance(_id);
+  //   setAccountBalance(_balance || "0");
+  //   setUserName(_id);
+  //   setUserAccountId(_id);
+  //   setIsLoading(false);
+  //   setIsAccountCreated(true);
+  // };
 
-  const handleCreateAccount = async (): Promise<void> => {
+  const handleGoBack = () => {
+    setShowSignupForm(false);
+  };
+
+  const handleSignupSubmit = async (
+    email: string,
+    companyName: string,
+    password: string
+  ) => {
+    setShowSignupForm(false);
     setIsLoading(true);
+
     await sleep(1000);
     const _account = await createAccount();
     const _id = _account.id().to_string();
     const userType = activeTab === "Business" ? "employer" : "employee";
-    try{
-      createAccountInBackend(_id,userType).then(response => {
-        setAccountDetailsBackend(response.data);
-      });
-      setUserType(userType);
-      console.log('usersss',userType);
-    } catch (error: any) {
-      console.log(error);
+
+    try {
+      const response = await createAccountInBackend(
+        _id,
+        userType,
+        email,
+        companyName,
+        password
+      );
+      console.log("Account created:", response.data);
+    } catch (error) {
+      console.error("Error creating account:", error);
     }
+
     const _balance = await getBalance(_id);
     setAccountBalance(_balance || "0");
-    setUserName(_id);
     setUserAccountId(_id);
+    setUserType(userType);
     setIsLoading(false);
     setIsAccountCreated(true);
   };
+
   const handleImportClick = (): void => {
     setShowSend(false);
     if (fileInputRef.current) {
@@ -137,11 +178,13 @@ const Tabs = () => {
       setIsLoading(true);
       await sleep(100);
       const accountDetails = await checkForNonFaucetAccount();
-    
+
       if (accountDetails.nonFaucetAccount) {
         const _id = accountDetails.nonFaucetAccount;
-        if(accountDetails.faucetAccount) setActiveFaucet(accountDetails.faucetAccount);
-        if(accountDetails?.profile) setUserType(accountDetails?.profile.userType);
+        if (accountDetails.faucetAccount)
+          setActiveFaucet(accountDetails.faucetAccount);
+        if (accountDetails?.profile)
+          setUserType(accountDetails?.profile.userType);
         setIsAccountCreated(true);
         setUserAccountId(_id);
         setIsLoading(false);
@@ -154,14 +197,17 @@ const Tabs = () => {
   };
 
   const updateAccountBalance = async () => {
-    if (userAccountId && activeFaucet !== '') {
+    if (userAccountId && activeFaucet !== "") {
       const _balance = await getBalance(userAccountId, activeFaucet);
       setAccountBalance(_balance || "0");
     } else {
-      const _balance = await getBalance(userAccountId, '0x1f2573c25f7712a0000051dd99ccd1');
+      const _balance = await getBalance(
+        userAccountId,
+        "0x1f2573c25f7712a0000051dd99ccd1"
+      );
       setAccountBalance(_balance || "0");
     }
-  }
+  };
 
   const exportAccount = () => {};
 
@@ -171,7 +217,7 @@ const Tabs = () => {
 
   useEffect(() => {
     updateAccountBalance();
-  },[accountBalance, activeFaucet, userAccountId]);
+  }, [accountBalance, activeFaucet, userAccountId]);
 
   useEffect(() => {
     checkForFaucetAccount(setActiveFaucet);
@@ -180,7 +226,7 @@ const Tabs = () => {
   return (
     // <div className="flex flex-col items-center justify-center min-h-screen bg-purple-100 p-4">
     <>
-      {isLoading && <LoadingScreen />}
+      {/* {isLoading && <LoadingScreen />}
       {!isLoading && !isAccountCreated && (
         <div className="flex flex-col items-center justify-center min-h-screen bg-[#D9BBFF] p-4">
           <div className="flex bg-white rounded-full shadow-md p-1 w-[420px]">
@@ -211,6 +257,45 @@ const Tabs = () => {
             handleImportAccount={handleImportClick}
           />
         </div>
+      )} */}
+
+      {isLoading && <LoadingScreen />}
+      {!isLoading && !isAccountCreated && (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-[#D9BBFF] p-4">
+          {showSignupForm ? (
+            <SignupForm onSubmit={handleSignupSubmit} onBack={handleGoBack} />
+          ) : (
+            <>
+              <div className="flex bg-white rounded-full shadow-md p-1 w-[420px]">
+                <TabButton
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                  tabName="Business"
+                />
+                <TabButton
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                  tabName="Employee"
+                />
+              </div>
+
+              <TabContent
+                title={
+                  activeTab === "Business"
+                    ? "Create a business account"
+                    : "Create an employee account"
+                }
+                description={
+                  activeTab === "Business"
+                    ? "Create an account to enable bulk fund disbursement"
+                    : "Create an account to manage your personal tasks"
+                }
+                handleCreateAccount={() => setShowSignupForm(true)}
+                handleImportAccount={handleImportClick}
+              />
+            </>
+          )}
+        </div>
       )}
 
       {isAccountCreated && !isLoading && (
@@ -222,7 +307,7 @@ const Tabs = () => {
             walletAddress={userAccountId}
             onImportClick={handleImportClick}
             onSendClick={handleSendClick}
-            activeFauct = {activeFaucet}
+            activeFauct={activeFaucet}
             setActiveFaucet={setActiveFaucet}
             updateAccountBalance={updateAccountBalance}
           />
@@ -235,18 +320,16 @@ const Tabs = () => {
               resetImport={resetImport}
             />
           ) : showSend ? (
-            <Send 
-            onClose={handleCloseSend}
-            balance={accountBalance}
-            userAccountId={userAccountId}
-            activeFaucet={activeFaucet}
-            updateAccountBalance={updateAccountBalance}
-            userType={userType}
+            <Send
+              onClose={handleCloseSend}
+              balance={accountBalance}
+              userAccountId={userAccountId}
+              activeFaucet={activeFaucet}
+              updateAccountBalance={updateAccountBalance}
+              userType={userType}
             />
           ) : (
-            <History 
-            userAccountId={userAccountId}
-            />
+            <History userAccountId={userAccountId} />
           )}
 
           {/* <input
