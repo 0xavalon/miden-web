@@ -63,15 +63,15 @@ const Tabs = () => {
     const _id = _account.id().to_string();
     const userType = activeTab === "Business" ? "employer" : "employee";
     try{
-      const response = await createCompanyAccountInBackend(_id,userType);
-      setAccountDetails(response);
-      setUserType(response.userType);
+      createCompanyAccountInBackend(_id,userType).then(response => {
+        console.log('response', response);
+      });
+      setUserType(userType);
     } catch (error: any) {
       console.log(error);
     }
     const _balance = await getBalance(_id);
     setAccountBalance(_balance || "0");
-    setAccount(_account);
     setUserName(_id);
     setUserAccountId(_id);
     setIsLoading(false);

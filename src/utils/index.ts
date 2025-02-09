@@ -63,7 +63,6 @@ export const checkForFaucetAccount = async (
   setActiveFaucet: React.Dispatch<React.SetStateAction<string>>
 ) => {
   const _allAccounts = await getAccountsFromDb();
-  let _faucetAccount = activeFaucet;
   for (const account of _allAccounts) {
     const _id = account.id().to_string();
     const _accountDetails = await getAccountDetails(AccountId.from_hex(_id));
@@ -72,10 +71,6 @@ export const checkForFaucetAccount = async (
       setActiveFaucet(_id);
       return _id;
     }
-  }
-
-  if (_faucetAccount) {
-    return _faucetAccount;
   }
   return activeFaucet;
 };
@@ -86,8 +81,6 @@ export const checkForNonFaucetAccount = async () => {
     nonFaucetAccount: "",
     faucetAccount: activeFaucet
   };
-
-  console.log('all accounts', _allAccounts, accounts);
 
   for (const account of _allAccounts) {
     const _id = account.id().to_string();
