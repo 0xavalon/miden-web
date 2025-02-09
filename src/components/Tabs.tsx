@@ -16,7 +16,7 @@ import {
   checkForNonFaucetAccount,
   consumeAvailableNotes,
   createAccount,
-  createCompanyAccountInBackend,
+  createAccountInBackend,
   getBalance,
   getExistingAccountFromBackend,
   importNoteFiles,
@@ -43,7 +43,7 @@ const Tabs = () => {
   const [userAccountId, setUserAccountId] = useState("");
   const [userType, setUserType] = useState("");
   const [activeFaucet, setActiveFaucet] = useState(""); // Dummy faucet address
-  const [accountDetails, setAccountDetails] = useState<AccountDetails>({} as AccountDetails);
+  const [accountDetailsBackend, setAccountDetailsBackend] = useState<AccountDetails>({} as AccountDetails);
   const [account, setAccount] = useState<Account>();
   const [selectedAccountBalance, setSelectedAccountBalance] = useState("0");
   const [isAccountCreated, setIsAccountCreated] = useState<boolean>(false);
@@ -63,8 +63,8 @@ const Tabs = () => {
     const _id = _account.id().to_string();
     const userType = activeTab === "Business" ? "employer" : "employee";
     try{
-      createCompanyAccountInBackend(_id,userType).then(response => {
-        console.log('response', response);
+      createAccountInBackend(_id,userType).then(response => {
+        setAccountDetailsBackend(response.data);
       });
       setUserType(userType);
     } catch (error: any) {

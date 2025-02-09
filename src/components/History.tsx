@@ -57,7 +57,6 @@ const History = ({userAccountId}: HistoryProps) => {
           historyData.push(item);
         }
       });
-
     } catch (error) {
       console.error("Error fetching existing accounts:", error);
     }

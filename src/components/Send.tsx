@@ -7,6 +7,7 @@ import teamwork from "../assets/images/teamwork.png";
 import {
   createMultipleNotes,
   exportNote,
+  savePayrollNoteDataToBackend,
 } from "../utils";
 
 const recipientSchema = z.object({
@@ -102,9 +103,15 @@ const Send = ({ onClose, balance, userAccountId, activeFaucet, updateAccountBala
           console.log(`Note data is not found. id:${id}, account: ${username}`)
         } 
       }
-      // await savePayrollNoteDataToBackend(_noteResults, accountId, recipients);
       setNoteResults(_noteResults);
       updateAccountBalance();
+      try{
+        savePayrollNoteDataToBackend(_noteResults, userAccountId).then((response) => {
+          console.log('payroll data is saved in backend',response);
+        })
+      } catch{
+        console.log('error saving payroll data in backend')
+      }
     }
     setIsLoading(false);
     reset({

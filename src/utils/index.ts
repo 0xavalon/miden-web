@@ -617,7 +617,7 @@ export function generateRandomString(length = 6) {
     .substring(2, 2 + length);
 }
 
-export const createCompanyAccountInBackend = async (
+export const createAccountInBackend = async (
   accountId: string,
   userType: string,
   employerId: string = "679f1ddb49e80051f944f1f7" // mongodb default user Id
@@ -688,8 +688,7 @@ export const savePayrollNoteDataToBackend = async (
     filename: string;
     amount: any;
   }[],
-  sender: string,
-  recipients: { username: string; amount: number }[]
+  sender: string
 ) => {
   try {
     const randomSuffix = generateRandomString();
@@ -706,7 +705,7 @@ export const savePayrollNoteDataToBackend = async (
     const payload = {
       payrollName,
       payments,
-      hash: `0x${generateRandomString()}1234`,
+      hash: `0x${generateRandomString(44)}`,
     };
 
     console.log("Payload to save payroll data to backend", payload);
