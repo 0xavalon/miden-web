@@ -33,6 +33,7 @@ const historyData: HistoryItem[] = [];
 const History = ({ userAccountId }: HistoryProps) => {
   const [activeTab, setActiveTab] = useState<string>("Send");
   const [loading, setLoading] = useState(true);
+  const [isConsuming, setIsConsuming] = useState(false);
 
   const getHistories = async () => {
     if (!userAccountId) return;
@@ -77,14 +78,16 @@ const History = ({ userAccountId }: HistoryProps) => {
   };
 
   const _addNotesToAccount = async (item: any) => {
+    setIsConsuming(true);
     await importNotesFromData(item.noteData, item.ownerId); // Consume notes directly to account(item);
+    setIsConsuming(false);
   };
 
   const filteredHistory = historyData.filter((item) => item.type === activeTab);
 
   useEffect(() => {
     getHistories();
-  }, [activeTab]);
+  }, [activeTab,isConsuming]);
 
   if (loading) return <HistorySkeleton />;
 
@@ -135,10 +138,12 @@ const History = ({ userAccountId }: HistoryProps) => {
                   </button>
                 </div>
                 <div className="flex items-center flex-row gap-2">
-                <p className="text-[#75808a] text-sm font-medium font-inter leading-[21px]">
-                  To {item.recipients} recipients
-                </p>
-                  {item.isSpent && <Icons.assetAdded color="grey" className="h-5 w-5" />}
+                  <p className="text-[#75808a] text-sm font-medium font-inter leading-[21px]">
+                    To {item.recipients} recipients
+                  </p>
+                  {item.isSpent && (
+                    <Icons.assetAdded color="grey" className="h-5 w-5" />
+                  )}
                 </div>
               </div>
             </div>
@@ -154,9 +159,17 @@ const History = ({ userAccountId }: HistoryProps) => {
                   className="bg-[#0B3CEB] rounded-full py-1 px-3 inline-flex items-center justify-center"
                   onClick={() => _addNotesToAccount(item)}
                 >
-                  <span className="text-white font-normal text-sm">{activeTab === 'Send' ? 'Sent': 'Accept'}</span>
+                  <span className="text-white font-normal text-sm">
+                    {activeTab === "Send"
+                      ? "Sent"
+                      : isConsuming
+                      ? "Accepting"
+                      : "Accept"}
+                  </span>
                 </button>
-              ): ""}
+              ) : (
+                ""
+              )}
             </div>
           </li>
         ))}

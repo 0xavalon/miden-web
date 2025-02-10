@@ -501,7 +501,6 @@ const _exportNotesArray = async (outputNotes: string[]) => {
   for (const noteId of outputNotes) {
     try {
       const noteData = await webClient.export_note(noteId, "Full");
-      console.log("noteData", noteData);
       if (noteData) noteDataLists.push({ noteId, noteData });
     } catch (error) {
       console.error(`Failed to fetch noteData for noteId: ${noteId}`, error);
