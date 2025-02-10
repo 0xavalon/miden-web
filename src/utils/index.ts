@@ -206,11 +206,11 @@ export const downloadNotesFromHash = async (item: any) => {
 };
 
 export const downloadNotesFromBackend = async (item: any) => {
-  // await importNotesFromData(item.noteData, item.ownerId); // Consume notes directly to account
-  exportNote(
-    new Uint8Array(item.noteData),
-    `${item.ownerId ? item.ownerId : item.noteId}_${item.amount}.mno`
-  );
+  await importNotesFromData(item.noteData, item.ownerId); // Consume notes directly to account
+  // exportNote(
+  //   new Uint8Array(item.noteData),
+  //   `${item.ownerId ? item.ownerId : item.noteId}_${item.amount}.mno`
+  // );
 };
 
 export const importNoteFiles = async (file: File): Promise<void> => {
