@@ -6,19 +6,24 @@ import {
   X,
   CircleArrowOutDownLeft,
   CircleFadingPlus,
-  RefreshCcwDot,
-  ArrowLeft
+  RefreshCcw,
+  Plus,
+  ArrowLeft,
+  Blocks
+  
 } from "lucide-react";
 
 export type Icon = LucideIcon;
 
 export const Icons = {
   close: X,
+  plus: Plus,
   arrowLeft: ArrowLeft,
+  deployFaucet: Blocks,
   circleMinus: CircleMinus,
   addCustomAsset: CircleFadingPlus,
   arrowDownToLine: ArrowDownToLine,
-  findAvailableAsset: RefreshCcwDot,
+  findAvailableAsset: RefreshCcw,
   addDefaultAsset: CircleArrowOutDownLeft,
   send: ({
     className,

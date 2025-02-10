@@ -173,7 +173,8 @@ const AccountCard = ({
           />
         </div>
       </div>
-      <div className="flex justify-between gap-4 mt-6 px-8 pb-8">
+      <div className="flex flex-col gap-4 mt-6 px-8 pb-8">
+        <div className="flex justify-between ">
         <button
           onClick={onImportClick}
           className="flex items-center justify-center w-[174px] px-4 py-4 bg-white border rounded-full shadow"
@@ -192,15 +193,27 @@ const AccountCard = ({
             Send
           </span>
         </button>
+        </div>
+        <div className="flex justify-between ">
         <button
           onClick={handleAddFaucetBalance}
           className="flex items-center justify-center w-[174px] px-4 py-4 bg-white border rounded-full shadow"
         >
-          <Icons.send />
+          <Icons.deployFaucet />
           <span className="text-[#151515] text-base font-semibold font-inter leading-normal ml-2">
-            Add Faucet
+            Deploy asset
           </span>
         </button>
+        <button
+          onClick={handleAddFaucetBalance}
+          className="flex items-center justify-center w-[174px] px-4 py-4 bg-white border rounded-full shadow"
+        >
+          <Icons.plus />
+          <span className="text-[#151515] text-base font-semibold font-inter leading-normal ml-2">
+            100 Faucet
+          </span>
+        </button>
+        </div>
       </div>
     </div>
   );

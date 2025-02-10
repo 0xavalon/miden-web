@@ -10,13 +10,12 @@ import {
 } from "../utils";
 import { Icons } from "./icons";
 
-
 interface HistoryItem {
   id: number;
   title: string;
   hash: string;
   noteId: string;
-  noteData: Uint8Array,
+  noteData: Uint8Array;
   recipients: number;
   amount: string;
   ownerId: string;
@@ -29,18 +28,20 @@ type HistoryProps = {
 
 const historyData: HistoryItem[] = [];
 
-
-const History = ({userAccountId}: HistoryProps) => {
+const History = ({ userAccountId }: HistoryProps) => {
   const [activeTab, setActiveTab] = useState<string>("Send");
   const [loading, setLoading] = useState(true);
 
   const getHistories = async () => {
-    if(!userAccountId) return;
+    if (!userAccountId) return;
     setLoading(true);
 
-    try{
+    try {
       const { token } = await getExistingAccountFromBackend(userAccountId);
-      const { data: _histories } = await getHistoryFromBackend(activeTab, token);
+      const { data: _histories } = await getHistoryFromBackend(
+        activeTab,
+        token
+      );
 
       const historyBackend: HistoryItem[] = [];
       _histories.forEach((item: any) => {
@@ -53,7 +54,7 @@ const History = ({userAccountId}: HistoryProps) => {
           recipients: 1,
           amount: item.amount,
           ownerId: item.ownerId?.walletId,
-          type: activeTab === 'Send' ? 'Send' : 'Receive'
+          type: activeTab === "Send" ? "Send" : "Receive",
         });
       });
       historyBackend.forEach((item) => {
@@ -70,17 +71,15 @@ const History = ({userAccountId}: HistoryProps) => {
 
   const _downloadSpecificNotes = (item: any) => {
     downloadNotesFromBackend(item);
-  }
+  };
 
-  const filteredHistory = historyData.filter(
-    (item) => item.type === activeTab
-  );
+  const filteredHistory = historyData.filter((item) => item.type === activeTab);
 
   useEffect(() => {
     getHistories();
   }, [activeTab]);
 
-  if(loading) return <HistorySkeleton/>;
+  if (loading) return <HistorySkeleton />;
 
   return (
     <div className="p-6 px-8 py-10 flex flex-col bg-white rounded-[32px] shadow-[0px_0px_4px_0px_rgba(0,0,0,0.12)] w-[433px] min-h-[430px]">
@@ -112,27 +111,37 @@ const History = ({userAccountId}: HistoryProps) => {
               <div className="w-14 h-14 bg-[#d9bbff] rounded-full flex items-center justify-center text-[#49404d] text-2xl font-bold font-inter leading-6">
                 M
               </div>
-              <div className="ml-3">
-              <div className="w-full gap-3 flex flex-row items-center mt-2">
-                <CopyToClipboard
-                  textToCopy={item.hash}
-                  displayText={item.title}
-                  textClassName="text-[#151515] text-base font-semibold font-inter leading-6"
-                />
-                <button
-                    onClick={() => {_downloadSpecificNotes(item)}}
+              <div className="ml-3 flex flex-col">
+                <div className="w-full gap-3 flex flex-row items-center mt-2">
+                  <CopyToClipboard
+                    textToCopy={item.hash}
+                    displayText={item.title}
+                    textClassName="text-[#151515] text-base font-semibold font-inter leading-6"
+                  />
+                  <button
+                    onClick={() => {
+                      _downloadSpecificNotes(item);
+                    }}
                     className="text-[#151515] opacity-60"
                   >
                     <Icons.arrowDownToLine className="h-5 w-5" />
                   </button>
-                  </div>
+                </div>
                 <p className="text-[#75808a] text-sm font-medium font-inter leading-[21px]">
                   To {item.recipients} recipients
                 </p>
               </div>
             </div>
-            <div className="text-[#151515] text-base font-semibold font-inter leading-6">
+            {/* <div className="text-[#151515] text-base font-semibold font-inter leading-6">
               {item.amount} Miden
+            </div> */}
+            <div className="flex flex-col items-start gap-1">
+              <div className="text-[#151515] text-base font-semibold font-inter leading-6">
+                {item.amount} Miden
+              </div>
+              <button className="bg-[#0B3CEB] rounded-full py-1 px-3 inline-flex items-center justify-center">
+                <span className="text-white font-normal text-sm">Accept</span>
+              </button>
             </div>
           </li>
         ))}
@@ -158,10 +167,7 @@ const HistorySkeleton = () => {
         {Array(5)
           .fill(0)
           .map((_, index) => (
-            <li
-              key={index}
-              className="flex items-center justify-between gap-4"
-            >
+            <li key={index} className="flex items-center justify-between gap-4">
               {/* Left Section (Avatar + Texts) */}
               <div className="flex items-center">
                 <div className="w-14 h-14 bg-gray-200 rounded-full animate-pulse"></div>
