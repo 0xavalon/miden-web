@@ -6,7 +6,7 @@ import CopyToClipboard from "./CopyToClipboard";
 import bg from "../assets/images/purple-bg.png";
 import GenerateNewFaucet from "./GenerateNewFaucet";
 import FindAvailableFaucet from "./FindAvailableFaucet";
-import { mintFaucetAccount } from "../utils";
+import { createNewFaucetAccount, mintFaucetAccount } from "../utils";
 
 interface AccountCardProps {
   username: string;
@@ -162,10 +162,10 @@ const AccountCard = ({
             textClassName="text font-semibold leading-[16px] text-[#151515] opacity-60"
           />
 
-          <GenerateNewFaucet
+          {/* <GenerateNewFaucet
             className="mt-2 ml-2 text-[#151515] opacity-60 text font-semibold"
             setActiveFaucet={setActiveFaucet}
-          />
+          /> */}
 
           <FindAvailableFaucet
             className="mt-2 ml-2 text-[#151515] opacity-60 text font-semibold"
@@ -177,7 +177,7 @@ const AccountCard = ({
         <div className="flex justify-between ">
         <button
           onClick={onImportClick}
-          className="flex items-center justify-center w-[174px] px-4 py-4 bg-white border rounded-full shadow"
+          className="flex items-center justify-center w-[174px] px-3 py-2 bg-white border rounded-full shadow"
         >
           <Icons.import />
           <span className="text-[#151515] text-base font-semibold font-inter leading-normal ml-2">
@@ -186,7 +186,7 @@ const AccountCard = ({
         </button>
         <button
           onClick={onSendClick}
-          className="flex items-center justify-center w-[174px] px-4 py-4 bg-white border rounded-full shadow"
+          className="flex items-center justify-center w-[174px] px-3 py-2 bg-white border rounded-full shadow"
         >
           <Icons.send />
           <span className="text-[#151515] text-base font-semibold font-inter leading-normal ml-2">
@@ -196,8 +196,8 @@ const AccountCard = ({
         </div>
         <div className="flex justify-between ">
         <button
-          onClick={handleAddFaucetBalance}
-          className="flex items-center justify-center w-[174px] px-4 py-4 bg-white border rounded-full shadow"
+          onClick={() => createNewFaucetAccount(setActiveFaucet)}
+          className="flex items-center justify-center w-[174px] px-3 py-2 bg-white border rounded-full shadow"
         >
           <Icons.deployFaucet />
           <span className="text-[#151515] text-base font-semibold font-inter leading-normal ml-2">
@@ -206,7 +206,7 @@ const AccountCard = ({
         </button>
         <button
           onClick={handleAddFaucetBalance}
-          className="flex items-center justify-center w-[174px] px-4 py-4 bg-white border rounded-full shadow"
+          className="flex items-center justify-center w-[174px] px-3 py-2 bg-white border rounded-full shadow"
         >
           <Icons.plus />
           <span className="text-[#151515] text-base font-semibold font-inter leading-normal ml-2">
