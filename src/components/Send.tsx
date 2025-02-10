@@ -99,6 +99,7 @@ const Send = ({ onClose, balance, userAccountId, activeFaucet, updateAccountBala
             recipientId: username,
             amount: amount,
             filename: `${username}_${amount}.mno`,
+            assetAddress: activeFaucet,
           });
         } else {
           console.log(`Note data is not found. id:${id}, account: ${username}`)
@@ -260,7 +261,7 @@ const Send = ({ onClose, balance, userAccountId, activeFaucet, updateAccountBala
             className="text-blue-600 flex items-center space-x-1 mt-4"
           >
              {/* Conditionally render this section if userType is 'employee' */}
-          {userType !== "employer" && (
+          {userType === "employer" && (
             <div>
               <span>+</span> <span>Add another recipient</span>
             </div>

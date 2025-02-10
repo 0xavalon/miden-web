@@ -206,11 +206,11 @@ export const downloadNotesFromHash = async (item: any) => {
 };
 
 export const downloadNotesFromBackend = async (item: any) => {
-  await importNotesFromData(item.noteData, item.ownerId);
-  // exportNote(
-  //   new Uint8Array(item.noteData),
-  //   `${item.ownerId ? item.ownerId : item.noteId}_${item.amount}.mno`
-  // );
+  // await importNotesFromData(item.noteData, item.ownerId); // Consume notes directly to account
+  exportNote(
+    new Uint8Array(item.noteData),
+    `${item.ownerId ? item.ownerId : item.noteId}_${item.amount}.mno`
+  );
 };
 
 export const importNoteFiles = async (file: File): Promise<void> => {
@@ -242,7 +242,6 @@ export const importNotesFromData = async (noteData: any, targetWalletAddress: st
   if (noteData) {
       const arrayBuffer = noteData as ArrayBuffer; // Assert type
       const byteArray = new Uint8Array(arrayBuffer);
-      console.log('byte array', byteArray);
 
       try {
         await sleep(100);
@@ -348,7 +347,6 @@ export const consumeAvailableNotes = async (targetAccount: string) => {
   const notes = await webClient.get_consumable_notes(
     AccountId.from_hex(targetAccount)
   );
-  console.log(notes);
   console.log(
     `consuming notes for account id: ${targetAccount}, Notes Found: ${notes.length}`
   );
@@ -724,6 +722,7 @@ export const savePayrollNoteDataToBackend = async (
     recipientId: string;
     filename: string;
     amount: any;
+    assetAddress: string;
   }[],
   sender: string
 ) => {
@@ -736,6 +735,7 @@ export const savePayrollNoteDataToBackend = async (
         noteData: noteData.noteData,
         walletId: noteData.recipientId,
         amount: noteData.amount,
+        assetAddress: noteData.assetAddress,
       };
     });
 
@@ -765,6 +765,7 @@ export const createOneToOneTx = async (noteResults: {
   recipientId: string;
   filename: string;
   amount: any;
+  assetAddress: string;
 }[],
 sender: string) => {
     try{
@@ -773,6 +774,7 @@ sender: string) => {
         "noteId": noteResults[0].noteId,
         "noteData": noteResults[0].noteData,
         "amount": noteResults[0].amount,
+        "assetAddress": noteResults[0].assetAddress
       });
       const token = await getExistingAccountFromBackend(sender);
       

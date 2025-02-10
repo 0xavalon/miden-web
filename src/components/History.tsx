@@ -39,7 +39,7 @@ const History = ({userAccountId}: HistoryProps) => {
     setLoading(true);
 
     try{
-      const {token} = await getExistingAccountFromBackend(userAccountId);
+      const { token } = await getExistingAccountFromBackend(userAccountId);
       const { data: _histories } = await getHistoryFromBackend(activeTab, token);
 
       const historyBackend: HistoryItem[] = [];
