@@ -83,7 +83,6 @@ const Tabs = () => {
         companyName,
         password
       );
-      setAccountDetailsBackend(response.data);
       console.log('backend details',response.data);
       console.log("Account created:", response.data);
     } catch (error) {
@@ -184,6 +183,7 @@ const Tabs = () => {
         const _id = accountDetails.nonFaucetAccount;
         if(accountDetails.faucetAccount) setActiveFaucet(accountDetails.faucetAccount);
         if(accountDetails?.profile) setUserType(accountDetails?.profile.userType);
+        if(accountDetails?.profile?.name) setAccountDetailsBackend(accountDetails?.profile);
         setIsAccountCreated(true);
         setUserAccountId(_id);
         setIsLoading(false);
