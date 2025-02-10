@@ -312,6 +312,7 @@ const Tabs = () => {
             activeFauct = {activeFaucet}
             setActiveFaucet={setActiveFaucet}
             updateAccountBalance={updateAccountBalance}
+            userType={userType}
           />
 
           {selectedFile ? (

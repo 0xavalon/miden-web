@@ -18,6 +18,7 @@ interface AccountCardProps {
   activeFauct: string;
   setActiveFaucet: React.Dispatch<React.SetStateAction<string>>
   updateAccountBalance: () => Promise<void>;
+  userType: string;
 }
 
 const AccountCard = ({
@@ -30,6 +31,7 @@ const AccountCard = ({
   activeFauct,
   setActiveFaucet,
   updateAccountBalance,
+  userType,
 }: AccountCardProps) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
@@ -194,7 +196,7 @@ const AccountCard = ({
           </span>
         </button>
         </div>
-        <div className="flex justify-between ">
+        { userType === 'employer' && <div className="flex justify-between ">
         <button
           onClick={() => createNewFaucetAccount(setActiveFaucet)}
           className="flex items-center justify-center w-[174px] px-3 py-2 bg-white border rounded-full shadow"
@@ -213,7 +215,7 @@ const AccountCard = ({
             100 Faucet
           </span>
         </button>
-        </div>
+        </div>}
       </div>
     </div>
   );
