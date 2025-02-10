@@ -25,6 +25,7 @@ import {
   syncClient,
 } from "../utils";
 import SignupForm from "./SignupForm";
+import Navbar from "./Navbar";
 
 interface AccountDetails {
   _id: string;
@@ -82,6 +83,8 @@ const Tabs = () => {
         companyName,
         password
       );
+      setAccountDetailsBackend(response.data);
+      console.log('backend details',response.data);
       console.log("Account created:", response.data);
     } catch (error) {
       console.error("Error creating account:", error);
@@ -253,6 +256,11 @@ const Tabs = () => {
           />
         </div>
       )} */}
+
+    {isAccountCreated && (<div className="fixed top-0 left-0 w-full bg-white z-50">
+        <Navbar companyName={accountDetailsBackend.name} totalRecipients={24} />
+    </div>)}
+
       {isLoading && <LoadingScreen />}
       {!isLoading && !isAccountCreated && (
         <div className="flex flex-col items-center justify-center min-h-screen bg-[#D9BBFF] p-4">
@@ -293,7 +301,7 @@ const Tabs = () => {
       )}
 
       {isAccountCreated && !isLoading && (
-        <div className="flex flex-col min-h-screen lg:flex-row justify-center items-center gap-6 p-8 bg-white">
+        <div className="flex flex-col mt-[88px] lg:mt-[40px] min-h-screen lg:flex-row justify-center items-center gap-6 p-8 bg-white">
           <AccountCard
             username={userName}
             balance={accountBalance}

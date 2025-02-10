@@ -666,11 +666,11 @@ export const createAccountInBackend = async (
       const email = `co_${randomSuffix}@example.com`; // Dynamic email
       const username = `co_username_${randomSuffix}`; // Dynamic username
       const payload = {
-        name: "Company XYZ",
+        name: companyName,
         email,
-        password: "securepassword",
+        password: password,
         userType: "employer",
-        companyName: "Company XYZ Ltd.",
+        companyName: companyName,
         username,
         walletId: accountId,
       };
@@ -685,9 +685,9 @@ export const createAccountInBackend = async (
       const username = `em_username_${randomSuffix}`; // Dynamic username
 
       const response = await axios.post(`${API_URL}/api/users/register`, {
-        name: "John Doe",
+        name: companyName,
         email,
-        password: "securepassword",
+        password: password,
         userType: "employee",
         username,
         walletId: accountId,
