@@ -24,6 +24,7 @@ import {
   sleep,
   syncClient,
 } from "../utils";
+import SignupForm from "./SignupForm";
 
 interface AccountDetails {
   _id: string;
@@ -49,35 +50,73 @@ const Tabs = () => {
   const [isAccountCreated, setIsAccountCreated] = useState<boolean>(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [accountBalance, setAccountBalance] = useState<string>("0");
+  const [showSignupForm, setShowSignupForm] = useState<boolean>(false);
   const [importStatus, setImportStatus] = useState<
     "idle" | "importing" | "success" | "error"
   >("idle");
   const [showSend, setShowSend] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  const handleGoBack = (): void => {
+    setShowSignupForm(false);
+  };
 
-  const handleCreateAccount = async (): Promise<void> => {
+  const handleSignupSubmit = async (
+    email: string,
+    companyName: string,
+    password: string
+  ) => {
+    setShowSignupForm(false);
     setIsLoading(true);
+
     await sleep(1000);
     const _account = await createAccount();
     const _id = _account.id().to_string();
     const userType = activeTab === "Business" ? "employer" : "employee";
-    try{
-      createAccountInBackend(_id,userType).then(response => {
-        setAccountDetailsBackend(response.data);
-      });
-      setUserType(userType);
-      console.log('usersss',userType);
-    } catch (error: any) {
-      console.log(error);
+
+    try {
+      const response = await createAccountInBackend(
+        _id,
+        userType,
+        email,
+        companyName,
+        password
+      );
+      console.log("Account created:", response.data);
+    } catch (error) {
+      console.error("Error creating account:", error);
     }
+
     const _balance = await getBalance(_id);
     setAccountBalance(_balance || "0");
-    setUserName(_id);
     setUserAccountId(_id);
+    setUserType(userType);
     setIsLoading(false);
     setIsAccountCreated(true);
   };
+
+  // const handleCreateAccount = async (): Promise<void> => {
+  //   setIsLoading(true);
+  //   await sleep(1000);
+  //   const _account = await createAccount();
+  //   const _id = _account.id().to_string();
+  //   const userType = activeTab === "Business" ? "employer" : "employee";
+  //   try{
+  //     createAccountInBackend(_id,userType).then(response => {
+  //       setAccountDetailsBackend(response.data);
+  //     });
+  //     setUserType(userType);
+  //     console.log('usersss',userType);
+  //   } catch (error: any) {
+  //     console.log(error);
+  //   }
+  //   const _balance = await getBalance(_id);
+  //   setAccountBalance(_balance || "0");
+  //   setUserName(_id);
+  //   setUserAccountId(_id);
+  //   setIsLoading(false);
+  //   setIsAccountCreated(true);
+  // };
   const handleImportClick = (): void => {
     setShowSend(false);
     if (fileInputRef.current) {
@@ -180,9 +219,10 @@ const Tabs = () => {
   return (
     // <div className="flex flex-col items-center justify-center min-h-screen bg-purple-100 p-4">
     <>
-      {isLoading && <LoadingScreen />}
+      {/* {isLoading && <LoadingScreen />}
       {!isLoading && !isAccountCreated && (
         <div className="flex flex-col items-center justify-center min-h-screen bg-[#D9BBFF] p-4">
+
           <div className="flex bg-white rounded-full shadow-md p-1 w-[420px]">
             <TabButton
               activeTab={activeTab}
@@ -207,9 +247,48 @@ const Tabs = () => {
                 ? "Create an account to enable bulk fund disbursement"
                 : "Create an account to manage your personal tasks"
             }
-            handleCreateAccount={handleCreateAccount}
+            // handleCreateAccount={handleCreateAccount}
+            handleCreateAccount={() => setShowSignupForm(true)}
             handleImportAccount={handleImportClick}
           />
+        </div>
+      )} */}
+      {isLoading && <LoadingScreen />}
+      {!isLoading && !isAccountCreated && (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-[#D9BBFF] p-4">
+          {showSignupForm ? (
+            <SignupForm onSubmit={handleSignupSubmit} onBack={handleGoBack} />
+          ) : (
+            <>
+              <div className="flex bg-white rounded-full shadow-md p-1 w-[420px]">
+                <TabButton
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                  tabName="Business"
+                />
+                <TabButton
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                  tabName="Employee"
+                />
+              </div>
+
+              <TabContent
+                title={
+                  activeTab === "Business"
+                    ? "Create a business account"
+                    : "Create an employee account"
+                }
+                description={
+                  activeTab === "Business"
+                    ? "Create an account to enable bulk fund disbursement"
+                    : "Create an account to manage your personal tasks"
+                }
+                handleCreateAccount={() => setShowSignupForm(true)}
+                handleImportAccount={handleImportClick}
+              />
+            </>
+          )}
         </div>
       )}
 
