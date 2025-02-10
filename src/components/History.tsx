@@ -87,7 +87,7 @@ const History = ({ userAccountId }: HistoryProps) => {
 
   useEffect(() => {
     getHistories();
-  }, [activeTab,isConsuming]);
+  }, [activeTab]);
 
   if (loading) return <HistorySkeleton />;
 

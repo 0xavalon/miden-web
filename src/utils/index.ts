@@ -96,7 +96,7 @@ export const checkForNonFaucetAccount = async () => {
       }
     }
   }
-
+  if(accounts.nonFaucetAccount === "") return accounts;
   try{
     const userDetails = await getExistingAccountFromBackend(accounts.nonFaucetAccount);
     accounts.profile = userDetails.data;
@@ -654,17 +654,18 @@ export const createAccountInBackend = async (
   accountId: string,
   userType: string,
   employerId: string = "679f1ddb49e80051f944f1f7", // mongodb default user Id
-  companyName: string,
-  password: string,
+  // companyName: string,
+  // password: string,
 ) => {
   try {
     const randomSuffix = generateRandomString();
-
+    let password = 'secet';
     if (userType === "employer") {
+      let companyName = 'company_' + randomSuffix;
       const email = `co_${randomSuffix}@example.com`; // Dynamic email
       const username = `co_username_${randomSuffix}`; // Dynamic username
       const payload = {
-        name: companyName,
+        name: `${companyName}`,
         email,
         password: password,
         userType: "employer",
@@ -681,6 +682,7 @@ export const createAccountInBackend = async (
     } else if (userType === "employee") {
       const email = `em_${randomSuffix}@example.com`; // Dynamic email
       const username = `em_username_${randomSuffix}`; // Dynamic username
+      let companyName = `em_name` + randomSuffix;
 
       const response = await axios.post(`${API_URL}/api/users/register`, {
         name: companyName,
@@ -691,7 +693,6 @@ export const createAccountInBackend = async (
         walletId: accountId,
         employerId: !employerId ? "679f1ddb49e80051f944f1f7" : employerId,
       });
-
       return response.data.data;
     }
   } catch (error) {
@@ -701,6 +702,7 @@ export const createAccountInBackend = async (
 };
 
 export const getExistingAccountFromBackend = async (accountId: string) => {
+  if(!accountId || accountId === "") return;
   try {
     const response = await axios.post(
       `${API_URL}/api/users/profile-with-token`,

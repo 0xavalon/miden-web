@@ -80,8 +80,8 @@ const Tabs = () => {
         _id,
         userType,
         email,
-        companyName,
-        password
+        // companyName,
+        // password
       );
       console.log('backend details',response.data);
       console.log("Account created:", response.data);
@@ -97,28 +97,28 @@ const Tabs = () => {
     setIsAccountCreated(true);
   };
 
-  // const handleCreateAccount = async (): Promise<void> => {
-  //   setIsLoading(true);
-  //   await sleep(1000);
-  //   const _account = await createAccount();
-  //   const _id = _account.id().to_string();
-  //   const userType = activeTab === "Business" ? "employer" : "employee";
-  //   try{
-  //     createAccountInBackend(_id,userType).then(response => {
-  //       setAccountDetailsBackend(response.data);
-  //     });
-  //     setUserType(userType);
-  //     console.log('usersss',userType);
-  //   } catch (error: any) {
-  //     console.log(error);
-  //   }
-  //   const _balance = await getBalance(_id);
-  //   setAccountBalance(_balance || "0");
-  //   setUserName(_id);
-  //   setUserAccountId(_id);
-  //   setIsLoading(false);
-  //   setIsAccountCreated(true);
-  // };
+  const handleCreateAccount = async (): Promise<void> => {
+    setIsLoading(true);
+    await sleep(1000);
+    const _account = await createAccount();
+    const _id = _account.id().to_string();
+    const userType = activeTab === "Business" ? "employer" : "employee";
+    try{
+      createAccountInBackend(_id,userType).then(response => {
+        setAccountDetailsBackend(response.data);
+      });
+      setUserType(userType);
+      console.log('usersss',userType);
+    } catch (error: any) {
+      console.log(error);
+    }
+    const _balance = await getBalance(_id);
+    setAccountBalance(_balance || "0");
+    setUserName(_id);
+    setUserAccountId(_id);
+    setIsLoading(false);
+    setIsAccountCreated(true);
+  };
   const handleImportClick = (): void => {
     setShowSend(false);
     if (fileInputRef.current) {
@@ -222,7 +222,7 @@ const Tabs = () => {
   return (
     // <div className="flex flex-col items-center justify-center min-h-screen bg-purple-100 p-4">
     <>
-      {/* {isLoading && <LoadingScreen />}
+      {isLoading && <LoadingScreen />}
       {!isLoading && !isAccountCreated && (
         <div className="flex flex-col items-center justify-center min-h-screen bg-[#D9BBFF] p-4">
 
@@ -250,18 +250,18 @@ const Tabs = () => {
                 ? "Create an account to enable bulk fund disbursement"
                 : "Create an account to manage your personal tasks"
             }
-            // handleCreateAccount={handleCreateAccount}
-            handleCreateAccount={() => setShowSignupForm(true)}
+            handleCreateAccount={handleCreateAccount}
+            // handleCreateAccount={() => setShowSignupForm(true)}
             handleImportAccount={handleImportClick}
           />
         </div>
-      )} */}
+      )}
 
     {isAccountCreated && (<div className="fixed top-0 left-0 w-full bg-white z-50">
-        <Navbar companyName={accountDetailsBackend.name} totalRecipients={24} />
+        <Navbar companyName={accountDetailsBackend?.name} totalRecipients={0} />
     </div>)}
 
-      {isLoading && <LoadingScreen />}
+      {/* {isLoading && <LoadingScreen />}
       {!isLoading && !isAccountCreated && (
         <div className="flex flex-col items-center justify-center min-h-screen bg-[#D9BBFF] p-4">
           {showSignupForm ? (
@@ -298,7 +298,7 @@ const Tabs = () => {
             </>
           )}
         </div>
-      )}
+      )} */}
 
       {isAccountCreated && !isLoading && (
         <div className="flex flex-col mt-[88px] lg:mt-[40px] min-h-screen lg:flex-row justify-center items-center gap-6 p-8 bg-white">
