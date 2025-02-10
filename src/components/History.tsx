@@ -152,9 +152,9 @@ const History = ({ userAccountId }: HistoryProps) => {
               {!item.isSpent ? (
                 <button
                   className="bg-[#0B3CEB] rounded-full py-1 px-3 inline-flex items-center justify-center"
-                  onClick={_addNotesToAccount}
+                  onClick={() => _addNotesToAccount(item)}
                 >
-                  <span className="text-white font-normal text-sm">Accept</span>
+                  <span className="text-white font-normal text-sm">{activeTab === 'Send' ? 'Sent': 'Accept'}</span>
                 </button>
               ): ""}
             </div>
