@@ -7,6 +7,7 @@ import {
   getHistoryFromBackend,
   downloadNotesFromBackend,
   sleep,
+  importNotesFromData,
 } from "../utils";
 import { Icons } from "./icons";
 
@@ -20,6 +21,7 @@ interface HistoryItem {
   amount: string;
   ownerId: string;
   type: "Send" | "Receive";
+  isSpent: boolean;
 }
 
 type HistoryProps = {
@@ -55,6 +57,7 @@ const History = ({ userAccountId }: HistoryProps) => {
           amount: item.amount,
           ownerId: item.ownerId?.walletId,
           type: activeTab === "Send" ? "Send" : "Receive",
+          isSpent: item.isSpent,
         });
       });
       historyBackend.forEach((item) => {
@@ -71,6 +74,10 @@ const History = ({ userAccountId }: HistoryProps) => {
 
   const _downloadSpecificNotes = (item: any) => {
     downloadNotesFromBackend(item);
+  };
+
+  const _addNotesToAccount = async (item: any) => {
+    await importNotesFromData(item.noteData, item.ownerId); // Consume notes directly to account(item);
   };
 
   const filteredHistory = historyData.filter((item) => item.type === activeTab);
@@ -111,7 +118,7 @@ const History = ({ userAccountId }: HistoryProps) => {
               <div className="w-14 h-14 bg-[#d9bbff] rounded-full flex items-center justify-center text-[#49404d] text-2xl font-bold font-inter leading-6">
                 M
               </div>
-              <div className="ml-3 flex flex-col">
+              <div className="ml-3 flex flex-col gap-1">
                 <div className="w-full gap-3 flex flex-row items-center mt-2">
                   <CopyToClipboard
                     textToCopy={item.hash}
@@ -127,9 +134,12 @@ const History = ({ userAccountId }: HistoryProps) => {
                     <Icons.arrowDownToLine className="h-5 w-5" />
                   </button>
                 </div>
+                <div className="flex items-center flex-row gap-2">
                 <p className="text-[#75808a] text-sm font-medium font-inter leading-[21px]">
                   To {item.recipients} recipients
                 </p>
+                  {item.isSpent && <Icons.assetAdded color="grey" className="h-5 w-5" />}
+                </div>
               </div>
             </div>
             {/* <div className="text-[#151515] text-base font-semibold font-inter leading-6">
@@ -139,9 +149,14 @@ const History = ({ userAccountId }: HistoryProps) => {
               <div className="text-[#151515] text-base font-semibold font-inter leading-6">
                 {item.amount} Miden
               </div>
-              <button className="bg-[#0B3CEB] rounded-full py-1 px-3 inline-flex items-center justify-center">
-                <span className="text-white font-normal text-sm">Accept</span>
-              </button>
+              {!item.isSpent ? (
+                <button
+                  className="bg-[#0B3CEB] rounded-full py-1 px-3 inline-flex items-center justify-center"
+                  onClick={_addNotesToAccount}
+                >
+                  <span className="text-white font-normal text-sm">Accept</span>
+                </button>
+              ): ""}
             </div>
           </li>
         ))}

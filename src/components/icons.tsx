@@ -9,7 +9,8 @@ import {
   RefreshCcw,
   Plus,
   ArrowLeft,
-  Blocks
+  Blocks,
+  CheckCheck
   
 } from "lucide-react";
 
@@ -20,6 +21,7 @@ export const Icons = {
   plus: Plus,
   arrowLeft: ArrowLeft,
   deployFaucet: Blocks,
+  assetAdded: CheckCheck,
   circleMinus: CircleMinus,
   addCustomAsset: CircleFadingPlus,
   arrowDownToLine: ArrowDownToLine,
