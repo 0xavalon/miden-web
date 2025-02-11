@@ -212,7 +212,7 @@ const AccountCard = ({
         >
           <Icons.plus />
           <span className="text-[#151515] text-base font-semibold font-inter leading-normal ml-2">
-            100 Faucet
+            10000 Faucet
           </span>
         </button>
         </div>}

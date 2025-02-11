@@ -32,7 +32,7 @@ const nodeEndpoint = "https://rpc.testnet.miden.io";
 const delegatedProver = "http://18.118.151.210:8082";
 const API_URL = import.meta.env.VITE_NODE_ENV === 'development' ? `http://localhost:5001`: `https://miden-backend.onrender.com`;
 // let activeFaucet = "0xee1a629024782da00000150b382c06";
-let activeFaucet = "0xd46429c8ffbb4aa000036642f91df1";
+let activeFaucet = "0x05759eff4dad5da00003d5c52482df";
 
 
 
@@ -77,7 +77,7 @@ export const checkForFaucetAccount = async (
       return _id;
     }
   }
-  return "0xd46429c8ffbb4aa000036642f91df1";
+  return activeFaucet;
 };
 
 export const checkForNonFaucetAccount = async () => {
