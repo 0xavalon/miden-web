@@ -444,7 +444,7 @@ export const createMultipleNotes = async (
 
       const noteMetadata = new NoteMetadata(
         senderAccount,
-        NoteType.public(),
+        NoteType.private(),
         NoteTag.from_account_id(targetAccount, NoteExecutionMode.new_local()),
         NoteExecutionHint.none(),
         undefined
