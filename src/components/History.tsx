@@ -50,7 +50,7 @@ const History = ({ userAccountId }: HistoryProps) => {
       _histories.forEach((item: any) => {
         historyBackend.push({
           id: item._id,
-          title: item.title,
+          title: `${item.ownerId?.walletId.slice(0, 3)}...${item.ownerId?.walletId.slice(-3)}`,
           noteId: item.noteId,
           noteData: item.noteData.data,
           hash: `${item.ownerId?.walletId.slice(0, 3)}...${item.ownerId?.walletId.slice(-3)}`,
@@ -124,7 +124,7 @@ const History = ({ userAccountId }: HistoryProps) => {
               <div className="ml-3 flex flex-col gap-1">
                 <div className="w-full gap-3 flex flex-row items-center mt-2">
                   <CopyToClipboard
-                    textToCopy={item.hash}
+                    textToCopy={item.ownerId}
                     displayText={item.title}
                     textClassName="text-[#151515] text-base font-semibold font-inter leading-6"
                   />
