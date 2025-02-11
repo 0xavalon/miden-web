@@ -657,7 +657,7 @@ export function generateRandomString(length = 6) {
 export const createAccountInBackend = async (
   accountId: string,
   userType: string,
-  employerId: string = "679f1ddb49e80051f944f1f7", // mongodb default user Id
+  employerId: string = "67aae62ebc519c28a4564d0d", // mongodb default user Id
   // companyName: string,
   // password: string,
 ) => {
