@@ -28,9 +28,11 @@ import axios from "axios";
 
 const webClient = new WebClient();
 const nodeEndpoint = "http://localhost:57291";
+// const API_URL = `http://localhost:5001`;
+const delegatedProver = "http://18.118.151.210:8082";
 const API_URL = `http://localhost:5001`;
 // let activeFaucet = "0xee1a629024782da00000150b382c06";
-let activeFaucet = "0x12a11f54e5d57ca000000cf2bedf16";
+let activeFaucet = "0x6ffb471fda42b1a0000086e725943c";
 
 export const sleep = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
@@ -51,7 +53,7 @@ const _getAccountId = (accountId: any) => {
 
 export const createClient = async () => {
   await sleep(100);
-  await webClient.create_client(nodeEndpoint);
+  await webClient.create_client(nodeEndpoint, delegatedProver);
 };
 
 export const getAccountsFromDb = async () => {
@@ -73,7 +75,7 @@ export const checkForFaucetAccount = async (
       return _id;
     }
   }
-  return "0x12a11f54e5d57ca000000cf2bedf16";
+  return "0x6ffb471fda42b1a0000086e725943c";
 };
 
 export const checkForNonFaucetAccount = async () => {
@@ -329,8 +331,8 @@ export const getAccountHistory = async () => {
 export const syncClient = async () => {
   try {
     console.log("Attempting to sync the client ...", new Date());
-    await sleep(20000);
-    await webClient.create_client(nodeEndpoint);
+    // await sleep(20000);
+    await webClient.create_client(nodeEndpoint, delegatedProver);
     await webClient.sync_state();
     console.log("syncing done ...", new Date());
   } catch (error: any) {
@@ -339,7 +341,7 @@ export const syncClient = async () => {
 };
 
 export const consumeAvailableNotes = async (targetAccount: string) => {
-  await webClient.create_client(nodeEndpoint);
+  await webClient.create_client(nodeEndpoint,delegatedProver);
   await webClient.fetch_and_cache_account_auth_by_pub_key(
     AccountId.from_hex(targetAccount)
   );
