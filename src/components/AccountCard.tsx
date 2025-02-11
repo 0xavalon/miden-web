@@ -58,7 +58,7 @@ const AccountCard = ({
   };
 
   const handleAddFaucetBalance = async () => { 
-    const isAdded = await mintFaucetAccount(walletAddress, activeFauct, 100)
+    const isAdded = await mintFaucetAccount(walletAddress, activeFauct, 10000)
     if(isAdded) {
        updateAccountBalance();
     } else {
