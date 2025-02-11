@@ -55,7 +55,7 @@ const _getAccountId = (accountId: any) => {
 
 export const createClient = async () => {
   await sleep(100);
-  await webClient.create_client(nodeEndpoint, delegatedProver);
+  await webClient.create_client(nodeEndpoint);
 };
 
 export const getAccountsFromDb = async () => {
@@ -334,7 +334,7 @@ export const syncClient = async () => {
   try {
     console.log("Attempting to sync the client ...", new Date());
     // await sleep(20000);
-    await webClient.create_client(nodeEndpoint, delegatedProver);
+    await webClient.create_client(nodeEndpoint);
     await webClient.sync_state();
     console.log("syncing done ...", new Date());
   } catch (error: any) {
@@ -343,7 +343,7 @@ export const syncClient = async () => {
 };
 
 export const consumeAvailableNotes = async (targetAccount: string) => {
-  await webClient.create_client(nodeEndpoint,delegatedProver);
+  await webClient.create_client(nodeEndpoint);
   await webClient.fetch_and_cache_account_auth_by_pub_key(
     AccountId.from_hex(targetAccount)
   );
