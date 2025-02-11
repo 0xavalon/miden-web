@@ -17,6 +17,7 @@ const CopyToClipboard = ({
   const [isCopy, setIsCopy] = useState(false);
 
   const copyToClipboard = () => {
+    console.log("copyToClipboard", { textToCopy, displayText });
     navigator.clipboard.writeText(textToCopy);
     setIsCopy(true);
 
