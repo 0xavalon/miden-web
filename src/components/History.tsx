@@ -53,7 +53,7 @@ const History = ({ userAccountId }: HistoryProps) => {
           title: item.title,
           noteId: item.noteId,
           noteData: item.noteData.data,
-          hash: `${item._id.slice(0, 3)}...${item._id.slice(-3)}`,
+          hash: `${item.ownerId?.walletId.slice(0, 3)}...${item.ownerId?.walletId.slice(-3)}`,
           recipients: 1,
           amount: item.amount,
           ownerId: item.ownerId?.walletId,
