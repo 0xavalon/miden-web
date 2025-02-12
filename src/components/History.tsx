@@ -166,7 +166,7 @@ const History = ({ userAccountId, updateAccountBalance }: HistoryProps) => {
                   onClick={() => _addNotesToAccount(item)}
                 >
                   <span className="text-white font-normal text-sm">
-                    {activeTab === "Send" ? "Sent" : isConsuming}
+                    {activeTab === "Send" ? "Sent" : consumingState}
                   </span>
                 </button>
               ) : (
