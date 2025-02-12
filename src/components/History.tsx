@@ -49,6 +49,7 @@ const History = ({ userAccountId, updateAccountBalance }: HistoryProps) => {
       );
 
       const historyBackend: HistoryItem[] = [];
+      historyData.length = 0;
       _histories.forEach((item: any) => {
         historyBackend.push({
           id: item._id,
@@ -81,11 +82,9 @@ const History = ({ userAccountId, updateAccountBalance }: HistoryProps) => {
 
   const _addNotesToAccount = async (item: any) => {
     setConsumingState("Accepting");
-    setIsConsuming(true);
     await importNotesFromData(item.noteData, item.ownerId); // Consume notes directly to account(item);
     updateAccountBalance();
     setConsumingState("Accepted");
-    setIsConsuming(false);
   };
 
   const filteredHistory = historyData.filter((item) => item.type === activeTab);
