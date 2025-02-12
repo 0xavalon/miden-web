@@ -57,6 +57,7 @@ const Tabs = () => {
     "idle" | "importing" | "success" | "error"
   >("idle");
   const [showSend, setShowSend] = useState<boolean>(false);
+  const [isFaucetCreationDisabled, setFaucetCreationDisabled] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleGoBack = (): void => {
@@ -187,6 +188,11 @@ const Tabs = () => {
           setUserType(accountDetails?.profile.userType);
         if (accountDetails?.profile?.name)
           setAccountDetailsBackend(accountDetails?.profile);
+
+        if(accountDetails?.profile?.faucetAccounts.length > 0){
+          setActiveFaucet(accountDetails?.profile?.faucetAccounts[0]);
+          setFaucetCreationDisabled(true);
+        }
         setIsAccountCreated(true);
         setUserAccountId(_id);
         setIsLoading(false);
@@ -200,6 +206,7 @@ const Tabs = () => {
 
   const updateAccountBalance = async () => {
     if (userAccountId && activeFaucet !== "") {
+      console.log("activeFaucet", activeFaucet);
       const _balance = await getBalance(userAccountId, activeFaucet);
       setAccountBalance(_balance || "0");
     } else {
@@ -328,6 +335,7 @@ const Tabs = () => {
             setActiveFaucet={setActiveFaucet}
             updateAccountBalance={updateAccountBalance}
             userType={userType}
+            isFaucetCreationDisabled={isFaucetCreationDisabled}
           />
 
           {selectedFile ? (

@@ -4,7 +4,6 @@ import { Icons } from "./icons";
 import CopyToClipboard from "./CopyToClipboard";
 
 import bg from "../assets/images/purple-bg.png";
-import GenerateNewFaucet from "./GenerateNewFaucet";
 import FindAvailableFaucet from "./FindAvailableFaucet";
 import { createNewFaucetAccount, mintFaucetAccount } from "../utils";
 
@@ -19,6 +18,7 @@ interface AccountCardProps {
   setActiveFaucet: React.Dispatch<React.SetStateAction<string>>
   updateAccountBalance: () => Promise<void>;
   userType: string;
+  isFaucetCreationDisabled: boolean;
 }
 
 const AccountCard = ({
@@ -32,10 +32,12 @@ const AccountCard = ({
   setActiveFaucet,
   updateAccountBalance,
   userType,
+  isFaucetCreationDisabled,
 }: AccountCardProps) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const downloadRef = useRef<HTMLAnchorElement | null>(null);
+
 
   const toggleTooltip = () => setShowTooltip((prev) => !prev);
 
@@ -64,7 +66,6 @@ const AccountCard = ({
     } else {
       console.log('Failed to add new faucet balance');
     }
-
   }
 
   const _createNDownloadFile = (fileContent: any) => {
@@ -199,12 +200,15 @@ const AccountCard = ({
         </div>
         { userType === 'employer' && <div className="flex justify-between ">
         <button
-          onClick={() => createNewFaucetAccount(setActiveFaucet)}
-          className="flex items-center justify-center w-[174px] px-3 py-2 bg-white border rounded-full shadow"
+          onClick={() => createNewFaucetAccount(setActiveFaucet, walletAddress)}
+          className={`flex items-center justify-center w-[174px] px-3 py-2 bg-white border rounded-full shadow ${
+            isFaucetCreationDisabled ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+          disabled={isFaucetCreationDisabled}
         >
           <Icons.deployFaucet />
           <span className="text-[#151515] text-base font-semibold font-inter leading-normal ml-2">
-            Deploy asset
+            New faucet
           </span>
         </button>
         <button

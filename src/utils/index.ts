@@ -104,6 +104,7 @@ export const checkForNonFaucetAccount = async () => {
   try{
     const userDetails = await getExistingAccountFromBackend(accounts.nonFaucetAccount);
     accounts.profile = userDetails.data;
+    console.log('user details found from backend',userDetails);
   } catch(error) {
     console.log('error in fetching user details', error);
   }
@@ -112,7 +113,8 @@ export const checkForNonFaucetAccount = async () => {
 };
 
 export const createNewFaucetAccount = async (
-  setActiveFaucet: React.Dispatch<React.SetStateAction<string>>
+  setActiveFaucet: React.Dispatch<React.SetStateAction<string>>,
+  faucetOriginAccount: string
 ) => {
   await syncClient();
   const faucetId = await webClient.new_faucet(
@@ -130,6 +132,19 @@ export const createNewFaucetAccount = async (
   const accountDetails = await webClient.get_account(
     AccountId.from_hex(faucetIdHex)
   );
+
+  // call addFaucetAddress to add the faucet address to the backend
+  try {
+    if(faucetOriginAccount) {
+      addFaucetAddress(faucetIdHex, faucetOriginAccount).then((_response) => {
+        console.log("Faucet address added to backend", _response);
+      });
+    } else {
+      console.log('faucetOriginAccount is not defined');
+    }
+  } catch (error) {
+    console.log("Error adding faucet address to backend", error);
+  }
   return accountDetails;
 };
 
@@ -850,6 +865,36 @@ export const markNoteAsConsumed = async (
     return response.data;
   } catch (error) {
     console.error("Error fetching history from backend:", error);
+    throw error;
+  }
+};
+
+
+export const addFaucetAddress = async (
+  faucetAddress: string,
+  targetAccount: string
+) => {
+  try {
+    const authToken = await getExistingAccountFromBackend(targetAccount);
+
+    let config = {
+      method: "post", // POST request to add a faucet
+      maxBodyLength: Infinity,
+      url: `${API_URL}/api/users/add-faucet`,
+      headers: {
+        Authorization: "Bearer " + authToken.token,
+        "Content-Type": "application/json", // Ensure JSON content type
+      },
+      data: {
+        faucetAddress, // Send faucetAddress in request body
+      },
+    };
+
+    // Make request
+    const response = await axios.request(config);
+    return response.data;
+  } catch (error) {
+    console.error("Error adding faucet address to backend:", error);
     throw error;
   }
 };
