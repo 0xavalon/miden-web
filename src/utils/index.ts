@@ -31,8 +31,8 @@ const webClient = new WebClient();
 const nodeEndpoint = "https://rpc.testnet.miden.io";
 const delegatedProver = "http://18.118.151.210:8082";
 const API_URL = import.meta.env.VITE_NODE_ENV === 'development' ? `http://localhost:5001`: `https://miden-backend.onrender.com`;
-// let activeFaucet = "0xee1a629024782da00000150b382c06";
-let activeFaucet = "0x05759eff4dad5da00003d5c52482df";
+let activeFaucet = import.meta.env.VITE_NODE_ENV === 'development' ? "0x50e7dfe9c5e724a00003e6fe1534c2": "0x05759eff4dad5da00003d5c52482df";
+// let activeFaucet = "0x05759eff4dad5da00003d5c52482df";
 
 
 
@@ -141,7 +141,7 @@ export const mintFaucetAccount = async (
   try {
     if(!accountId || faucetId === '') return;
     console.log('==============', accountId, faucetId, amount);
-    await syncClient();
+    // await syncClient();
 
     console.log('minting asset');
     await webClient.fetch_and_cache_account_auth_by_pub_key(AccountId.from_hex(accountId));
@@ -152,7 +152,7 @@ export const mintFaucetAccount = async (
       NoteType.private(),
       BigInt(amount)
     );
-    await syncClient();
+    // await syncClient();
 
     try {
       const mintedNotes = await webClient.get_consumable_notes(AccountId.from_hex(accountId));
@@ -333,7 +333,7 @@ export const getAccountHistory = async () => {
 export const syncClient = async () => {
   try {
     console.log("Attempting to sync the client ...", new Date());
-    await sleep(20000);
+    await sleep(15000);
     await webClient.create_client(nodeEndpoint);
     await webClient.sync_state();
     console.log("syncing done ...", new Date());
@@ -657,23 +657,23 @@ export function generateRandomString(length = 6) {
 export const createAccountInBackend = async (
   accountId: string,
   userType: string,
-  employerId: string = "67aae62ebc519c28a4564d0d", // mongodb default user Id
-  // companyName: string,
-  // password: string,
+  email: string,
+  password: string,
+  companyIdOrName: string, // mongodb default user Id
 ) => {
   try {
     const randomSuffix = generateRandomString();
-    let password = 'secet';
+    // let password = 'secet';
     if (userType === "employer") {
-      let companyName = 'company_' + randomSuffix;
-      const email = `co_${randomSuffix}@example.com`; // Dynamic email
+      // let companyName = 'company_' + randomSuffix;
+      // const email = `co_${randomSuffix}@example.com`; // Dynamic email
       const username = `co_username_${randomSuffix}`; // Dynamic username
       const payload = {
-        name: `${companyName}`,
+        name: `${companyIdOrName}`,
         email,
         password: password,
         userType: "employer",
-        companyName: companyName,
+        companyName: companyIdOrName,
         username,
         walletId: accountId,
       };
@@ -684,18 +684,18 @@ export const createAccountInBackend = async (
       );
       return response.data.data;
     } else if (userType === "employee") {
-      const email = `em_${randomSuffix}@example.com`; // Dynamic email
+      // const email = `em_${randomSuffix}@example.com`; // Dynamic email
       const username = `em_username_${randomSuffix}`; // Dynamic username
-      let companyName = `em_name` + randomSuffix;
+      // let companyName = `em_name` + randomSuffix;
 
       const response = await axios.post(`${API_URL}/api/users/register`, {
-        name: companyName,
+        name: companyIdOrName,
         email,
         password: password,
         userType: "employee",
         username,
         walletId: accountId,
-        employerId: !employerId ? "679f1ddb49e80051f944f1f7" : employerId,
+        employerId: !companyIdOrName ? "67aae62ebc519c28a4564d0d" : companyIdOrName,
       });
       return response.data.data;
     }

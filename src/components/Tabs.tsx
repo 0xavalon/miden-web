@@ -45,7 +45,8 @@ const Tabs = () => {
   const [userAccountId, setUserAccountId] = useState("");
   const [userType, setUserType] = useState("");
   const [activeFaucet, setActiveFaucet] = useState(""); // Dummy faucet address
-  const [accountDetailsBackend, setAccountDetailsBackend] = useState<AccountDetails>({} as AccountDetails);
+  const [accountDetailsBackend, setAccountDetailsBackend] =
+    useState<AccountDetails>({} as AccountDetails);
   const [account, setAccount] = useState<Account>();
   const [selectedAccountBalance, setSelectedAccountBalance] = useState("0");
   const [isAccountCreated, setIsAccountCreated] = useState<boolean>(false);
@@ -60,7 +61,7 @@ const Tabs = () => {
 
   const handleGoBack = (): void => {
     setShowSignupForm(false);
-  };
+};
 
   const handleSignupSubmit = async (
     email: string,
@@ -80,11 +81,10 @@ const Tabs = () => {
         _id,
         userType,
         email,
-        // companyName,
-        // password
+        password,
+        companyName
       );
-      console.log('backend details',response.data);
-      console.log("Account created:", response.data);
+      console.log("Account created:", response);
     } catch (error) {
       console.error("Error creating account:", error);
     }
@@ -103,12 +103,12 @@ const Tabs = () => {
     const _account = await createAccount();
     const _id = _account.id().to_string();
     const userType = activeTab === "Business" ? "employer" : "employee";
-    try{
-      createAccountInBackend(_id,userType).then(response => {
-        setAccountDetailsBackend(response.data);
-      });
+    try {
+      // createAccountInBackend(_id,userType).then(response => {
+      //   setAccountDetailsBackend(response.data);
+      // });
       setUserType(userType);
-      console.log('usersss',userType);
+      console.log("usersss", userType);
     } catch (error: any) {
       console.log(error);
     }
@@ -178,12 +178,15 @@ const Tabs = () => {
       setIsLoading(true);
       await sleep(100);
       const accountDetails = await checkForNonFaucetAccount();
-    
+
       if (accountDetails.nonFaucetAccount) {
         const _id = accountDetails.nonFaucetAccount;
-        if(accountDetails.faucetAccount) setActiveFaucet(accountDetails.faucetAccount);
-        if(accountDetails?.profile) setUserType(accountDetails?.profile.userType);
-        if(accountDetails?.profile?.name) setAccountDetailsBackend(accountDetails?.profile);
+        if (accountDetails.faucetAccount)
+          setActiveFaucet(accountDetails.faucetAccount);
+        if (accountDetails?.profile)
+          setUserType(accountDetails?.profile.userType);
+        if (accountDetails?.profile?.name)
+          setAccountDetailsBackend(accountDetails?.profile);
         setIsAccountCreated(true);
         setUserAccountId(_id);
         setIsLoading(false);
@@ -196,14 +199,17 @@ const Tabs = () => {
   };
 
   const updateAccountBalance = async () => {
-    if (userAccountId && activeFaucet !== '') {
+    if (userAccountId && activeFaucet !== "") {
       const _balance = await getBalance(userAccountId, activeFaucet);
       setAccountBalance(_balance || "0");
     } else {
-      const _balance = await getBalance(userAccountId, '0x1f2573c25f7712a0000051dd99ccd1');
+      const _balance = await getBalance(
+        userAccountId,
+        "0x1f2573c25f7712a0000051dd99ccd1"
+      );
       setAccountBalance(_balance || "0");
     }
-  }
+  };
 
   const exportAccount = () => {};
 
@@ -213,7 +219,7 @@ const Tabs = () => {
 
   useEffect(() => {
     updateAccountBalance();
-  },[accountBalance, activeFaucet, userAccountId]);
+  }, [accountBalance, activeFaucet, userAccountId]);
 
   useEffect(() => {
     checkForFaucetAccount(setActiveFaucet);
@@ -222,8 +228,8 @@ const Tabs = () => {
   return (
     // <div className="flex flex-col items-center justify-center min-h-screen bg-purple-100 p-4">
     <>
-      {isLoading && <LoadingScreen />}
-      {!isLoading && !isAccountCreated && (
+      {/* {isLoading && <LoadingScreen />} */}
+      {/* {!isLoading && !isAccountCreated && (
         <div className="flex flex-col items-center justify-center min-h-screen bg-[#D9BBFF] p-4">
 
           <div className="flex bg-white rounded-full shadow-md p-1 w-[420px]">
@@ -255,17 +261,26 @@ const Tabs = () => {
             handleImportAccount={handleImportClick}
           />
         </div>
+      )} */}
+
+      {isAccountCreated && (
+        <div className="fixed top-0 left-0 w-full bg-white z-50">
+          <Navbar
+            companyName={accountDetailsBackend?.name}
+            totalRecipients={0}
+          />
+        </div>
       )}
 
-    {isAccountCreated && (<div className="fixed top-0 left-0 w-full bg-white z-50">
-        <Navbar companyName={accountDetailsBackend?.name} totalRecipients={0} />
-    </div>)}
-
-      {/* {isLoading && <LoadingScreen />}
+      {isLoading && <LoadingScreen />}
       {!isLoading && !isAccountCreated && (
         <div className="flex flex-col items-center justify-center min-h-screen bg-[#D9BBFF] p-4">
           {showSignupForm ? (
-            <SignupForm onSubmit={handleSignupSubmit} onBack={handleGoBack} />
+            <SignupForm
+              onSubmit={handleSignupSubmit}
+              onBack={handleGoBack}
+              selectedTab={activeTab}
+            />
           ) : (
             <>
               <div className="flex bg-white rounded-full shadow-md p-1 w-[420px]">
@@ -298,7 +313,7 @@ const Tabs = () => {
             </>
           )}
         </div>
-      )} */}
+      )}
 
       {isAccountCreated && !isLoading && (
         <div className="flex flex-col mt-[88px] lg:mt-[40px] min-h-screen lg:flex-row justify-center items-center gap-6 p-8 bg-white">
@@ -309,7 +324,7 @@ const Tabs = () => {
             walletAddress={userAccountId}
             onImportClick={handleImportClick}
             onSendClick={handleSendClick}
-            activeFauct = {activeFaucet}
+            activeFauct={activeFaucet}
             setActiveFaucet={setActiveFaucet}
             updateAccountBalance={updateAccountBalance}
             userType={userType}
@@ -323,18 +338,18 @@ const Tabs = () => {
               resetImport={resetImport}
             />
           ) : showSend ? (
-            <Send 
-            onClose={handleCloseSend}
-            balance={accountBalance}
-            userAccountId={userAccountId}
-            activeFaucet={activeFaucet}
-            updateAccountBalance={updateAccountBalance}
-            userType={userType}
+            <Send
+              onClose={handleCloseSend}
+              balance={accountBalance}
+              userAccountId={userAccountId}
+              activeFaucet={activeFaucet}
+              updateAccountBalance={updateAccountBalance}
+              userType={userType}
             />
           ) : (
-            <History 
-            userAccountId={userAccountId}
-            updateAccountBalance = {updateAccountBalance}
+            <History
+              userAccountId={userAccountId}
+              updateAccountBalance={updateAccountBalance}
             />
           )}
 
