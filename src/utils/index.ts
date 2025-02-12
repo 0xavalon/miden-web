@@ -104,7 +104,6 @@ export const checkForNonFaucetAccount = async () => {
   try{
     const userDetails = await getExistingAccountFromBackend(accounts.nonFaucetAccount);
     accounts.profile = userDetails.data;
-    console.log('user details found from backend',userDetails);
   } catch(error) {
     console.log('error in fetching user details', error);
   }
