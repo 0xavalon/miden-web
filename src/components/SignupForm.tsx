@@ -6,19 +6,17 @@ import { Icons } from "./icons";
 // Define validation schema
 const signupSchema = z.object({
   email: z.string().email("Invalid email address"),
-  companyName: z
-    .string()
-    .min(3, "Company name must be at least 3 characters")
-    .max(50, "Company name must be at most 50 characters"),
-  password: z.string().min(6, "Password must be at least 6 characters").max(50),
+  companyName: z.string().optional(),
+  password: z.string().min(3, "Password must be at least 6 characters").max(50),
 });
 
 interface SignupFormProps {
   onSubmit: (email: string, companyName: string, password: string) => void;
   onBack: () => void;
+  selectedTab: string;
 }
 
-const SignupForm: React.FC<SignupFormProps> = ({ onSubmit, onBack }) => {
+const SignupForm: React.FC<SignupFormProps> = ({ onSubmit, onBack, selectedTab }) => {
   const {
     register,
     handleSubmit,
@@ -66,7 +64,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSubmit, onBack }) => {
             )}
           </div>
 
-          <div>
+          {selectedTab === 'Business' && <div>
             <label className="block text-gray-600 font-medium">
               Company Name
             </label>
@@ -81,7 +79,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSubmit, onBack }) => {
                 {String(errors.companyName.message)}
               </p>
             )}
-          </div>
+          </div>}
 
           <div>
             <label className="block text-gray-600 font-medium">Password</label>

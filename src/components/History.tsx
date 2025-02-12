@@ -56,7 +56,7 @@ const History = ({ userAccountId, updateAccountBalance }: HistoryProps) => {
           title: `${item.ownerId?.walletId.slice(0, 3)}...${item.ownerId?.walletId.slice(-3)}`,
           noteId: item.noteId,
           noteData: item.noteData.data,
-          hash: `${item.ownerId?.walletId.slice(0, 3)}...${item.ownerId?.walletId.slice(-3)}`,
+          hash: `${item.noteId}`,
           recipients: 1,
           amount: item.amount,
           ownerId: item.ownerId?.walletId,
