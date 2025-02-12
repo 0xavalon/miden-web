@@ -35,7 +35,7 @@ const History = ({ userAccountId, updateAccountBalance }: HistoryProps) => {
   const [activeTab, setActiveTab] = useState<string>("Send");
   const [loading, setLoading] = useState(true);
   const [isConsuming, setIsConsuming] = useState(false);
-  const [consumingState, setConsumingState] = useState("Accept");
+  const [consumingState, setConsumingState] = useState<string>("Accept");
 
   const getHistories = async () => {
     if (!userAccountId) return;
@@ -83,10 +83,10 @@ const History = ({ userAccountId, updateAccountBalance }: HistoryProps) => {
     setConsumingState("Accepting");
     setIsConsuming(true);
     await importNotesFromData(item.noteData, item.ownerId); // Consume notes directly to account(item);
+    updateAccountBalance();
     setConsumingState("Accepted");
     setIsConsuming(false);
     getHistories();
-    updateAccountBalance();
   };
 
   const filteredHistory = historyData.filter((item) => item.type === activeTab);
