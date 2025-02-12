@@ -26,14 +26,16 @@ interface HistoryItem {
 
 type HistoryProps = {
   userAccountId: string;
+  updateAccountBalance: () => Promise<void>;
 };
 
 const historyData: HistoryItem[] = [];
 
-const History = ({ userAccountId }: HistoryProps) => {
+const History = ({ userAccountId, updateAccountBalance }: HistoryProps) => {
   const [activeTab, setActiveTab] = useState<string>("Send");
   const [loading, setLoading] = useState(true);
   const [isConsuming, setIsConsuming] = useState(false);
+  const [consumingState, setConsumingState] = useState("Accept");
 
   const getHistories = async () => {
     if (!userAccountId) return;
@@ -78,9 +80,13 @@ const History = ({ userAccountId }: HistoryProps) => {
   };
 
   const _addNotesToAccount = async (item: any) => {
+    setConsumingState("Accepting");
     setIsConsuming(true);
     await importNotesFromData(item.noteData, item.ownerId); // Consume notes directly to account(item);
+    setConsumingState("Accepted");
     setIsConsuming(false);
+    getHistories();
+    updateAccountBalance();
   };
 
   const filteredHistory = historyData.filter((item) => item.type === activeTab);
@@ -160,11 +166,7 @@ const History = ({ userAccountId }: HistoryProps) => {
                   onClick={() => _addNotesToAccount(item)}
                 >
                   <span className="text-white font-normal text-sm">
-                    {activeTab === "Send"
-                      ? "Sent"
-                      : isConsuming
-                      ? "Accepting"
-                      : "Accept"}
+                    {activeTab === "Send" ? "Sent" : isConsuming}
                   </span>
                 </button>
               ) : (

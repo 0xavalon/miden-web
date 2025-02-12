@@ -334,6 +334,7 @@ const Tabs = () => {
           ) : (
             <History 
             userAccountId={userAccountId}
+            updateAccountBalance = {updateAccountBalance}
             />
           )}
 
