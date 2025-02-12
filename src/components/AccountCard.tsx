@@ -172,6 +172,7 @@ const AccountCard = ({
           <FindAvailableFaucet
             className="mt-2 ml-2 text-[#151515] opacity-60 text font-semibold"
             setActiveFaucet={setActiveFaucet}
+            updateAccountBalance={updateAccountBalance}
           />
         </div>
       </div>
