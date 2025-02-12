@@ -86,7 +86,6 @@ const History = ({ userAccountId, updateAccountBalance }: HistoryProps) => {
     updateAccountBalance();
     setConsumingState("Accepted");
     setIsConsuming(false);
-    getHistories();
   };
 
   const filteredHistory = historyData.filter((item) => item.type === activeTab);
