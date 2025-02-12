@@ -31,8 +31,9 @@ const webClient = new WebClient();
 const nodeEndpoint = "https://rpc.testnet.miden.io";
 const delegatedProver = "http://18.118.151.210:8082";
 const API_URL = import.meta.env.VITE_NODE_ENV === 'development' ? `http://localhost:5001`: `https://miden-backend.onrender.com`;
-let activeFaucet = import.meta.env.VITE_NODE_ENV === 'development' ? "0x50e7dfe9c5e724a00003e6fe1534c2": "0x05759eff4dad5da00003d5c52482df";
-// let activeFaucet = "0x05759eff4dad5da00003d5c52482df";
+const _defaultEmployer = import.meta.env.VITE_NODE_ENV === 'development' ? `67a05d793963ab40758834e9`: `67aae62ebc519c28a4564d0d`;
+// let activeFaucet = import.meta.env.VITE_NODE_ENV === 'development' ? "0x50e7dfe9c5e724a00003e6fe1534c2": "0x05759eff4dad5da00003d5c52482df";
+let activeFaucet = "";
 
 
 
@@ -700,16 +701,16 @@ export const createAccountInBackend = async (
     } else if (userType === "employee") {
       // const email = `em_${randomSuffix}@example.com`; // Dynamic email
       const username = `em_username_${randomSuffix}`; // Dynamic username
-      // let companyName = `em_name` + randomSuffix;
+      let companyName = `em_name` + randomSuffix;
 
       const response = await axios.post(`${API_URL}/api/users/register`, {
-        name: companyIdOrName,
+        name: companyIdOrName || companyName,
         email,
         password: password,
         userType: "employee",
         username,
         walletId: accountId,
-        employerId: !companyIdOrName ? "67aae62ebc519c28a4564d0d" : companyIdOrName,
+        employerId: !companyIdOrName ? _defaultEmployer : companyIdOrName,
       });
       return response.data.data;
     }

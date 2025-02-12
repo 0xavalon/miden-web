@@ -189,9 +189,13 @@ const Tabs = () => {
         if (accountDetails?.profile?.name)
           setAccountDetailsBackend(accountDetails?.profile);
 
-        if(accountDetails?.profile?.faucetAccounts.length > 0){
-          setActiveFaucet(accountDetails?.profile?.faucetAccounts[0]);
-          setFaucetCreationDisabled(true);
+        try{
+          if(accountDetails?.profile?.faucetAccounts?.length){
+            setActiveFaucet(accountDetails?.profile?.faucetAccounts[0]);
+            setFaucetCreationDisabled(true);
+          }
+        } catch{
+          console.log(`No faucet accounts found for user: ${_id}`);
         }
         setIsAccountCreated(true);
         setUserAccountId(_id);
@@ -358,6 +362,8 @@ const Tabs = () => {
             <History
               userAccountId={userAccountId}
               updateAccountBalance={updateAccountBalance}
+              setActiveFaucet={setActiveFaucet}
+              activeFaucet={activeFaucet}
             />
           )}
 
