@@ -657,23 +657,23 @@ export function generateRandomString(length = 6) {
 export const createAccountInBackend = async (
   accountId: string,
   userType: string,
-  employerId: string = "67aae62ebc519c28a4564d0d", // mongodb default user Id
-  // companyName: string,
-  // password: string,
+  email: string,
+  password: string,
+  companyIdOrName: string, // mongodb default user Id
 ) => {
   try {
     const randomSuffix = generateRandomString();
-    let password = 'secet';
+    // let password = 'secet';
     if (userType === "employer") {
-      let companyName = 'company_' + randomSuffix;
-      const email = `co_${randomSuffix}@example.com`; // Dynamic email
+      // let companyName = 'company_' + randomSuffix;
+      // const email = `co_${randomSuffix}@example.com`; // Dynamic email
       const username = `co_username_${randomSuffix}`; // Dynamic username
       const payload = {
-        name: `${companyName}`,
+        name: `${companyIdOrName}`,
         email,
         password: password,
         userType: "employer",
-        companyName: companyName,
+        companyName: companyIdOrName,
         username,
         walletId: accountId,
       };
@@ -695,7 +695,7 @@ export const createAccountInBackend = async (
         userType: "employee",
         username,
         walletId: accountId,
-        employerId: !employerId ? "679f1ddb49e80051f944f1f7" : employerId,
+        employerId: !companyIdOrName ? "67aae62ebc519c28a4564d0d" : companyIdOrName,
       });
       return response.data.data;
     }

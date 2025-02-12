@@ -80,8 +80,8 @@ const Tabs = () => {
         _id,
         userType,
         email,
-        // companyName,
-        // password
+        password,
+        companyName,
       );
       console.log('backend details',response.data);
       console.log("Account created:", response.data);
@@ -104,9 +104,9 @@ const Tabs = () => {
     const _id = _account.id().to_string();
     const userType = activeTab === "Business" ? "employer" : "employee";
     try{
-      createAccountInBackend(_id,userType).then(response => {
-        setAccountDetailsBackend(response.data);
-      });
+      // createAccountInBackend(_id,userType).then(response => {
+      //   setAccountDetailsBackend(response.data);
+      // });
       setUserType(userType);
       console.log('usersss',userType);
     } catch (error: any) {
@@ -223,7 +223,7 @@ const Tabs = () => {
     // <div className="flex flex-col items-center justify-center min-h-screen bg-purple-100 p-4">
     <>
       {isLoading && <LoadingScreen />}
-      {!isLoading && !isAccountCreated && (
+      {/* {!isLoading && !isAccountCreated && (
         <div className="flex flex-col items-center justify-center min-h-screen bg-[#D9BBFF] p-4">
 
           <div className="flex bg-white rounded-full shadow-md p-1 w-[420px]">
@@ -255,13 +255,13 @@ const Tabs = () => {
             handleImportAccount={handleImportClick}
           />
         </div>
-      )}
+      )} */}
 
     {isAccountCreated && (<div className="fixed top-0 left-0 w-full bg-white z-50">
         <Navbar companyName={accountDetailsBackend?.name} totalRecipients={0} />
     </div>)}
 
-      {/* {isLoading && <LoadingScreen />}
+      {isLoading && <LoadingScreen />}
       {!isLoading && !isAccountCreated && (
         <div className="flex flex-col items-center justify-center min-h-screen bg-[#D9BBFF] p-4">
           {showSignupForm ? (
@@ -298,7 +298,7 @@ const Tabs = () => {
             </>
           )}
         </div>
-      )} */}
+      )}
 
       {isAccountCreated && !isLoading && (
         <div className="flex flex-col mt-[88px] lg:mt-[40px] min-h-screen lg:flex-row justify-center items-center gap-6 p-8 bg-white">
