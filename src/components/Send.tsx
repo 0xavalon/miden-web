@@ -155,7 +155,7 @@ const Send = ({ onClose, balance, userAccountId, activeFaucet, updateAccountBala
               >
                 <p className="font-semibold">For recipient {index + 1}</p>
                 <div className="flex items-center space-x-4">
-                  <span>{filename}</span>
+                  <span>{`${filename.slice(0, 3)}...${filename.slice(-3)}`}</span>
                   <button
                     // onClick={() => downloadFile(file.name, file.content)}
                     onClick={() => downloadFile(filename, noteData)}
