@@ -56,7 +56,7 @@ const _getAccountId = (accountId: any) => {
 
 export const createClient = async () => {
   await sleep(100);
-  await webClient.create_client(nodeEndpoint);
+  await webClient.create_client(nodeEndpoint, delegatedProver);
 };
 
 export const getAccountsFromDb = async () => {
@@ -116,7 +116,7 @@ export const createNewFaucetAccount = async (
   setActiveFaucet: React.Dispatch<React.SetStateAction<string>>,
   faucetOriginAccount: string
 ) => {
-  await syncClient();
+  // await syncClient();
   const faucetId = await webClient.new_faucet(
     AccountStorageMode.private(),
     false,
@@ -178,7 +178,7 @@ export const mintFaucetAccount = async (
 
       console.log("Consuming minted notes...");
       await webClient.new_consume_transaction(AccountId.from_hex(accountId), mintedNoteIds);
-      await syncClient();
+      await webClient.sync_state();
       console.log("Notes consumed.");
       return true;
     } catch (error) {
@@ -349,7 +349,7 @@ export const syncClient = async () => {
   try {
     console.log("Attempting to sync the client ...", new Date());
     await sleep(15000);
-    await webClient.create_client(nodeEndpoint);
+    await webClient.create_client(nodeEndpoint, delegatedProver);
     await webClient.sync_state();
     console.log("syncing done ...", new Date());
   } catch (error: any) {
@@ -358,7 +358,7 @@ export const syncClient = async () => {
 };
 
 export const consumeAvailableNotes = async (targetAccount: string) => {
-  await webClient.create_client(nodeEndpoint);
+  await webClient.create_client(nodeEndpoint, delegatedProver);
   await webClient.fetch_and_cache_account_auth_by_pub_key(
     AccountId.from_hex(targetAccount)
   );
