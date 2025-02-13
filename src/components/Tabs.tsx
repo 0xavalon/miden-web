@@ -57,6 +57,7 @@ const Tabs = () => {
     "idle" | "importing" | "success" | "error"
   >("idle");
   const [showSend, setShowSend] = useState<boolean>(false);
+  const [isFaucetCreationDisabled, setFaucetCreationDisabled] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleGoBack = (): void => {
@@ -84,7 +85,6 @@ const Tabs = () => {
         password,
         companyName
       );
-      console.log("Account created:", response);
     } catch (error) {
       console.error("Error creating account:", error);
     }
@@ -187,6 +187,15 @@ const Tabs = () => {
           setUserType(accountDetails?.profile.userType);
         if (accountDetails?.profile?.name)
           setAccountDetailsBackend(accountDetails?.profile);
+
+        try{
+          if(accountDetails?.profile?.faucetAccounts?.length){
+            setActiveFaucet(accountDetails?.profile?.faucetAccounts[0]);
+            setFaucetCreationDisabled(true);
+          }
+        } catch{
+          console.log(`No faucet accounts found for user: ${_id}`);
+        }
         setIsAccountCreated(true);
         setUserAccountId(_id);
         setIsLoading(false);
@@ -219,7 +228,7 @@ const Tabs = () => {
 
   useEffect(() => {
     updateAccountBalance();
-  }, [accountBalance, activeFaucet, userAccountId]);
+  }, [accountBalance, activeFaucet, userAccountId, activeTab]);
 
   useEffect(() => {
     checkForFaucetAccount(setActiveFaucet);
@@ -328,6 +337,8 @@ const Tabs = () => {
             setActiveFaucet={setActiveFaucet}
             updateAccountBalance={updateAccountBalance}
             userType={userType}
+            isFaucetCreationDisabled={isFaucetCreationDisabled}
+            setFauctCreationDisabled={setFaucetCreationDisabled}
           />
 
           {selectedFile ? (
@@ -350,6 +361,8 @@ const Tabs = () => {
             <History
               userAccountId={userAccountId}
               updateAccountBalance={updateAccountBalance}
+              setActiveFaucet={setActiveFaucet}
+              activeFaucet={activeFaucet}
             />
           )}
 

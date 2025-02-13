@@ -29,7 +29,8 @@ export default function TabContent({
       </p>
       <button
         onClick={handleImportAccount}
-        className="mt-8 w-full px-6 py-3 bg-[#0b3ceb] text-white rounded-full shadow hover:bg-[#0b3ceb]/90"
+        disabled={true}
+        className="mt-8 w-full px-6 py-3 bg-[#0b3ceb] text-white rounded-full shadow hover:bg-[#0b3ceb]/90 opacity-50 cursor-not-allowed"
       >
         Import account
       </button>

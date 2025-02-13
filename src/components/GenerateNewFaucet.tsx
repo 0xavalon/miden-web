@@ -14,7 +14,7 @@ const GenerateNewFaucet = ({
   return (
     <div className={`flex items-center ${className}`}>
       <Icons.addCustomAsset
-            onClick={() => createNewFaucetAccount(setActiveFaucet)}
+            // onClick={() => createNewFaucetAccount(setActiveFaucet)}
             size={20}
           />
     </div>

@@ -22,16 +22,19 @@ interface HistoryItem {
   ownerId: string;
   type: "Send" | "Receive";
   isSpent: boolean;
+  assetAddress: string;
 }
 
 type HistoryProps = {
   userAccountId: string;
   updateAccountBalance: () => Promise<void>;
+  setActiveFaucet: React.Dispatch<React.SetStateAction<string>>;
+  activeFaucet: string;
 };
 
 const historyData: HistoryItem[] = [];
 
-const History = ({ userAccountId, updateAccountBalance }: HistoryProps) => {
+const History = ({ userAccountId, updateAccountBalance, setActiveFaucet, activeFaucet }: HistoryProps) => {
   const [activeTab, setActiveTab] = useState<string>("Send");
   const [loading, setLoading] = useState(true);
   const [isConsuming, setIsConsuming] = useState(false);
@@ -48,12 +51,13 @@ const History = ({ userAccountId, updateAccountBalance }: HistoryProps) => {
         token
       );
 
+      let _assetAddress = "";
       const historyBackend: HistoryItem[] = [];
       historyData.length = 0;
       _histories.forEach((item: any) => {
         historyBackend.push({
           id: item._id,
-          title: `${item.ownerId?.walletId.slice(0, 3)}...${item.ownerId?.walletId.slice(-3)}`,
+          title: `${item.noteId.slice(0, 3)}...${item.noteId.slice(-3)}`,
           noteId: item.noteId,
           noteData: item.noteData.data,
           hash: `${item.noteId}`,
@@ -62,6 +66,7 @@ const History = ({ userAccountId, updateAccountBalance }: HistoryProps) => {
           ownerId: item.ownerId?.walletId,
           type: activeTab === "Send" ? "Send" : "Receive",
           isSpent: item.isSpent,
+          assetAddress: item.assetAddress,
         });
       });
       historyBackend.forEach((item) => {
@@ -74,6 +79,17 @@ const History = ({ userAccountId, updateAccountBalance }: HistoryProps) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const syncAssetFromHistory = () => {
+    let _assetAddress = "";
+    if(activeFaucet) return;
+    historyData.forEach((history) => {
+      if (history.assetAddress) {
+        _assetAddress = history.assetAddress;
+      }
+    });
+    setActiveFaucet(_assetAddress);
   };
 
   const _downloadSpecificNotes = (item: any) => {
@@ -91,6 +107,7 @@ const History = ({ userAccountId, updateAccountBalance }: HistoryProps) => {
 
   useEffect(() => {
     getHistories();
+    syncAssetFromHistory();
   }, [activeTab]);
 
   if (loading) return <HistorySkeleton />;

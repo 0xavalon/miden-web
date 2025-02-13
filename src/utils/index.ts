@@ -31,8 +31,9 @@ const webClient = new WebClient();
 const nodeEndpoint = "https://rpc.testnet.miden.io";
 const delegatedProver = "http://18.118.151.210:8082";
 const API_URL = import.meta.env.VITE_NODE_ENV === 'development' ? `http://localhost:5001`: `https://miden-backend.onrender.com`;
-let activeFaucet = import.meta.env.VITE_NODE_ENV === 'development' ? "0x50e7dfe9c5e724a00003e6fe1534c2": "0x05759eff4dad5da00003d5c52482df";
-// let activeFaucet = "0x05759eff4dad5da00003d5c52482df";
+const _defaultEmployer = import.meta.env.VITE_NODE_ENV === 'development' ? `67a05d793963ab40758834e9`: `67aae62ebc519c28a4564d0d`;
+// let activeFaucet = import.meta.env.VITE_NODE_ENV === 'development' ? "0x50e7dfe9c5e724a00003e6fe1534c2": "0x05759eff4dad5da00003d5c52482df";
+let activeFaucet = "";
 
 
 
@@ -112,7 +113,8 @@ export const checkForNonFaucetAccount = async () => {
 };
 
 export const createNewFaucetAccount = async (
-  setActiveFaucet: React.Dispatch<React.SetStateAction<string>>
+  setActiveFaucet: React.Dispatch<React.SetStateAction<string>>,
+  faucetOriginAccount: string
 ) => {
   await syncClient();
   const faucetId = await webClient.new_faucet(
@@ -130,6 +132,19 @@ export const createNewFaucetAccount = async (
   const accountDetails = await webClient.get_account(
     AccountId.from_hex(faucetIdHex)
   );
+
+  // call addFaucetAddress to add the faucet address to the backend
+  try {
+    if(faucetOriginAccount) {
+      addFaucetAddress(faucetIdHex, faucetOriginAccount).then((_response) => {
+        console.log("Faucet address added to backend", _response);
+      });
+    } else {
+      console.log('faucetOriginAccount is not defined');
+    }
+  } catch (error) {
+    console.log("Error adding faucet address to backend", error);
+  }
   return accountDetails;
 };
 
@@ -152,7 +167,7 @@ export const mintFaucetAccount = async (
       NoteType.private(),
       BigInt(amount)
     );
-    // await syncClient();
+    await syncClient();
 
     try {
       const mintedNotes = await webClient.get_consumable_notes(AccountId.from_hex(accountId));
@@ -686,16 +701,16 @@ export const createAccountInBackend = async (
     } else if (userType === "employee") {
       // const email = `em_${randomSuffix}@example.com`; // Dynamic email
       const username = `em_username_${randomSuffix}`; // Dynamic username
-      // let companyName = `em_name` + randomSuffix;
+      let companyName = `em_name` + randomSuffix;
 
       const response = await axios.post(`${API_URL}/api/users/register`, {
-        name: companyIdOrName,
+        name: companyIdOrName || companyName,
         email,
         password: password,
         userType: "employee",
         username,
         walletId: accountId,
-        employerId: !companyIdOrName ? "67aae62ebc519c28a4564d0d" : companyIdOrName,
+        employerId: !companyIdOrName ? _defaultEmployer : companyIdOrName,
       });
       return response.data.data;
     }
@@ -850,6 +865,36 @@ export const markNoteAsConsumed = async (
     return response.data;
   } catch (error) {
     console.error("Error fetching history from backend:", error);
+    throw error;
+  }
+};
+
+
+export const addFaucetAddress = async (
+  faucetAddress: string,
+  targetAccount: string
+) => {
+  try {
+    const authToken = await getExistingAccountFromBackend(targetAccount);
+
+    let config = {
+      method: "post", // POST request to add a faucet
+      maxBodyLength: Infinity,
+      url: `${API_URL}/api/users/add-faucet`,
+      headers: {
+        Authorization: "Bearer " + authToken.token,
+        "Content-Type": "application/json", // Ensure JSON content type
+      },
+      data: {
+        faucetAddress, // Send faucetAddress in request body
+      },
+    };
+
+    // Make request
+    const response = await axios.request(config);
+    return response.data;
+  } catch (error) {
+    console.error("Error adding faucet address to backend:", error);
     throw error;
   }
 };

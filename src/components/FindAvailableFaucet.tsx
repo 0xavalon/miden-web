@@ -1,4 +1,4 @@
-import { checkForFaucetAccount, createNewFaucetAccount } from "../utils";
+import { checkForFaucetAccount } from "../utils";
 import { Icons } from "./icons";
 
 interface FindAvailalbeFaucetsProps {

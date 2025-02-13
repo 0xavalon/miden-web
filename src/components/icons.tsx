@@ -10,7 +10,8 @@ import {
   Plus,
   ArrowLeft,
   Blocks,
-  CheckCheck
+  CheckCheck,
+  Wallet
   
 } from "lucide-react";
 
@@ -27,6 +28,7 @@ export const Icons = {
   arrowDownToLine: ArrowDownToLine,
   findAvailableAsset: RefreshCcw,
   addDefaultAsset: CircleArrowOutDownLeft,
+  wallet: Wallet,
   send: ({
     className,
     width,

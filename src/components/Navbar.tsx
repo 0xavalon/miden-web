@@ -31,7 +31,9 @@ const Navbar = ({ companyName, totalRecipients }: NavbarProps) => {
             {totalRecipients}
           </span>
         </div>
-        <button className="text-white bg-[#0B3CEB] text-base font-semibold px-6 py-4 rounded-[64px]">
+        <button
+        disabled={true}
+         className="text-white bg-[#0B3CEB] text-base font-semibold px-6 py-4 rounded-[64px] opacity-50 cursor-not-allowed">
           Export account
         </button>
       </div>
