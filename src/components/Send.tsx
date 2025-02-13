@@ -32,7 +32,14 @@ type SendProps = {
   userType: string;
 };
 
-const Send = ({ onClose, balance, userAccountId, activeFaucet, updateAccountBalance, userType}: SendProps) => {
+const Send = ({
+  onClose,
+  balance,
+  userAccountId,
+  activeFaucet,
+  updateAccountBalance,
+  userType,
+}: SendProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [noteResults, setNoteResults] = useState<
     { noteData: any; recipientId: string; filename: string }[]
@@ -43,6 +50,7 @@ const Send = ({ onClose, balance, userAccountId, activeFaucet, updateAccountBala
     handleSubmit,
     register,
     reset,
+    watch,
     formState: { errors },
   } = useForm<FormSchema>({
     defaultValues: {
@@ -66,6 +74,13 @@ const Send = ({ onClose, balance, userAccountId, activeFaucet, updateAccountBala
     };
   };
 
+  const recipients = watch("recipients");
+  const totalAmount = recipients.reduce(
+    (acc, recipient) => acc + (recipient.amount || 0),
+    0
+  );
+  const availableBalance = Number(balance);
+  const isExceedingBalance = totalAmount > availableBalance;
 
   const downloadFile = (fileName: string, result: any) => {
     const byteArray = new Uint8Array(result);
@@ -80,19 +95,24 @@ const Send = ({ onClose, balance, userAccountId, activeFaucet, updateAccountBala
 
   const onSubmit = async (data: FormSchema) => {
     if (!userAccountId) {
-      console.log("account not valid or not enough balance");
+      console.log("account not valid");
     }
+
     setIsLoading(true);
     const recipients: { username: string; amount: number }[] = data.recipients;
-    let txResult = await createMultipleNotes(userAccountId, recipients, activeFaucet);
+    let txResult = await createMultipleNotes(
+      userAccountId,
+      recipients,
+      activeFaucet
+    );
 
     let _noteResults = [];
-    if(txResult.length) {
+    if (txResult.length) {
       for (let [id, recipient] of recipients.entries()) {
         const { username, amount } = recipient;
         const _noteData = txResult[id].noteData;
         const _noteId = txResult[id].noteId;
-        if(_noteData) {
+        if (_noteData) {
           _noteResults.push({
             noteId: _noteId,
             noteData: _noteData,
@@ -102,19 +122,20 @@ const Send = ({ onClose, balance, userAccountId, activeFaucet, updateAccountBala
             assetAddress: activeFaucet,
           });
         } else {
-          console.log(`Note data is not found. id:${id}, account: ${username}`)
-        } 
+          console.log(`Note data is not found. id:${id}, account: ${username}`);
+        }
       }
       setNoteResults(_noteResults);
       updateAccountBalance();
       try {
-        if(userType === 'employer') savePayrollNoteDataToBackend(_noteResults, userAccountId);
-        else if(userType === 'employee') {
-          console.log('saving employee payroll data to backend');
+        if (userType === "employer")
+          savePayrollNoteDataToBackend(_noteResults, userAccountId);
+        else if (userType === "employee") {
+          console.log("saving employee payroll data to backend");
           createOneToOneTx(_noteResults, userAccountId);
         }
-      } catch{
-        console.log('error saving payroll data in backend')
+      } catch {
+        console.log("error saving payroll data in backend");
       }
     }
     setIsLoading(false);
@@ -155,7 +176,9 @@ const Send = ({ onClose, balance, userAccountId, activeFaucet, updateAccountBala
               >
                 <p className="font-semibold">For recipient {index + 1}</p>
                 <div className="flex items-center space-x-4">
-                  <span>{`${filename.slice(0, 3)}...${filename.slice(-3)}`}</span>
+                  <span>{`${filename.slice(0, 3)}...${filename.slice(
+                    -3
+                  )}`}</span>
                   <button
                     // onClick={() => downloadFile(file.name, file.content)}
                     onClick={() => downloadFile(filename, noteData)}
@@ -260,17 +283,25 @@ const Send = ({ onClose, balance, userAccountId, activeFaucet, updateAccountBala
             }}
             className="text-blue-600 flex items-center space-x-1 mt-4"
           >
-             {/* Conditionally render this section if userType is 'employee' */}
-          {userType === "employer" && (
-            <div>
-              <span>+</span> <span>Add another recipient</span>
-            </div>
-          )}
+            {/* Conditionally render this section if userType is 'employee' */}
+            {userType === "employer" && (
+              <div>
+                <span>+</span> <span>Add another recipient</span>
+              </div>
+            )}
           </button>
 
           <button
             type="submit"
-            className="w-full px-6 py-3 bg-[#0b3ceb] text-white font-inter font-bold rounded-[48px] shadow-lg hover:bg-[#0b3ceb]/90 mt-8"
+            className={`w-full px-6 py-3 bg-[#0b3ceb] text-white font-inter font-bold rounded-[48px] shadow-lg hover:bg-[#0b3ceb]/90 mt-8 ${
+              isExceedingBalance
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-[#0b3ceb] text-white hover:bg-[#0b3ceb]/90"
+            }`}
+            disabled={isExceedingBalance}
+            title={
+              isExceedingBalance ? "Amount exceeds available balance!" : ""
+            }
           >
             Send
           </button>
