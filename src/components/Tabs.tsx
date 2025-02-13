@@ -85,7 +85,6 @@ const Tabs = () => {
         password,
         companyName
       );
-      console.log("Account created:", response);
     } catch (error) {
       console.error("Error creating account:", error);
     }
@@ -229,7 +228,7 @@ const Tabs = () => {
 
   useEffect(() => {
     updateAccountBalance();
-  }, [accountBalance, activeFaucet, userAccountId]);
+  }, [accountBalance, activeFaucet, userAccountId, activeTab]);
 
   useEffect(() => {
     checkForFaucetAccount(setActiveFaucet);
@@ -339,6 +338,7 @@ const Tabs = () => {
             updateAccountBalance={updateAccountBalance}
             userType={userType}
             isFaucetCreationDisabled={isFaucetCreationDisabled}
+            setFauctCreationDisabled={setFaucetCreationDisabled}
           />
 
           {selectedFile ? (

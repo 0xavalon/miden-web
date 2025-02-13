@@ -167,7 +167,7 @@ export const mintFaucetAccount = async (
       NoteType.private(),
       BigInt(amount)
     );
-    // await syncClient();
+    await syncClient();
 
     try {
       const mintedNotes = await webClient.get_consumable_notes(AccountId.from_hex(accountId));

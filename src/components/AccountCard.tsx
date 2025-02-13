@@ -19,6 +19,7 @@ interface AccountCardProps {
   updateAccountBalance: () => Promise<void>;
   userType: string;
   isFaucetCreationDisabled: boolean;
+  setFauctCreationDisabled: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const AccountCard = ({
@@ -33,8 +34,12 @@ const AccountCard = ({
   updateAccountBalance,
   userType,
   isFaucetCreationDisabled,
+  setFauctCreationDisabled,
 }: AccountCardProps) => {
   const [showTooltip, setShowTooltip] = useState(false);
+  const [showMintingButton, setShowMinitingButton] = useState(true);
+  const [faucetCreationString, setFaucetCreationString] = useState("Deploy Faucet");
+  const [mintFaucetString, setMintFaucetString] = useState("10000 Faucet");
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const downloadRef = useRef<HTMLAnchorElement | null>(null);
 
@@ -60,12 +65,17 @@ const AccountCard = ({
   };
 
   const handleAddFaucetBalance = async () => { 
+    setShowMinitingButton(false);
+    setMintFaucetString("Minting...");
     const isAdded = await mintFaucetAccount(walletAddress, activeFauct, 10000)
     if(isAdded) {
        updateAccountBalance();
+       setMintFaucetString("Minted");
     } else {
       console.log('Failed to add new faucet balance');
+      setMintFaucetString("Failed");
     }
+    setShowMinitingButton(true);
   }
 
   const _createNDownloadFile = (fileContent: any) => {
@@ -116,6 +126,7 @@ const AccountCard = ({
     >
       <div className="flex items-center justify-between px-4 pt-4">
         <div className="bg-yellow-200 p-4 rounded-full flex items-center">
+          <Icons.wallet className="pr-1" />
           <CopyToClipboard
             textToCopy={walletAddress}
             textClassName="text-[#151515] text-base font-semibold leading-6"
@@ -200,7 +211,15 @@ const AccountCard = ({
         </div>
         { userType === 'employer' && <div className="flex justify-between ">
         <button
-          onClick={() => createNewFaucetAccount(setActiveFaucet, walletAddress)}
+          onClick={() => {
+            setFaucetCreationString("Creating...");
+            setFauctCreationDisabled(true);
+            setShowMinitingButton(false);
+            createNewFaucetAccount(setActiveFaucet, walletAddress).then(() => {
+              setFaucetCreationString("Deployed");
+            })
+            setShowMinitingButton(true);
+          }}
           className={`flex items-center justify-center w-[174px] px-3 py-2 bg-white border rounded-full shadow ${
             isFaucetCreationDisabled ? "opacity-50 cursor-not-allowed" : ""
           }`}
@@ -208,16 +227,19 @@ const AccountCard = ({
         >
           <Icons.deployFaucet />
           <span className="text-[#151515] text-base font-semibold font-inter leading-normal ml-2">
-            New faucet
+            {faucetCreationString}
           </span>
         </button>
         <button
           onClick={handleAddFaucetBalance}
-          className="flex items-center justify-center w-[174px] px-3 py-2 bg-white border rounded-full shadow"
+          className={`flex items-center justify-center w-[174px] px-3 py-2 bg-white border rounded-full shadow ${
+            !showMintingButton ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+          disabled={!showMintingButton}
         >
           <Icons.plus />
           <span className="text-[#151515] text-base font-semibold font-inter leading-normal ml-2">
-            10000 Faucet
+            {mintFaucetString}
           </span>
         </button>
         </div>}
