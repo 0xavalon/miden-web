@@ -85,6 +85,7 @@ const Tabs = () => {
         password,
         companyName
       );
+      setAccountDetailsBackend(response);
     } catch (error) {
       console.error("Error creating account:", error);
     }
@@ -187,6 +188,8 @@ const Tabs = () => {
           setUserType(accountDetails?.profile.userType);
         if (accountDetails?.profile?.name)
           setAccountDetailsBackend(accountDetails?.profile);
+        if (accountDetails?.profile?.lastUsedAsset)
+          setActiveFaucet(accountDetails?.profile?.lastUsedAsset);
 
         try{
           if(accountDetails?.profile?.faucetAccounts?.length){
