@@ -210,7 +210,6 @@ const Tabs = () => {
 
   const updateAccountBalance = async () => {
     if (userAccountId && activeFaucet !== "") {
-      console.log("activeFaucet", activeFaucet);
       const _balance = await getBalance(userAccountId, activeFaucet);
       setAccountBalance(_balance || "0");
     } else {

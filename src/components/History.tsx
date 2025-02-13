@@ -57,7 +57,7 @@ const History = ({ userAccountId, updateAccountBalance, setActiveFaucet, activeF
       _histories.forEach((item: any) => {
         historyBackend.push({
           id: item._id,
-          title: `${item.ownerId?.walletId.slice(0, 3)}...${item.ownerId?.walletId.slice(-3)}`,
+          title: `${item.noteId.slice(0, 3)}...${item.noteId.slice(-3)}`,
           noteId: item.noteId,
           noteData: item.noteData.data,
           hash: `${item.noteId}`,
