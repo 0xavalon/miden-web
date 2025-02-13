@@ -125,7 +125,7 @@ const Send = ({ onClose, balance, userAccountId, activeFaucet, updateAccountBala
 
   return (
     <div className=" px-8 py-10 flex flex-col bg-white rounded-[32px] shadow-lg min-h-[430px] w-[433px]">
-      {isLoading ? (
+      {isLoading && Number(balance) > 0 ? (
         <div className="flex flex-col  h-full">
           <h1 className="text-lg font-semibold text-start">Send</h1>
           <div className="mt-10 flex flex-col items-center justify-center">

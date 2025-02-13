@@ -15,7 +15,7 @@ interface AccountCardProps {
   onImportClick: () => void;
   onSendClick: () => void;
   activeFauct: string;
-  setActiveFaucet: React.Dispatch<React.SetStateAction<string>>
+  setActiveFaucet: React.Dispatch<React.SetStateAction<string>>;
   updateAccountBalance: () => Promise<void>;
   userType: string;
   isFaucetCreationDisabled: boolean;
@@ -38,11 +38,11 @@ const AccountCard = ({
 }: AccountCardProps) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [showMintingButton, setShowMinitingButton] = useState(true);
-  const [faucetCreationString, setFaucetCreationString] = useState("Deploy Faucet");
+  const [faucetCreationString, setFaucetCreationString] =
+    useState("Deploy Faucet");
   const [mintFaucetString, setMintFaucetString] = useState("10000 Faucet");
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const downloadRef = useRef<HTMLAnchorElement | null>(null);
-
 
   const toggleTooltip = () => setShowTooltip((prev) => !prev);
 
@@ -64,19 +64,19 @@ const AccountCard = ({
     }
   };
 
-  const handleAddFaucetBalance = async () => { 
+  const handleAddFaucetBalance = async () => {
     setShowMinitingButton(false);
     setMintFaucetString("Minting...");
-    const isAdded = await mintFaucetAccount(walletAddress, activeFauct, 10000)
-    if(isAdded) {
-       updateAccountBalance();
-       setMintFaucetString("Minted");
+    const isAdded = await mintFaucetAccount(walletAddress, activeFauct, 10000);
+    if (isAdded) {
+      updateAccountBalance();
+      setMintFaucetString("Minted");
     } else {
-      console.log('Failed to add new faucet balance');
+      console.log("Failed to add new faucet balance");
       setMintFaucetString("Failed");
     }
     setShowMinitingButton(true);
-  }
+  };
 
   const _createNDownloadFile = (fileContent: any) => {
     const blob = new Blob([fileContent], { type: "application/json" });
@@ -168,81 +168,92 @@ const AccountCard = ({
           Account balance
         </p>
         <h1 className="mt-4 text-4xl font-bold text-black">{balance} Miden</h1>
-        <div className="flex items-center mt-2">
-          <CopyToClipboard
-            textToCopy={activeFauct}
-            displayText={activeFauct}
-            className="mt-2"
-            textClassName="text font-semibold leading-[16px] text-[#151515] opacity-60"
-          />
+        {activeFauct && (
+          <div className="flex items-center mt-2">
+            <CopyToClipboard
+              textToCopy={activeFauct}
+              displayText={activeFauct}
+              className="mt-2"
+              textClassName="text font-semibold leading-[16px] text-[#151515] opacity-60"
+            />
 
-          {/* <GenerateNewFaucet
+            {/* <GenerateNewFaucet
             className="mt-2 ml-2 text-[#151515] opacity-60 text font-semibold"
             setActiveFaucet={setActiveFaucet}
           /> */}
 
-          <FindAvailableFaucet
-            className="mt-2 ml-2 text-[#151515] opacity-60 text font-semibold"
-            setActiveFaucet={setActiveFaucet}
-            updateAccountBalance={updateAccountBalance}
-          />
-        </div>
+            <FindAvailableFaucet
+              className="mt-2 ml-2 text-[#151515] opacity-60 text font-semibold"
+              setActiveFaucet={setActiveFaucet}
+              updateAccountBalance={updateAccountBalance}
+            />
+          </div>
+        )}
       </div>
       <div className="flex flex-col gap-4 mt-6 px-8 pb-8">
         <div className="flex justify-between ">
-        <button
-          onClick={onImportClick}
-          className="flex items-center justify-center w-[174px] px-3 py-2 bg-white border rounded-full shadow"
-        >
-          <Icons.import />
-          <span className="text-[#151515] text-base font-semibold font-inter leading-normal ml-2">
-            Import Notes
-          </span>
-        </button>
-        <button
-          onClick={onSendClick}
-          className="flex items-center justify-center w-[174px] px-3 py-2 bg-white border rounded-full shadow"
-        >
-          <Icons.send />
-          <span className="text-[#151515] text-base font-semibold font-inter leading-normal ml-2">
-            Send
-          </span>
-        </button>
+          <button
+            onClick={onImportClick}
+            className="flex items-center justify-center w-[174px] px-3 py-2 bg-white border rounded-full shadow"
+          >
+            <Icons.import />
+            <span className="text-[#151515] text-base font-semibold font-inter leading-normal ml-2">
+              Import Notes
+            </span>
+          </button>
+          <button
+            onClick={onSendClick}
+            className={`flex items-center justify-center w-[174px] px-3 py-2 bg-white border rounded-full shadow ${
+              activeFauct && Number(balance)
+                ? ""
+                : "opacity-50 cursor-not-allowed"
+            }`}
+            disabled={!activeFauct || Number(balance) === 0}
+          >
+            <Icons.send />
+            <span className="text-[#151515] text-base font-semibold font-inter leading-normal ml-2">
+              Send
+            </span>
+          </button>
         </div>
-        { userType === 'employer' && <div className="flex justify-between ">
-        <button
-          onClick={() => {
-            setFaucetCreationString("Creating...");
-            setFauctCreationDisabled(true);
-            setShowMinitingButton(false);
-            createNewFaucetAccount(setActiveFaucet, walletAddress).then(() => {
-              setFaucetCreationString("Deployed");
-            })
-            setShowMinitingButton(true);
-          }}
-          className={`flex items-center justify-center w-[174px] px-3 py-2 bg-white border rounded-full shadow ${
-            isFaucetCreationDisabled ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-          disabled={isFaucetCreationDisabled}
-        >
-          <Icons.deployFaucet />
-          <span className="text-[#151515] text-base font-semibold font-inter leading-normal ml-2">
-            {faucetCreationString}
-          </span>
-        </button>
-        <button
-          onClick={handleAddFaucetBalance}
-          className={`flex items-center justify-center w-[174px] px-3 py-2 bg-white border rounded-full shadow ${
-            !showMintingButton ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-          disabled={!showMintingButton}
-        >
-          <Icons.plus />
-          <span className="text-[#151515] text-base font-semibold font-inter leading-normal ml-2">
-            {mintFaucetString}
-          </span>
-        </button>
-        </div>}
+        {userType === "employer" && (
+          <div className="flex justify-between ">
+            <button
+              onClick={() => {
+                setFaucetCreationString("Creating...");
+                setFauctCreationDisabled(true);
+                setShowMinitingButton(false);
+                createNewFaucetAccount(setActiveFaucet, walletAddress).then(
+                  () => {
+                    setFaucetCreationString("Deployed");
+                  }
+                );
+                setShowMinitingButton(true);
+              }}
+              className={`flex items-center justify-center w-[174px] px-3 py-2 bg-white border rounded-full shadow ${
+                isFaucetCreationDisabled ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+              disabled={isFaucetCreationDisabled}
+            >
+              <Icons.deployFaucet />
+              <span className="text-[#151515] text-base font-semibold font-inter leading-normal ml-2">
+                {faucetCreationString}
+              </span>
+            </button>
+            <button
+              onClick={handleAddFaucetBalance}
+              className={`flex items-center justify-center w-[174px] px-3 py-2 bg-white border rounded-full shadow ${
+                !showMintingButton ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+              disabled={!showMintingButton}
+            >
+              <Icons.plus />
+              <span className="text-[#151515] text-base font-semibold font-inter leading-normal ml-2">
+                {mintFaucetString}
+              </span>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
