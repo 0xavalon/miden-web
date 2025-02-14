@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 // components
 import Tabs from "./components/Tabs";
 import LoadingScreen from "./components/LoadingScreen";
+import IndexedDBSupportCheck from "./components/IndexedDBSupportCheck";
 
 // utils
 import { createClient } from "./utils";
@@ -23,8 +24,8 @@ export default function App() {
   if (isLoading) return <LoadingScreen />;
 
   return (
-    <div className="App">
+    <IndexedDBSupportCheck>
       <Tabs />
-    </div>
+    </IndexedDBSupportCheck>
   );
 }
