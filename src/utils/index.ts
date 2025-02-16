@@ -22,6 +22,7 @@ import {
   TransactionRequestBuilder,
   Word,
   NoteScript,
+  TransactionProver,
 } from "@demox-labs/miden-sdk";
 
 import axios from "axios";
@@ -29,7 +30,7 @@ import axios from "axios";
 const webClient = new WebClient();
 // const nodeEndpoint = "http://localhost:57291";
 const nodeEndpoint = "https://rpc.testnet.miden.io";
-const delegatedProver = "http://18.118.151.210:8082";
+const delegatedProver = "http://localhost:8082";
 const API_URL = import.meta.env.VITE_NODE_ENV === 'development' ? `http://localhost:5001`: `https://miden-backend.onrender.com`;
 const _defaultEmployer = import.meta.env.VITE_NODE_ENV === 'development' ? `67a05d793963ab40758834e9`: `67aae62ebc519c28a4564d0d`;
 // let activeFaucet = import.meta.env.VITE_NODE_ENV === 'development' ? "0x50e7dfe9c5e724a00003e6fe1534c2": "0x05759eff4dad5da00003d5c52482df";
@@ -348,7 +349,7 @@ export const getAccountHistory = async () => {
 export const syncClient = async () => {
   try {
     console.log("Attempting to sync the client ...", new Date());
-    await sleep(15000);
+    await sleep(6000);
     await webClient.create_client(nodeEndpoint, delegatedProver);
     await webClient.sync_state();
     console.log("syncing done ...", new Date());
@@ -494,9 +495,13 @@ export const createMultipleNotes = async (
 
     await webClient.fetch_and_cache_account_auth_by_pub_key(senderAccount);
     const transactionResult = await webClient.new_transaction(senderAccount, transactionRequest);
+    console.log('txresult ==>', transactionResult);
 
     try {
-      await webClient.submit_transaction(transactionResult);
+      const prover = TransactionProver.new_remote_prover(delegatedProver);
+      await webClient.submit_transaction_with_prover(transactionResult, prover);
+      console.log("Transaction submitted successfully");
+      // await webClient.sync_state();
       await syncClient();
     } catch (error) {
       console.log("Error in multi-note submission", error);
