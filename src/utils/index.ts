@@ -30,7 +30,7 @@ import axios from "axios";
 const webClient = new WebClient();
 // const nodeEndpoint = "http://localhost:57291";
 const nodeEndpoint = "https://rpc.testnet.miden.io";
-const delegatedProver = "http://18.118.151.210:8082";
+const delegatedProver = "http://localhost:8082";
 const API_URL = import.meta.env.VITE_NODE_ENV === 'development' ? `http://localhost:5001`: `https://miden-backend.onrender.com`;
 const _defaultEmployer = import.meta.env.VITE_NODE_ENV === 'development' ? `67a05d793963ab40758834e9`: `67aae62ebc519c28a4564d0d`;
 // let activeFaucet = import.meta.env.VITE_NODE_ENV === 'development' ? "0x50e7dfe9c5e724a00003e6fe1534c2": "0x05759eff4dad5da00003d5c52482df";
