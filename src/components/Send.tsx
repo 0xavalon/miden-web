@@ -125,7 +125,7 @@ const Send = ({
           console.log(`Note data is not found. id:${id}, account: ${username}`);
         }
       }
-      // setNoteResults(_noteResults);
+      setNoteResults(_noteResults);
       await updateAccountBalance();
       try {
         if (userType === "employer")

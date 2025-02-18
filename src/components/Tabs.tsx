@@ -147,6 +147,7 @@ const Tabs = () => {
     try {
       setImportStatus("importing");
       await _consumeAvailableNotes(file);
+      await updateAccountBalance();
       setImportStatus("success");
     } catch (error: any) {
       console.error("Error importing notes:", error.message);
