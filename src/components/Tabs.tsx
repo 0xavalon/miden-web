@@ -66,15 +66,15 @@ const Tabs = () => {
 
   const handleSignupSubmit = async (
     email: string,
-    companyName: string,
+    name: string,
     password: string
   ) => {
     setShowSignupForm(false);
     setIsLoading(true);
 
-    await sleep(1000);
     const _account = await createAccount();
     const _id = _account.id().to_string();
+
     const userType = activeTab === "Business" ? "employer" : "employee";
 
     try {
@@ -83,7 +83,7 @@ const Tabs = () => {
         userType,
         email,
         password,
-        companyName
+        name
       );
       setAccountDetailsBackend(response);
     } catch (error) {
@@ -144,12 +144,14 @@ const Tabs = () => {
 
   const handleImportFile = async (file: File) => {
     if (!file) return;
-    setImportStatus("importing");
-    await _consumeAvailableNotes(file);
-    setTimeout(() => {
-      const isSuccess = Math.random() > 0.5;
-      setImportStatus(isSuccess ? "success" : "error");
-    }, 2000);
+    try {
+      setImportStatus("importing");
+      await _consumeAvailableNotes(file);
+      setImportStatus("success");
+    } catch (error: any) {
+      console.error("Error importing notes:", error.message);
+      setImportStatus("error");
+    }
   };
 
   const _consumeAvailableNotes = async (file: File) => {

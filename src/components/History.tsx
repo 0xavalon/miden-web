@@ -99,6 +99,7 @@ const History = ({ userAccountId, updateAccountBalance, setActiveFaucet, activeF
   const _addNotesToAccount = async (item: any) => {
     setConsumingState("Accepting");
     await importNotesFromData(item.noteData, item.ownerId); // Consume notes directly to account(item);
+    await updateAccountBalance();
     setConsumingState("Accepted");
     syncAssetFromHistory();
   };

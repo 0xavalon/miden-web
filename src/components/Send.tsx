@@ -125,8 +125,8 @@ const Send = ({
           console.log(`Note data is not found. id:${id}, account: ${username}`);
         }
       }
-      setNoteResults(_noteResults);
-      updateAccountBalance();
+      // setNoteResults(_noteResults);
+      await updateAccountBalance();
       try {
         if (userType === "employer")
           savePayrollNoteDataToBackend(_noteResults, userAccountId);
