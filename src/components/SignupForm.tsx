@@ -64,14 +64,14 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSubmit, onBack, selectedTab }
             )}
           </div>
 
-          {selectedTab === 'Business' && <div>
+          {<div>
             <label className="block text-gray-600 font-medium">
-              Company Name
+              Name
             </label>
             <input
               {...register("companyName")}
               type="text"
-              placeholder="Enter company name"
+              placeholder="Enter name"
               className="w-full p-3 border-2 border-[#F2F2F2] rounded-full mt-1 outline-none focus:border-[#1E1E1E]"
             />
             {errors.companyName?.message && (

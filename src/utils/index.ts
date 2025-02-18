@@ -266,9 +266,8 @@ export const importNotesFromData = async (noteData: any, targetWalletAddress: st
         await sleep(100);
         await webClient.import_note(byteArray); // Assuming `webClient` is correctly typed
         console.log("Note successfully imported!");
-        await syncClient();
         try{
-          // trying to consume notes
+          await syncClient();
           await consumeAvailableNotes(targetWalletAddress);
         } catch (error) {
           console.error("Error consuming note:", error);
@@ -679,7 +678,7 @@ export const createAccountInBackend = async (
   userType: string,
   email: string,
   password: string,
-  companyIdOrName: string, // mongodb default user Id
+  name: string, // mongodb default user Id
 ) => {
   try {
     const randomSuffix = generateRandomString();
@@ -689,11 +688,11 @@ export const createAccountInBackend = async (
       // const email = `co_${randomSuffix}@example.com`; // Dynamic email
       const username = `co_username_${randomSuffix}`; // Dynamic username
       const payload = {
-        name: `${companyIdOrName}`,
+        name: `${name}`,
         email,
         password: password,
         userType: "employer",
-        companyName: companyIdOrName,
+        companyName: name,
         username,
         walletId: accountId,
       };
@@ -706,16 +705,16 @@ export const createAccountInBackend = async (
     } else if (userType === "employee") {
       // const email = `em_${randomSuffix}@example.com`; // Dynamic email
       const username = `em_username_${randomSuffix}`; // Dynamic username
-      let companyName = `em_name` + randomSuffix;
+      let randomName = `em_name` + randomSuffix;
 
       const response = await axios.post(`${API_URL}/api/users/register`, {
-        name: companyIdOrName || companyName,
+        name: name || randomName,
         email,
         password: password,
         userType: "employee",
         username,
         walletId: accountId,
-        employerId: !companyIdOrName ? _defaultEmployer : companyIdOrName,
+        employerId:_defaultEmployer,
       });
       return response.data.data;
     }
