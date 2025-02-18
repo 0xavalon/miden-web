@@ -11,4 +11,7 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ["@demox-labs/miden-sdk"],
   },
+  preview: {
+    allowedHosts: ["arifpro--4173.gh.srv.us"],
+  },
 });
