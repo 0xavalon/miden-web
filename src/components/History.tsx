@@ -146,7 +146,7 @@ const History = ({ userAccountId, updateAccountBalance, setActiveFaucet, activeF
               <div className="ml-3 flex flex-col gap-1">
                 <div className="w-full gap-3 flex flex-row items-center mt-2">
                   <CopyToClipboard
-                    textToCopy={item.ownerId}
+                    textToCopy={item.noteId}
                     displayText={item.title}
                     textClassName="text-[#151515] text-base font-semibold font-inter leading-6"
                   />
